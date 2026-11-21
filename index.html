@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HortaMon — Aventura Botânica</title>
+  <link
+    rel="icon"
+    type="image/svg+xml"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='14' y='34' width='36' height='22' rx='6' fill='%23d97706' stroke='%232b1d14' stroke-width='4'/%3E%3Crect x='10' y='28' width='44' height='10' rx='4' fill='%23f59e0b' stroke='%232b1d14' stroke-width='4'/%3E%3Cpath d='M32 28 C32 14 18 10 14 18 C12 24 24 28 32 28 Z' fill='%2322c55e' stroke='%232b1d14' stroke-width='4' stroke-linejoin='round'/%3E%3Cpath d='M32 28 C32 12 46 8 50 16 C52 22 40 28 32 28 Z' fill='%234ade80' stroke='%232b1d14' stroke-width='4' stroke-linejoin='round'/%3E%3C/svg%3E"
+  />
+  <link rel="stylesheet" href="css/style.css" />
+
+  <!-- Ordem exata de carregamento (compatível com file:// sem ES modules) -->
+  <script defer src="js/data/types.js"></script>
+  <script defer src="js/data/moves.js"></script>
+  <script defer src="js/data/species.js"></script>
+  <script defer src="js/data/world.js"></script>
+  <script defer src="js/engine/audio.js"></script>
+  <script defer src="js/engine/sprites.js"></script>
+  <script defer src="js/engine/save.js"></script>
+  <script defer src="js/engine/battle.js"></script>
+  <script defer src="js/engine/overworld.js"></script>
+  <script defer src="js/main.js"></script>
+</head>
+<body>
+  <div id="app" class="app-root">
+    <!-- =========================================================
+         TELA 1: TÍTULO / MENU INICIAL
+    ========================================================== -->
+    <section id="screen-title" class="screen screen-title active" aria-label="Tela Inicial">
+      <div class="title-card cartoon-card">
+        <div class="title-sun-deco" aria-hidden="true">☀️</div>
+        <div class="title-badge-row">
+          <span class="pill pill-leaf">🌱 RPG Botânico Cartoon</span>
+          <span class="pill pill-sun">📖 22 HortaMons Originais</span>
+        </div>
+
+        <header class="title-hero">
+          <h1 class="game-logo">
+            <span class="logo-horta">Horta</span><span class="logo-mon">Mon</span>
+          </h1>
+          <p class="game-subtitle">Aventura Botânica</p>
+          <p class="game-tagline">
+            Explore a Vila da Horta, capture frutas, verduras e fungos incríveis, evolua sua equipe e conquiste a Insígnia da Colheita Dourada!
+          </p>
+        </header>
+
+        <div id="title-showcase" class="title-showcase" aria-hidden="true"></div>
+
+        <div id="title-save-preview" class="save-preview hidden"></div>
+
+        <div class="title-actions">
+          <button id="btn-continue" type="button" class="btn btn-primary btn-lg hidden">
+            ▶ Continuar Aventura
+          </button>
+          <button id="btn-new-game" type="button" class="btn btn-sun btn-lg">
+            🌱 Começar Aventura
+          </button>
+        </div>
+
+        <div class="title-secondary-actions">
+          <button id="btn-title-types" type="button" class="btn btn-cream btn-sm">
+            ⚖️ Tabela de Tipos
+          </button>
+          <button id="btn-title-help" type="button" class="btn btn-cream btn-sm">
+            ❓ Como Jogar
+          </button>
+          <button id="btn-title-sound" type="button" class="btn btn-cream btn-sm">
+            🔊 Som: Ligado
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================
+         TELA 2: ESCOLHA DE INICIAL (PROF. POMAR)
+    ========================================================== -->
+    <section id="screen-starter" class="screen screen-starter" aria-label="Escolha de Inicial">
+      <div class="starter-shell cartoon-card">
+        <div class="prof-banner">
+          <div class="prof-portrait-wrap">
+            <canvas id="prof-avatar-canvas" width="68" height="68"></canvas>
+          </div>
+          <div class="prof-speech">
+            <span class="speaker-pill">Prof. Pomar</span>
+            <p>
+              Bem-vindo à <strong>Vila da Horta</strong>! Escolha o seu primeiro parceiro HortaMon para explorar as rotas, completar a BotaniDex e desafiar a Mestra Flora na Arena da Estufa Dourada!
+            </p>
+          </div>
+        </div>
+
+        <div id="starter-grid" class="starter-grid"></div>
+
+        <div class="starter-footer">
+          <div class="triangle-hint">
+            <span class="triangle-title">Vantagens dos Iniciais:</span>
+            <span class="type-chip" style="--t-bg:#fee2e2;--t-color:#991b1b;--t-border:#ef4444;">🌶️ Picante</span>
+            <span class="triangle-arrow">vence ➔</span>
+            <span class="type-chip" style="--t-bg:#dcfce7;--t-color:#166534;--t-border:#22c55e;">🥦 Folha</span>
+            <span class="triangle-arrow">vence ➔</span>
+            <span class="type-chip" style="--t-bg:#e0f2fe;--t-color:#075985;--t-border:#0ea5e9;">🍉 Fresco</span>
+            <span class="triangle-arrow">vence ➔</span>
+            <span class="type-chip" style="--t-bg:#fee2e2;--t-color:#991b1b;--t-border:#ef4444;">🌶️ Picante</span>
+          </div>
+          <button id="btn-starter-back" type="button" class="btn btn-cream btn-sm">
+            ← Voltar ao Menu
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================
+         TELA 3: EXPLORAÇÃO (OVERWORLD)
+    ========================================================== -->
+    <section id="screen-overworld" class="screen screen-overworld" aria-label="Exploração do Mundo">
+      <header class="top-bar cartoon-card">
+        <div class="top-bar-left">
+          <div class="zone-pill">
+            <span class="zone-pin">📍</span>
+            <div class="zone-texts">
+              <strong id="hud-zone-name">Vila da Horta</strong>
+              <small id="hud-zone-sub">Um jardim tranquilo</small>
+            </div>
+          </div>
+
+          <div class="hud-counters">
+            <span class="stat-pill stat-coins" title="Moedas">
+              🪙 <strong id="hud-coins">350</strong>
+            </span>
+            <span class="stat-pill stat-badges" title="Insígnias conquistadas">
+              🏅 <strong id="hud-badges">0</strong>
+            </span>
+            <span class="stat-pill stat-dex" title="Espécies capturadas na BotaniDex">
+              📖 <strong id="hud-dex">1/22</strong>
+            </span>
+          </div>
+        </div>
+
+        <nav class="top-bar-actions" aria-label="Ações rápidas">
+          <button id="btn-open-party" type="button" class="btn btn-leaf btn-xs" title="Gerenciar Time (P)">
+            🌿 <span>Time</span>
+          </button>
+          <button id="btn-open-bag" type="button" class="btn btn-cream btn-xs" title="Abrir Mochila (I)">
+            🎒 <span>Mochila</span>
+          </button>
+          <button id="btn-open-dex" type="button" class="btn btn-sun btn-xs" title="Abrir BotaniDex (X)">
+            📖 <span>BotaniDex</span>
+          </button>
+          <button id="btn-open-types" type="button" class="btn btn-cream btn-xs" title="Tabela de Tipos (T)">
+            ⚖️ <span>Tipos</span>
+          </button>
+          <button id="btn-save-game" type="button" class="btn btn-sky btn-xs" title="Salvar Progresso (K)">
+            💾 <span>Salvar</span>
+          </button>
+          <button id="btn-toggle-sound" type="button" class="btn btn-cream btn-xs btn-icon-only" title="Alternar Som (M)" aria-label="Alternar som">
+            🔊
+          </button>
+          <button id="btn-open-menu" type="button" class="btn btn-wood btn-xs" title="Menu e Ajuda (Esc)">
+            🏠 <span>Menu</span>
+          </button>
+        </nav>
+      </header>
+
+      <main class="overworld-layout">
+        <div class="stage-column">
+          <div class="canvas-frame cartoon-card">
+            <canvas id="overworld-canvas" width="768" height="480"></canvas>
+
+            <!-- Caixa de Diálogo RPG sobreposta -->
+            <div id="dialogue-box" class="dialogue-box hidden" role="dialog" aria-live="polite">
+              <div class="dialogue-portrait-wrap">
+                <canvas id="dialogue-portrait" width="56" height="56"></canvas>
+              </div>
+              <div class="dialogue-content">
+                <div class="dialogue-header">
+                  <span id="dialogue-speaker" class="speaker-pill">NPC</span>
+                  <span id="dialogue-page" class="dialogue-page">1/1</span>
+                </div>
+                <p id="dialogue-text" class="dialogue-text"></p>
+                <div class="dialogue-footer">
+                  <div id="dialogue-actions" class="dialogue-actions"></div>
+                  <span id="dialogue-next-hint" class="dialogue-next-hint">▼ Espaço / Clique</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="controls-hint-bar">
+            <span><strong>WASD / Setas:</strong> Andar</span>
+            <span><strong>Espaço / Clique:</strong> Interagir</span>
+            <span><strong>P:</strong> Time</span>
+            <span><strong>I:</strong> Mochila</span>
+            <span><strong>X:</strong> BotaniDex</span>
+            <span><strong>T:</strong> Tipos</span>
+            <span><strong>K:</strong> Salvar</span>
+          </div>
+        </div>
+
+        <aside class="side-panel">
+          <div class="side-card quest-card cartoon-card">
+            <div class="side-card-head">
+              <span class="side-title">🧭 Objetivo Atual</span>
+            </div>
+            <p id="quest-text" class="quest-text">
+              Explore a Vila da Horta e converse com o Prof. Pomar!
+            </p>
+          </div>
+
+          <div class="side-card party-side-card cartoon-card">
+            <div class="side-card-head">
+              <span class="side-title">🌿 Seu Time (<span id="sidebar-party-count">1</span>/6)</span>
+              <button id="btn-sidebar-party" type="button" class="link-btn">Detalhes</button>
+            </div>
+            <div id="sidebar-party-list" class="sidebar-party-list"></div>
+          </div>
+
+          <div class="side-card controls-side-card cartoon-card">
+            <div class="dpad" aria-label="Controles direcionais">
+              <button type="button" class="dpad-btn dpad-up" data-dir="up" aria-label="Mover para cima">▲</button>
+              <button type="button" class="dpad-btn dpad-left" data-dir="left" aria-label="Mover para esquerda">◀</button>
+              <span class="dpad-center" aria-hidden="true">🌱</span>
+              <button type="button" class="dpad-btn dpad-right" data-dir="right" aria-label="Mover para direita">▶</button>
+              <button type="button" class="dpad-btn dpad-down" data-dir="down" aria-label="Mover para baixo">▼</button>
+            </div>
+            <div class="interact-stack">
+              <button id="btn-dpad-interact" type="button" class="btn btn-primary btn-interact">
+                💬 Interagir
+                <small>(Espaço)</small>
+              </button>
+            </div>
+          </div>
+        </aside>
+      </main>
+    </section>
+
+    <!-- =========================================================
+         TELA 4: BATALHA POR TURNOS
+    ========================================================== -->
+    <section id="screen-battle" class="screen screen-battle" aria-label="Arena de Batalha">
+      <div class="battle-shell">
+        <header class="battle-topbar cartoon-card">
+          <div class="battle-topbar-left">
+            <span id="battle-type-badge" class="pill pill-leaf">🌿 Batalha Selvagem</span>
+            <strong id="battle-header-title">Encontro na Grama Alta</strong>
+          </div>
+          <div class="battle-topbar-right">
+            <button id="btn-battle-types" type="button" class="btn btn-cream btn-xs">
+              ⚖️ Tipos
+            </button>
+            <button id="btn-battle-sound" type="button" class="btn btn-cream btn-xs btn-icon-only" aria-label="Alternar som">
+              🔊
+            </button>
+          </div>
+        </header>
+
+        <div class="battle-stage cartoon-card">
+          <canvas id="battle-canvas" width="760" height="340"></canvas>
+
+          <!-- HUD Inimigo (Superior Esquerdo) -->
+          <div id="hud-enemy" class="battle-hud hud-enemy">
+            <div class="hud-row-top">
+              <div class="hud-name-group">
+                <strong id="enemy-name">Cenourito</strong>
+                <span id="enemy-caught-mark" class="caught-mark hidden" title="Espécie já capturada!">🏺</span>
+              </div>
+              <span id="enemy-level" class="lv-pill">Nv. 4</span>
+            </div>
+            <div class="hud-row-meta">
+              <span id="enemy-type-badge" class="type-chip">🥕 Raiz</span>
+              <span id="enemy-status-badge" class="status-chip hidden"></span>
+              <span id="enemy-stages" class="stages-group"></span>
+              <div id="enemy-party-dots" class="party-dots hidden" title="Time do oponente"></div>
+            </div>
+            <div class="hp-bar-wrap">
+              <span class="hp-label">HP</span>
+              <div class="bar-track">
+                <div id="enemy-hp-fill" class="bar-fill hp-high" style="width:100%"></div>
+              </div>
+              <span id="enemy-hp-text" class="hp-nums">20/20</span>
+            </div>
+          </div>
+
+          <!-- HUD Jogador (Inferior Direito) -->
+          <div id="hud-player" class="battle-hud hud-player">
+            <div class="hud-row-top">
+              <strong id="player-name">Pimentico</strong>
+              <span id="player-level" class="lv-pill">Nv. 5</span>
+            </div>
+            <div class="hud-row-meta">
+              <span id="player-type-badge" class="type-chip">🌶️ Picante</span>
+              <span id="player-status-badge" class="status-chip hidden"></span>
+              <span id="player-stages" class="stages-group"></span>
+            </div>
+            <div class="hp-bar-wrap">
+              <span class="hp-label">HP</span>
+              <div class="bar-track">
+                <div id="player-hp-fill" class="bar-fill hp-high" style="width:100%"></div>
+              </div>
+              <span id="player-hp-text" class="hp-nums">25/25</span>
+            </div>
+            <div class="xp-bar-wrap">
+              <span class="xp-label">XP</span>
+              <div class="bar-track bar-xp">
+                <div id="player-xp-fill" class="bar-fill xp-fill" style="width:0%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="battle-narration cartoon-card">
+          <span class="narration-leaf" aria-hidden="true">🍃</span>
+          <p id="battle-message" class="battle-message">Prepare-se para a batalha!</p>
+          <span id="battle-busy-dots" class="busy-dots hidden" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </span>
+        </div>
+
+        <div class="battle-command-deck">
+          <div class="battle-tabs cartoon-card" role="tablist" aria-label="Comandos de batalha">
+            <button id="btab-fight" type="button" class="btab-btn btab-fight active" data-tab="fight">
+              ⚔️ Lutar
+            </button>
+            <button id="btab-bag" type="button" class="btab-btn btab-bag" data-tab="bag">
+              🎒 Mochila
+            </button>
+            <button id="btab-party" type="button" class="btab-btn btab-party" data-tab="party">
+              🌿 Time
+            </button>
+            <button id="btab-run" type="button" class="btab-btn btab-run" data-tab="run">
+              🏃 Fugir
+            </button>
+          </div>
+
+          <div id="battle-action-pane" class="battle-action-pane cartoon-card"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- =========================================================
+       MODAL GENÉRICO (Time, Mochila, Loja, Caixa, BotaniDex, Tipos, Menu)
+  ========================================================== -->
+  <div id="modal-backdrop" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div id="modal-dialog" class="modal-dialog cartoon-card">
+      <header class="modal-header">
+        <div class="modal-title-wrap">
+          <h2 id="modal-title" class="modal-title">Título</h2>
+          <p id="modal-subtitle" class="modal-subtitle hidden"></p>
+        </div>
+        <button id="modal-close-btn" type="button" class="btn btn-cream btn-xs btn-icon-only" aria-label="Fechar janela">
+          ✕
+        </button>
+      </header>
+      <div id="modal-body" class="modal-body"></div>
+      <footer id="modal-footer" class="modal-footer hidden"></footer>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       MODAL COMEMORATIVO DE EVOLUÇÃO
+  ========================================================== -->
+  <div id="evo-overlay" class="evo-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="evo-title">
+    <div class="evo-card cartoon-card">
+      <div class="evo-rays" aria-hidden="true"></div>
+      <div class="evo-badge">✨ Evolução Botânica! ✨</div>
+      <h2 id="evo-title" class="evo-title">Seu HortaMon evoluiu!</h2>
+
+      <div class="evo-stage">
+        <div class="evo-mon evo-before">
+          <img id="evo-from-img" alt="Antes da evolução" />
+          <strong id="evo-from-name">Antes</strong>
+        </div>
+        <div class="evo-arrow" aria-hidden="true">➔</div>
+        <div class="evo-mon evo-after">
+          <img id="evo-to-img" alt="Depois da evolução" />
+          <strong id="evo-to-name">Depois</strong>
+          <span id="evo-to-type" class="type-chip"></span>
+        </div>
+      </div>
+
+      <p id="evo-desc" class="evo-desc"></p>
+
+      <button id="evo-confirm-btn" type="button" class="btn btn-sun btn-lg">
+        🌟 Incrível!
+      </button>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       NOTIFICAÇÕES TOAST
+  ========================================================== -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+</body>
+</html>

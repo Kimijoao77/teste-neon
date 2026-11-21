@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HortaMon — Galeria de Cartas Colecionáveis</title>
+  <link
+    rel="icon"
+    type="image/svg+xml"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='14' y='34' width='36' height='22' rx='6' fill='%23d97706' stroke='%232b1d14' stroke-width='4'/%3E%3Crect x='10' y='28' width='44' height='10' rx='4' fill='%23f59e0b' stroke='%232b1d14' stroke-width='4'/%3E%3Cpath d='M32 28 C32 14 18 10 14 18 C12 24 24 28 32 28 Z' fill='%2322c55e' stroke='%232b1d14' stroke-width='4' stroke-linejoin='round'/%3E%3Cpath d='M32 28 C32 12 46 8 50 16 C52 22 40 28 32 28 Z' fill='%234ade80' stroke='%232b1d14' stroke-width='4' stroke-linejoin='round'/%3E%3C/svg%3E"
+  />
+  <script defer src="js/data/types.js"></script>
+  <script defer src="js/data/moves.js"></script>
+  <script defer src="js/data/species.js"></script>
+  <script defer src="js/engine/sprites.js"></script>
+  <style>
+    :root {
+      --ink: #2b1d14;
+      --ink-soft: #5c4333;
+      --cream: #fffdf5;
+      --cream-warm: #fef6df;
+      --leaf: #22c55e;
+      --leaf-dark: #15803d;
+      --sun: #facc15;
+      --wood: #8b5a2b;
+      --font-main: 'Fredoka', 'Nunito', 'Quicksand', 'Trebuchet MS', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100%;
+      font-family: var(--font-main);
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% 10%, rgba(254, 240, 138, 0.7) 0%, transparent 35%),
+        radial-gradient(circle at 88% 8%, rgba(186, 230, 253, 0.68) 0%, transparent 36%),
+        linear-gradient(180deg, #effae6 0%, #fffdf5 50%, #e1f6d7 100%);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.16;
+      background-image: radial-gradient(var(--leaf-dark) 1.2px, transparent 1.2px);
+      background-size: 24px 24px;
+      z-index: 0;
+    }
+
+    .page-wrap {
+      position: relative;
+      z-index: 1;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 18px 20px 30px;
+    }
+
+    /* Cabeçalho interativo */
+    .gallery-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding: 12px 18px;
+      margin-bottom: 14px;
+      background: linear-gradient(180deg, #fffdf5 0%, #fcf1d2 100%);
+      border: 3px solid var(--ink);
+      border-radius: 18px;
+      box-shadow: 0 4px 0 var(--ink);
+    }
+
+    .brand-block {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .brand-title {
+      margin: 0;
+      font-size: 1.65rem;
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -0.01em;
+    }
+
+    .brand-horta {
+      color: #16a34a;
+    }
+
+    .brand-mon {
+      color: #ca8a04;
+    }
+
+    .brand-sub {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 11px;
+      border-radius: 999px;
+      background: #dcfce7;
+      border: 2px solid var(--ink);
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: var(--leaf-dark);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 13px;
+      border-radius: 12px;
+      border: 2.5px solid var(--ink);
+      box-shadow: 0 3px 0 var(--ink);
+      background: var(--cream);
+      color: var(--ink);
+      font-family: inherit;
+      font-weight: 800;
+      font-size: 0.84rem;
+      text-decoration: none;
+      cursor: pointer;
+      transition: transform 0.1s ease, box-shadow 0.1s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn:active {
+      transform: translateY(2px);
+      box-shadow: 0 1px 0 var(--ink);
+    }
+
+    .btn-primary {
+      background: linear-gradient(180deg, #4ade80 0%, #22c55e 100%);
+      color: #ffffff;
+      text-shadow: 0 1px 0 rgba(43, 29, 20, 0.45);
+    }
+
+    /* Barra de filtros por tipo */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 18px;
+      padding: 10px 14px;
+      background: rgba(255, 253, 245, 0.92);
+      border: 3px solid var(--ink);
+      border-radius: 16px;
+      box-shadow: 0 4px 0 var(--ink);
+    }
+
+    .filter-pills {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    .filter-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 2.5px solid var(--ink);
+      box-shadow: 0 2.5px 0 var(--ink);
+      background: var(--cream);
+      color: var(--ink);
+      font-family: inherit;
+      font-weight: 800;
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: transform 0.1s ease, filter 0.1s ease;
+    }
+
+    .filter-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .filter-btn.active {
+      background: var(--f-bg, #fde047);
+      color: var(--f-color, var(--ink));
+      box-shadow: 0 1px 0 var(--ink);
+      transform: translateY(1px);
+    }
+
+    .filter-count {
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: var(--ink-soft);
+    }
+
+    /* Banner limpo exclusivo do modo ?sheet= */
+    .sheet-banner {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 16px;
+      margin-bottom: 12px;
+      background: linear-gradient(180deg, #fffdf5 0%, #fef3c7 100%);
+      border: 3px solid var(--ink);
+      border-radius: 14px;
+      box-shadow: 0 4px 0 var(--ink);
+      height: 46px;
+    }
+
+    .sheet-banner-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sheet-logo {
+      font-size: 1.32rem;
+      font-weight: 900;
+      letter-spacing: -0.01em;
+    }
+
+    .sheet-subtitle {
+      font-size: 0.86rem;
+      font-weight: 800;
+      color: var(--wood);
+    }
+
+    .sheet-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 12px;
+      border-radius: 999px;
+      background: #dcfce7;
+      border: 2px solid var(--ink);
+      font-size: 0.82rem;
+      font-weight: 900;
+      color: var(--leaf-dark);
+    }
+
+    /* Grade de Cartas */
+    .cards-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 16px;
+    }
+
+    /* Carta Colecionável Cartoon */
+    .tcard {
+      width: 326px;
+      height: 360px;
+      padding: 7px;
+      border-radius: 18px;
+      border: 3.5px solid var(--ink);
+      box-shadow: 0 5px 0 var(--ink);
+      background: linear-gradient(155deg, var(--t-color) 0%, var(--t-dark) 100%);
+      position: relative;
+      display: flex;
+      transition: transform 0.14s ease, box-shadow 0.14s ease;
+    }
+
+    body:not(.sheet-mode) .tcard:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 9px 0 var(--ink);
+    }
+
+    .tcard-inner {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 6px 8px 6px;
+      border-radius: 12px;
+      border: 2.5px solid var(--ink);
+      background: linear-gradient(180deg, #fffdf5 0%, #fffdf5 55%, var(--t-bg) 100%);
+      overflow: hidden;
+    }
+
+    /* Topo da Carta */
+    .tcard-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      min-height: 32px;
+    }
+
+    .tcard-id-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .tcard-dex {
+      flex-shrink: 0;
+      padding: 2px 6px;
+      border-radius: 7px;
+      background: var(--ink);
+      color: var(--sun);
+      font-size: 0.72rem;
+      font-weight: 900;
+      letter-spacing: 0.02em;
+    }
+
+    .tcard-name-wrap {
+      min-width: 0;
+      line-height: 1.05;
+    }
+
+    .tcard-name {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 900;
+      color: var(--ink);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .tcard-title {
+      display: block;
+      font-size: 0.67rem;
+      font-weight: 800;
+      color: var(--ink-soft);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .type-badge {
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: var(--t-bg);
+      color: var(--t-dark);
+      border: 2px solid var(--t-color);
+      font-size: 0.7rem;
+      font-weight: 900;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+
+    /* Janela da Ilustração */
+    .tcard-art {
+      position: relative;
+      height: 128px;
+      border-radius: 11px;
+      border: 2.5px solid var(--ink);
+      background:
+        radial-gradient(circle at 50% 88%, rgba(134, 239, 172, 0.52) 0%, rgba(134, 239, 172, 0.16) 44%, transparent 66%),
+        radial-gradient(circle at 50% 38%, #ffffff 0%, var(--t-bg) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .tcard-art::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      bottom: 8px;
+      transform: translateX(-50%);
+      width: 116px;
+      height: 18px;
+      border-radius: 50%;
+      background: rgba(21, 128, 61, 0.16);
+      pointer-events: none;
+    }
+
+    .tcard-art img {
+      position: relative;
+      z-index: 1;
+      width: 116px;
+      height: 116px;
+      object-fit: contain;
+      filter: drop-shadow(0 3px 2px rgba(43, 29, 20, 0.18));
+    }
+
+    .stage-pill {
+      position: absolute;
+      top: 5px;
+      left: 5px;
+      z-index: 2;
+      padding: 1.5px 7px;
+      border-radius: 999px;
+      background: rgba(255, 253, 245, 0.94);
+      border: 1.8px solid var(--ink);
+      font-size: 0.64rem;
+      font-weight: 900;
+      color: var(--ink);
+      line-height: 1.25;
+      max-width: calc(100% - 10px);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Barras de Stats */
+    .tcard-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 5px;
+      padding: 4px 6px;
+      background: rgba(255, 253, 245, 0.92);
+      border: 2px solid var(--ink);
+      border-radius: 9px;
+    }
+
+    .stat-col {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .stat-top {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      font-size: 0.64rem;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .stat-lbl {
+      color: var(--ink-soft);
+    }
+
+    .stat-val {
+      color: var(--ink);
+      font-size: 0.7rem;
+    }
+
+    .stat-track {
+      height: 6px;
+      border-radius: 999px;
+      background: #e7dec6;
+      border: 1.5px solid var(--ink);
+      overflow: hidden;
+    }
+
+    .stat-fill {
+      height: 100%;
+      border-radius: 999px;
+    }
+
+    /* Golpes Principais */
+    .tcard-moves {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .move-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      padding: 2.5px 6px;
+      border-radius: 7px;
+      background: rgba(255, 253, 245, 0.94);
+      border: 1.8px solid var(--ink);
+      font-size: 0.7rem;
+      line-height: 1.15;
+    }
+
+    .move-left {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      min-width: 0;
+      font-weight: 900;
+      color: var(--ink);
+    }
+
+    .move-left span.mv-name {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .move-right {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      flex-shrink: 0;
+      font-weight: 800;
+      font-size: 0.64rem;
+      color: var(--ink-soft);
+    }
+
+    .move-pwr {
+      padding: 1px 5px;
+      border-radius: 5px;
+      border: 1.5px solid var(--ink);
+      background: var(--mv-bg, #fef9c3);
+      color: var(--mv-color, var(--ink));
+      font-weight: 900;
+    }
+
+    /* Descrição */
+    .tcard-desc {
+      margin: 0;
+      padding: 4px 6px;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      border-radius: 8px;
+      background: rgba(255, 253, 245, 0.85);
+      border: 1.8px dashed rgba(43, 29, 20, 0.35);
+      font-size: 0.655rem;
+      line-height: 1.22;
+      font-weight: 700;
+      color: var(--ink-soft);
+      overflow: hidden;
+    }
+
+    .tcard-desc span {
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* =====================================================================
+       MODO ?sheet=1|2|3 (Captura limpa 1400x820 sem rolagem)
+    ===================================================================== */
+    body.sheet-mode {
+      background: #fdf8e7;
+      overflow: hidden;
+    }
+
+    body.sheet-mode::before {
+      opacity: 0.1;
+    }
+
+    body.sheet-mode .page-wrap {
+      width: 1400px;
+      height: 820px;
+      max-width: 1400px;
+      padding: 14px 18px;
+      overflow: hidden;
+    }
+
+    body.sheet-mode .gallery-header,
+    body.sheet-mode .filter-bar {
+      display: none !important;
+    }
+
+    body.sheet-mode .sheet-banner {
+      display: flex;
+    }
+
+    body.sheet-mode .cards-grid {
+      gap: 14px;
+    }
+
+    body.sheet-mode.sheet-3 .cards-grid {
+      max-width: 1060px;
+      margin: 0 auto;
+    }
+
+    body.sheet-mode .tcard {
+      width: 328px;
+      height: 360px;
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrap">
+    <header class="gallery-header">
+      <div class="brand-block">
+        <h1 class="brand-title">
+          <span class="brand-horta">Horta</span><span class="brand-mon">Mon</span>
+        </h1>
+        <span class="brand-sub">🃏 Álbum Oficial — 22 Cartas Colecionáveis</span>
+      </div>
+      <div class="header-actions">
+        <a href="index.html" class="btn btn-primary">🎮 Jogar HortaMon</a>
+      </div>
+    </header>
+
+    <section class="filter-bar" aria-label="Filtrar cartas por tipo">
+      <div id="filter-pills" class="filter-pills"></div>
+      <span id="filter-count" class="filter-count">Exibindo 22 de 22 cartas</span>
+    </section>
+
+    <header id="sheet-banner" class="sheet-banner">
+      <div class="sheet-banner-left">
+        <span class="sheet-logo">
+          🌱 <span class="brand-horta">Horta</span><span class="brand-mon">Mon</span>
+        </span>
+        <span class="sheet-subtitle">Coleção Completa de Cartas Botânicas</span>
+      </div>
+      <span id="sheet-pill" class="sheet-pill">Página 1/3 • #01–#08</span>
+    </header>
+
+    <main id="cards-grid" class="cards-grid" aria-live="polite"></main>
+  </div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      function escapeHtml(str) {
+        return String(str == null ? '' : str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function getSheetParam() {
+        try {
+          const params = new URLSearchParams(window.location.search);
+          const s = Number(params.get('sheet'));
+          if (s === 1 || s === 2 || s === 3) return s;
+        } catch (_) {}
+        return null;
+      }
+
+      function pickSignatureMoves(sp, HM) {
+        const learnset = Array.isArray(sp.learnset) ? sp.learnset : [];
+        const unique = [];
+        const seen = new Set();
+        learnset.forEach((entry) => {
+          if (!entry || !entry.moveId || seen.has(entry.moveId)) return;
+          if (!HM.MOVES || !HM.MOVES[entry.moveId]) return;
+          seen.add(entry.moveId);
+          unique.push(entry);
+        });
+
+        // Prefere golpes temáticos (evita 'investida' se houver 3+ golpes melhores)
+        const nonBasic = unique.filter((e) => e.moveId !== 'investida');
+        const pool = nonBasic.length >= 3 ? nonBasic : unique;
+        if (pool.length <= 3) return pool;
+
+        // Pega inicial, intermediário e golpe assinatura final
+        const first = pool[0];
+        const mid = pool[Math.floor(pool.length / 2)];
+        const last = pool[pool.length - 1];
+        const chosen = [];
+        [first, mid, last].forEach((m) => {
+          if (m && !chosen.includes(m)) chosen.push(m);
+        });
+        return chosen;
+      }
+
+      function getStageLabel(sp, HM) {
+        const all = HM.SPECIES_LIST || [];
+        const hasPrev = all.some((other) => other.evolvesTo === sp.id);
+        const nextSp = sp.evolvesTo && HM.SPECIES && HM.SPECIES[sp.evolvesTo];
+
+        if (nextSp) {
+          return `Estágio ${sp.stage} • ➔ ${nextSp.name} Nv.${sp.evolveLevel}`;
+        }
+        if (hasPrev) {
+          return `Estágio ${sp.stage} • Forma Final`;
+        }
+        return 'Estágio Único';
+      }
+
+      function renderCard(sp, HM) {
+        const t = (HM.TYPES && HM.TYPES[sp.type]) || {
+          name: sp.type,
+          icon: '🌱',
+          color: '#22c55e',
+          bg: '#dcfce7',
+          dark: '#166534'
+        };
+        const num = String(sp.dexNum || 0).padStart(2, '0');
+        const imgUrl =
+          HM.Sprites && typeof HM.Sprites.renderCreatureToDataURL === 'function'
+            ? HM.Sprites.renderCreatureToDataURL(sp.id, 180, false)
+            : '';
+        const stageText = getStageLabel(sp, HM);
+        const bs = sp.baseStats || { hp: 50, atk: 50, def: 50, spd: 50 };
+
+        const statCol = (label, val, color) => {
+          const pct = Math.max(12, Math.min(100, Math.round((val / 110) * 100)));
+          return `
+            <div class="stat-col">
+              <div class="stat-top">
+                <span class="stat-lbl">${label}</span>
+                <span class="stat-val">${val}</span>
+              </div>
+              <div class="stat-track">
+                <div class="stat-fill" style="width:${pct}%;background:${color};"></div>
+              </div>
+            </div>
+          `;
+        };
+
+        const moves = pickSignatureMoves(sp, HM);
+        const movesHtml = moves
+          .map((entry) => {
+            const mv = HM.MOVES[entry.moveId];
+            const mt = (HM.TYPES && HM.TYPES[mv.type]) || t;
+            const pwrText = mv.category === 'attack' ? `POD ${mv.power}` : 'STATUS';
+            const mvBg = mv.category === 'attack' ? mt.bg : '#e0f2fe';
+            const mvColor = mv.category === 'attack' ? mt.dark : '#075985';
+            return `
+              <div class="move-row">
+                <span class="move-left">
+                  <span>${mt.icon}</span>
+                  <span class="mv-name">${escapeHtml(mv.name)}</span>
+                </span>
+                <span class="move-right">
+                  <span>Nv.${entry.level}</span>
+                  <span class="move-pwr" style="--mv-bg:${mvBg};--mv-color:${mvColor};">${pwrText}</span>
+                </span>
+              </div>
+            `;
+          })
+          .join('');
+
+        return `
+          <article class="tcard" style="--t-color:${t.color};--t-bg:${t.bg};--t-dark:${t.dark};">
+            <div class="tcard-inner">
+              <header class="tcard-head">
+                <div class="tcard-id-group">
+                  <span class="tcard-dex">#${num}</span>
+                  <div class="tcard-name-wrap">
+                    <h2 class="tcard-name">${escapeHtml(sp.name)}</h2>
+                    <span class="tcard-title">${escapeHtml(sp.title || '')}</span>
+                  </div>
+                </div>
+                <span class="type-badge">${t.icon} ${escapeHtml(t.name)}</span>
+              </header>
+
+              <div class="tcard-art">
+                <span class="stage-pill">${escapeHtml(stageText)}</span>
+                <img src="${imgUrl}" alt="${escapeHtml(sp.name)}" />
+              </div>
+
+              <div class="tcard-stats">
+                ${statCol('HP', bs.hp, '#22c55e')}
+                ${statCol('ATK', bs.atk, '#ef4444')}
+                ${statCol('DEF', bs.def, '#f59e0b')}
+                ${statCol('VEL', bs.spd, '#0ea5e9')}
+              </div>
+
+              <div class="tcard-moves">${movesHtml}</div>
+
+              <p class="tcard-desc"><span>${escapeHtml(sp.desc || '')}</span></p>
+            </div>
+          </article>
+        `;
+      }
+
+      function init() {
+        const HM = window.HortaMon;
+        if (!HM || !Array.isArray(HM.SPECIES_LIST)) return;
+
+        const grid = document.getElementById('cards-grid');
+        const filterPills = document.getElementById('filter-pills');
+        const filterCount = document.getElementById('filter-count');
+        const sheetPill = document.getElementById('sheet-pill');
+
+        const sheet = getSheetParam();
+        if (sheet) {
+          document.body.classList.add('sheet-mode', `sheet-${sheet}`);
+          const ranges = {
+            1: { start: 0, end: 8, label: 'Página 1/3 • #01–#08' },
+            2: { start: 8, end: 16, label: 'Página 2/3 • #09–#16' },
+            3: { start: 16, end: 22, label: 'Página 3/3 • #17–#22' }
+          };
+          const cfg = ranges[sheet];
+          sheetPill.textContent = cfg.label;
+          const slice = HM.SPECIES_LIST.slice(cfg.start, cfg.end);
+          grid.innerHTML = slice.map((sp) => renderCard(sp, HM)).join('');
+          return;
+        }
+
+        let activeType = 'all';
+
+        function renderFilters() {
+          const allCount = HM.SPECIES_LIST.length;
+          const btns = [
+            `<button type="button" class="filter-btn${activeType === 'all' ? ' active' : ''}" data-type="all" style="--f-bg:#fde047;--f-color:#2b1d14;">🌿 Todos (${allCount})</button>`
+          ];
+          (HM.TYPE_LIST || []).forEach((tid) => {
+            const t = HM.TYPES[tid];
+            const count = HM.SPECIES_LIST.filter((s) => s.type === tid).length;
+            btns.push(
+              `<button type="button" class="filter-btn${activeType === tid ? ' active' : ''}" data-type="${escapeHtml(tid)}" style="--f-bg:${t.bg};--f-color:${t.dark};">${t.icon} ${escapeHtml(t.name)} (${count})</button>`
+            );
+          });
+          filterPills.innerHTML = btns.join('');
+          filterPills.querySelectorAll('[data-type]').forEach((btn) => {
+            btn.addEventListener('click', () => {
+              activeType = btn.getAttribute('data-type');
+              renderFilters();
+              renderCards();
+            });
+          });
+        }
+
+        function renderCards() {
+          const list =
+            activeType === 'all'
+              ? HM.SPECIES_LIST
+              : HM.SPECIES_LIST.filter((sp) => sp.type === activeType);
+          filterCount.textContent = `Exibindo ${list.length} de ${HM.SPECIES_LIST.length} cartas`;
+          grid.innerHTML = list.map((sp) => renderCard(sp, HM)).join('');
+        }
+
+        renderFilters();
+        renderCards();
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+    })();
+  </script>
+</body>
+</html>
