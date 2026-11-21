@@ -3143,7 +3143,8 @@
     dom.toastContainer = $('toast-container');
   }
 
-  function init() {
+  async function init() {
+    await HM.Sprites.artReady;
     cacheDom();
     applyToolbarIcons();
     bindGlobalEvents();

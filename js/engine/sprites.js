@@ -5,6 +5,18 @@
 
   const INK = '#2b1d14';
   const dataUrlCache = new Map();
+  const illustrations = new Map();
+  const artReady = Promise.all(Object.entries(HM.creatureArt || {}).map(([id, url]) => {
+    const image = new Image();
+    return new Promise((resolve) => {
+      image.onload = () => {
+        illustrations.set(id, image);
+        resolve();
+      };
+      image.onerror = () => resolve();
+      image.src = url;
+    });
+  }));
   let scratchCanvas = null;
   let scratchCtx = null;
 
@@ -2667,6 +2679,14 @@
   }
 
   function drawCreatureInternal(ctx, speciesId, t, sleeping) {
+    const art = illustrations.get(speciesId);
+    if (art) {
+      const scale = 92 / Math.max(art.naturalWidth, art.naturalHeight);
+      const width = art.naturalWidth * scale;
+      const height = art.naturalHeight * scale * (sleeping ? 0.90 : 1);
+      ctx.drawImage(art, -width / 2, 39 - height, width, height);
+      return;
+    }
     const fn = SPECIES_DRAWERS[speciesId] || drawFallbackCreature;
     ctx.save();
     fn(ctx, t, sleeping);
@@ -3360,6 +3380,7 @@
   // =========================================================================
 
   HM.Sprites = {
+    artReady: artReady,
     drawCreature: drawCreature,
     renderCreatureToDataURL: renderCreatureToDataURL,
     drawCharacter: drawCharacter,

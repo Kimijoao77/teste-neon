@@ -12,6 +12,7 @@
   <script defer src="js/data/types.js"></script>
   <script defer src="js/data/moves.js"></script>
   <script defer src="js/data/species.js"></script>
+  <script defer src="js/data/creature-art.js"></script>
   <script defer src="js/engine/sprites.js"></script>
   <style>
     :root {
@@ -1046,9 +1047,10 @@
         });
       }
 
-      function init() {
+      async function init() {
         const HM = window.HortaMon;
         if (!HM || !Array.isArray(HM.SPECIES_LIST)) return;
+        await HM.Sprites.artReady;
 
         const grid = document.getElementById('cards-grid');
         const filterPills = document.getElementById('filter-pills');
@@ -1081,7 +1083,9 @@
           brandSub.textContent = `${total} cartas para colecionar — jogue para liberar as suas`;
         }
 
-        let activeType = 'all';
+        const galleryType = new URLSearchParams(location.search).get('galeria');
+        const preview = (HM.TYPE_LIST || []).includes(galleryType);
+        let activeType = preview ? galleryType : 'all';
         let allFlipped = false;
 
         function renderFilters() {
@@ -1124,7 +1128,7 @@
         }
 
         if (showAllBox) {
-          showAllBox.checked = false;
+          showAllBox.checked = preview;
           showAllBox.addEventListener('change', renderCards);
         }
         if (flipAllBtn) {
