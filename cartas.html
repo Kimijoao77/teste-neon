@@ -1084,8 +1084,8 @@
         }
 
         const galleryType = new URLSearchParams(location.search).get('galeria');
-        const preview = (HM.TYPE_LIST || []).includes(galleryType);
-        let activeType = preview ? galleryType : 'all';
+        let activeType = (HM.TYPE_LIST || []).includes(galleryType) ? galleryType : 'all';
+        const preview = galleryType === 'todas' || activeType !== 'all';
         let allFlipped = false;
 
         function renderFilters() {

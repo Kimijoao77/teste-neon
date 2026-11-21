@@ -42,7 +42,7 @@ No celular, abra o link no Chrome e use **⋮ → Adicionar à tela inicial** pa
 
 ## ✨ Recursos Implementados
 
-- **30 HortaMons originais em arte cartoon procedural (`Canvas 2D`)**, com versões **✨ Douradas** raríssimas (1 em 64 encontros).
+- **30 HortaMons com ilustrações próprias** nas batalhas, na BotaniDex e no [álbum completo](https://kimijoao77.github.io/teste-neon/cartas.html?galeria=todas), com versões **✨ Douradas** raríssimas (1 em 64 encontros).
 - **6 tipos em ciclo, cada um com identidade própria**: `🌶️ Picante → 🍄 Fungo → 🥦 Folha → 🥕 Raiz → 🍉 Fresco → 🍋 Cítrico → 🌶️`. Cada tipo vence os 2 seguintes (2×) e causa pouco dano nos 2 anteriores (0.5×). O triângulo dos iniciais continua: Picante > Folha > Fresco > Picante.
 - **Mundo de 60×26 tiles em 6 áreas**:
   - **Vila da Horta**: Lab do Prof. Pomar, Estufa de Cura, Loja do Seu Bento e Terminal da Estufa.
@@ -77,6 +77,7 @@ teste-neon/
 │   │   ├── types.js        # 6 tipos botânicos e matriz de efetividade
 │   │   ├── moves.js        # 35 golpes originais com efeitos e partículas
 │   │   ├── species.js      # 30 espécies, stats base, learnsets e evoluções
+│   │   ├── creature-art.js # Ilustrações WebP com transparência para uso online e offline
 │   │   └── world.js        # Itens, mapa 60×26, prédios, 6 zonas e NPCs
 │   ├── engine/
 │   │   ├── audio.js        # Efeitos sonoros procedurais (Web Audio API)
