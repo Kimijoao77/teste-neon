@@ -19,7 +19,12 @@
     FLOWERS: 8,
     GREENHOUSE_FLOOR: 9,
     BRIDGE: 10,
-    HEAL_COUNTER: 11
+    HEAL_COUNTER: 11,
+    SAND: 12,
+    PALM: 13,
+    CAVE_FLOOR: 14,
+    ROCK: 15,
+    CAVE_GRASS: 16
   };
 
   const SOLID_TILES = new Set([
@@ -27,8 +32,22 @@
     TILE.TREE,
     TILE.FENCE,
     TILE.BUILDING,
-    TILE.HEAL_COUNTER
+    TILE.HEAL_COUNTER,
+    TILE.PALM,
+    TILE.ROCK
   ]);
+
+  // Tiles que geram encontros selvagens
+  function isEncounterTile(t) {
+    return t === TILE.TALL_GRASS || t === TILE.CAVE_GRASS;
+  }
+
+  // NPC que some depois de uma insígnia (ex.: Guarda Tom libera a passagem)
+  function isNpcHidden(npc) {
+    if (!npc || !npc.hideIfBadge) return false;
+    const st = state;
+    return !!(st && Array.isArray(st.badges) && st.badges.indexOf(npc.hideIfBadge) !== -1);
+  }
 
   const DIR_DELTA = {
     up: { dx: 0, dy: -1 },
@@ -330,6 +349,7 @@
     if (!world || !Array.isArray(world.npcs)) return null;
     for (let i = 0; i < world.npcs.length; i++) {
       const n = world.npcs[i];
+      if (isNpcHidden(n)) continue;
       if (n.x === col && n.y === row) return n;
     }
     return null;
@@ -384,7 +404,12 @@
       [TILE.FLOWERS]: '#f472b6',
       [TILE.GREENHOUSE_FLOOR]: '#efe3c6',
       [TILE.BRIDGE]: '#b57a44',
-      [TILE.HEAL_COUNTER]: '#fb7185'
+      [TILE.HEAL_COUNTER]: '#fb7185',
+      [TILE.SAND]: '#fde68a',
+      [TILE.PALM]: '#15803d',
+      [TILE.CAVE_FLOOR]: '#6b5a7a',
+      [TILE.ROCK]: '#3f3450',
+      [TILE.CAVE_GRASS]: '#7e22ce'
     };
 
     for (let r = 0; r < world.rows; r++) {
@@ -844,7 +869,7 @@
   }
 
   function checkWildEncounter() {
-    if (getTile(player.x, player.y) !== TILE.TALL_GRASS) return false;
+    if (!isEncounterTile(getTile(player.x, player.y))) return false;
     if (tallGrassCooldown > 0) {
       tallGrassCooldown--;
       return false;
@@ -883,6 +908,7 @@
     const now = performance.now();
     for (let i = 0; i < world.npcs.length; i++) {
       const npc = world.npcs[i];
+      if (isNpcHidden(npc)) continue;
       // Only regular undefeated trainers auto-spot at 1 tile directly in front;
       // Leader Flora lets the player approach & challenge when ready!
       if (npc.role !== 'trainer') continue;
@@ -935,6 +961,8 @@
     const destTile = getTile(nx, ny);
     if (destTile === TILE.TALL_GRASS) {
       spawnLeafParticles(nx, ny, 6);
+    } else if (destTile === TILE.CAVE_GRASS) {
+      spawnLeafParticles(nx, ny, 6, ['#c084fc', '#a78bfa', '#22d3ee', '#e9d5ff']);
     } else if (destTile === TILE.FLOWERS) {
       spawnLeafParticles(nx, ny, 4, ['#f9a8d4', '#fde047', '#86efac', '#fbcfe8']);
     } else if (destTile === TILE.DIRT) {
@@ -1166,7 +1194,13 @@
   }
 
   function isPathLike(tile) {
-    return tile === TILE.DIRT || tile === TILE.BRIDGE || tile === TILE.DOOR || tile === TILE.GREENHOUSE_FLOOR;
+    return (
+      tile === TILE.DIRT ||
+      tile === TILE.BRIDGE ||
+      tile === TILE.DOOR ||
+      tile === TILE.GREENHOUSE_FLOOR ||
+      tile === TILE.SAND
+    );
   }
 
   function drawDirtTile(ctx, px, py, col, row, S) {
@@ -1254,7 +1288,7 @@
     drawTallGrassBladeRow(ctx, px, py + S * 0.82, col, row, S, sway, '#2f8c31', '#7ae057', 1);
   }
 
-  function drawTallGrassBladeRow(ctx, px, baseY, col, row, S, sway, darkCol, lightCol, rowIdx) {
+  function drawTallGrassBladeRow(ctx, px, baseY, col, row, S, sway, darkCol, lightCol, rowIdx, midCol, strokeCol) {
     const blades = 4;
     ctx.lineJoin = 'round';
     ctx.lineCap = 'round';
@@ -1264,8 +1298,8 @@
       const lean = (i - 1.5) * 2.2 + sway;
 
       // Leaf blade fill
-      ctx.fillStyle = i % 2 === 0 ? darkCol : '#379c35';
-      ctx.strokeStyle = '#1f4f1c';
+      ctx.fillStyle = i % 2 === 0 ? darkCol : midCol || '#379c35';
+      ctx.strokeStyle = strokeCol || '#1f4f1c';
       ctx.lineWidth = 1.6;
       ctx.beginPath();
       ctx.moveTo(bx - 4.2, baseY);
@@ -1550,6 +1584,225 @@
     ctx.strokeStyle = '#fde68a';
     ctx.lineWidth = 1.5;
     ctx.strokeRect(px + 12, py + 14, S - 24, S - 28);
+  }
+
+  // ---------------------------------------------------------------------------
+  // REGIÃO LESTE: areia, coqueiros, caverna, rochas e canteiros sombrios
+  // ---------------------------------------------------------------------------
+  function drawSandTile(ctx, px, py, col, row, S) {
+    const h = hash2D(col, row, 30);
+    ctx.fillStyle = (col + row) % 2 === 0 ? '#fde9a8' : '#fbe29a';
+    ctx.fillRect(px, py, S, S);
+    // Ondulações de vento na areia
+    ctx.strokeStyle = 'rgba(217, 164, 65, 0.35)';
+    ctx.lineWidth = 1.6;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(px + 8, py + S * (0.3 + h * 0.2));
+    ctx.quadraticCurveTo(px + S * 0.35, py + S * (0.22 + h * 0.2), px + S * 0.6, py + S * (0.3 + h * 0.2));
+    ctx.stroke();
+    if (h > 0.55) {
+      // Conchinha
+      const cx = px + 12 + hash2D(col, row, 31) * (S - 24);
+      const cy = py + 14 + hash2D(col, row, 32) * (S - 26);
+      ctx.fillStyle = '#fda4af';
+      ctx.strokeStyle = OUTLINE;
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(cx - 4, cy + 2);
+      ctx.quadraticCurveTo(cx, cy - 6, cx + 4, cy + 2);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+    } else if (h < 0.25) {
+      ctx.fillStyle = '#e8c574';
+      ctx.beginPath();
+      ctx.arc(px + 14 + h * 60, py + S * 0.7, 1.8, 0, Math.PI * 2);
+      ctx.arc(px + 20 + h * 60, py + S * 0.74, 1.3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  function drawPalmObject(ctx, col, row, S, time) {
+    const px = col * S;
+    const py = row * S;
+    const cx = px + S * 0.5;
+    const baseY = py + S * 0.9;
+    const lean = (hash2D(col, row, 40) - 0.5) * 10;
+    const sway = Math.sin(time * 0.0018 + col * 0.9 + row * 0.6) * 0.07;
+
+    ctx.fillStyle = 'rgba(28, 56, 22, 0.25)';
+    ctx.beginPath();
+    ctx.ellipse(cx + 3, baseY - 1, S * 0.34, S * 0.14, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Tronco anelado
+    ctx.strokeStyle = OUTLINE;
+    ctx.lineWidth = 2.3;
+    ctx.lineJoin = 'round';
+    ctx.fillStyle = '#c2803d';
+    ctx.beginPath();
+    ctx.moveTo(cx - 6, baseY);
+    ctx.quadraticCurveTo(cx - 4 + lean * 0.3, baseY - 22, cx - 3 + lean, baseY - 40);
+    ctx.lineTo(cx + 3 + lean, baseY - 40);
+    ctx.quadraticCurveTo(cx + 4 + lean * 0.3, baseY - 22, cx + 6, baseY);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.strokeStyle = 'rgba(120, 53, 15, 0.55)';
+    ctx.lineWidth = 1.4;
+    for (let i = 1; i < 5; i++) {
+      const ty = baseY - i * 8;
+      const tx = cx + lean * (i / 5);
+      ctx.beginPath();
+      ctx.moveTo(tx - 4.5, ty);
+      ctx.quadraticCurveTo(tx, ty + 2, tx + 4.5, ty);
+      ctx.stroke();
+    }
+
+    // Copa de folhas compridas
+    const topX = cx + lean;
+    const topY = baseY - 41;
+    const angles = [-2.9, -2.3, -1.6, -0.9, -0.25, 0.4];
+    ctx.lineWidth = 2.2;
+    for (let i = 0; i < angles.length; i++) {
+      ctx.save();
+      ctx.translate(topX, topY);
+      ctx.rotate(angles[i] + sway);
+      ctx.fillStyle = i % 2 === 0 ? '#22a34a' : '#16803c';
+      ctx.strokeStyle = OUTLINE;
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.quadraticCurveTo(12, -8, 26, 3);
+      ctx.quadraticCurveTo(12, 1, 0, 0);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+    }
+    // Cocos
+    ctx.fillStyle = '#7c4a1e';
+    ctx.strokeStyle = OUTLINE;
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.arc(topX - 3, topY + 4, 3.6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(topX + 3.5, topY + 5, 3.6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+  }
+
+  function drawCaveFloorTile(ctx, px, py, col, row, S) {
+    const h = hash2D(col, row, 50);
+    ctx.fillStyle = (col + row) % 2 === 0 ? '#5b4b6b' : '#564766';
+    ctx.fillRect(px, py, S, S);
+    if (h > 0.6) {
+      ctx.fillStyle = 'rgba(30, 20, 45, 0.28)';
+      ctx.beginPath();
+      ctx.ellipse(px + S * 0.5, py + S * 0.55, S * 0.3, S * 0.18, h * 3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    if (h < 0.3) {
+      ctx.fillStyle = '#7a6890';
+      ctx.beginPath();
+      ctx.ellipse(px + 10 + h * 80, py + 14 + h * 40, 3, 2, 0.4, 0, Math.PI * 2);
+      ctx.fill();
+    } else if (h > 0.9) {
+      // Cristal brilhante no chão
+      const cx = px + 12 + hash2D(col, row, 51) * (S - 24);
+      const cy = py + 14 + hash2D(col, row, 52) * (S - 26);
+      ctx.fillStyle = '#67e8f9';
+      ctx.strokeStyle = OUTLINE;
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - 6);
+      ctx.lineTo(cx + 3.5, cy);
+      ctx.lineTo(cx, cy + 4);
+      ctx.lineTo(cx - 3.5, cy);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+    }
+  }
+
+  function drawRockObject(ctx, col, row, S) {
+    const px = col * S;
+    const py = row * S;
+    const h = hash2D(col, row, 55);
+    ctx.fillStyle = 'rgba(15, 10, 25, 0.3)';
+    ctx.beginPath();
+    ctx.ellipse(px + S * 0.52, py + S * 0.86, S * 0.44, S * 0.14, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = h > 0.5 ? '#6d5c80' : '#655577';
+    ctx.strokeStyle = OUTLINE;
+    ctx.lineWidth = 2.4;
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    ctx.moveTo(px + 4, py + S * 0.86);
+    ctx.lineTo(px + 6, py + S * 0.4);
+    ctx.lineTo(px + S * 0.3, py + S * (0.08 + h * 0.08));
+    ctx.lineTo(px + S * 0.66, py + S * 0.12);
+    ctx.lineTo(px + S - 5, py + S * 0.42);
+    ctx.lineTo(px + S - 3, py + S * 0.86);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    // Faces de luz da pedra
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.16)';
+    ctx.beginPath();
+    ctx.moveTo(px + 9, py + S * 0.42);
+    ctx.lineTo(px + S * 0.31, py + S * 0.16);
+    ctx.lineTo(px + S * 0.42, py + S * 0.5);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(43, 29, 20, 0.45)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(px + S * 0.55, py + S * 0.2);
+    ctx.lineTo(px + S * 0.5, py + S * 0.5);
+    ctx.lineTo(px + S * 0.62, py + S * 0.7);
+    ctx.stroke();
+  }
+
+  function drawCaveGrassBase(ctx, px, py, col, row, S, time) {
+    drawCaveFloorTile(ctx, px, py, col, row, S);
+    ctx.fillStyle = '#3b2a55';
+    roundRectPath(ctx, px + 3, py + 4, S - 6, S - 7, 10);
+    ctx.fill();
+    const sway = Math.sin(time * 0.0024 + col * 0.65 + row * 0.35) * 2.6;
+    drawTallGrassBladeRow(ctx, px, py + S * 0.44, col, row, S, sway, '#6d28d9', '#c4b5fd', 0, '#8b5cf6', '#2e1065');
+  }
+
+  function drawCaveGrassFront(ctx, px, py, col, row, S, time) {
+    const sway = Math.sin(time * 0.0024 + col * 0.65 + row * 0.35 + 0.6) * 3;
+    drawTallGrassBladeRow(ctx, px, py + S * 0.82, col, row, S, sway, '#7e22ce', '#e9d5ff', 1, '#9333ea', '#2e1065');
+    // Cogumelo brilhante no meio do canteiro
+    if (hash2D(col, row, 57) > 0.5) {
+      const glow = 0.55 + 0.45 * Math.sin(time * 0.003 + col + row);
+      const mx = px + S * (0.3 + hash2D(col, row, 58) * 0.4);
+      const my = py + S * 0.8;
+      ctx.save();
+      ctx.globalAlpha = 0.25 * glow;
+      ctx.fillStyle = '#22d3ee';
+      ctx.beginPath();
+      ctx.arc(mx, my - 6, 11, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+      ctx.fillStyle = '#f5f5f4';
+      ctx.strokeStyle = OUTLINE;
+      ctx.lineWidth = 1.3;
+      ctx.fillRect(mx - 1.6, my - 6, 3.2, 6);
+      ctx.strokeRect(mx - 1.6, my - 6, 3.2, 6);
+      ctx.fillStyle = '#22d3ee';
+      ctx.beginPath();
+      ctx.moveTo(mx - 6, my - 5);
+      ctx.quadraticCurveTo(mx, my - 14, mx + 6, my - 5);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+    }
   }
 
   function drawTreeObject(ctx, col, row, S, time) {
@@ -2080,6 +2333,7 @@
     ctx.save();
     for (let i = 0; i < world.npcs.length; i++) {
       const npc = world.npcs[i];
+      if (isNpcHidden(npc)) continue;
       const cx = (npc.x + 0.5) * S;
       const topY = npc.y * S - 6;
 
@@ -2325,7 +2579,7 @@
       return;
     }
 
-    const mapW = 116;
+    const mapW = world.cols > 40 ? 158 : 116;
     const mapH = Math.round(mapW * (world.rows / world.cols));
     const frameW = mapW + 10;
     const frameH = mapH + 24;
@@ -2373,7 +2627,7 @@
     if (Array.isArray(world.npcs)) {
       for (let i = 0; i < world.npcs.length; i++) {
         const npc = world.npcs[i];
-        if (npc.role === 'trainer' && !isNpcDefeated(state, npc)) {
+        if (npc.role === 'trainer' && !isNpcHidden(npc) && !isNpcDefeated(state, npc)) {
           ctx.fillStyle = '#f97316';
           ctx.beginPath();
           ctx.arc(mx + (npc.x + 0.5) * sx, my + (npc.y + 0.5) * sy, 2.2, 0, Math.PI * 2);
@@ -2607,6 +2861,23 @@
               drawFallbackBuildingTile(ctx, c, r, S);
             }
             break;
+          case TILE.SAND:
+            drawSandTile(ctx, px, py, c, r, S);
+            break;
+          case TILE.PALM:
+            if (getTile(c, r + 1) === TILE.SAND || getTile(c, r - 1) === TILE.SAND) {
+              drawSandTile(ctx, px, py, c, r, S);
+            } else {
+              drawGrassTile(ctx, px, py, c, r, S);
+            }
+            break;
+          case TILE.CAVE_FLOOR:
+          case TILE.ROCK:
+            drawCaveFloorTile(ctx, px, py, c, r, S);
+            break;
+          case TILE.CAVE_GRASS:
+            drawCaveGrassBase(ctx, px, py, c, r, S, time);
+            break;
           case TILE.HEAL_COUNTER:
             // Draw stone/grass under healing counter depending on neighbors
             if (getTile(c, r + 1) === TILE.GREENHOUSE_FLOOR || getTile(c, r - 1) === TILE.GREENHOUSE_FLOOR) {
@@ -2685,6 +2956,27 @@
               drawTallGrassFront(ctx, c * S, r * S, c, r, S, time);
             }
           });
+        } else if (t === TILE.PALM) {
+          drawList.push({
+            sortY: (r + 0.9) * S,
+            draw: function () {
+              drawPalmObject(ctx, c, r, S, time);
+            }
+          });
+        } else if (t === TILE.ROCK) {
+          drawList.push({
+            sortY: (r + 0.85) * S,
+            draw: function () {
+              drawRockObject(ctx, c, r, S);
+            }
+          });
+        } else if (t === TILE.CAVE_GRASS) {
+          drawList.push({
+            sortY: (r + 0.86) * S,
+            draw: function () {
+              drawCaveGrassFront(ctx, c * S, r * S, c, r, S, time);
+            }
+          });
         }
       }
     }
@@ -2693,6 +2985,7 @@
     if (Array.isArray(world.npcs)) {
       for (let i = 0; i < world.npcs.length; i++) {
         const npc = world.npcs[i];
+        if (isNpcHidden(npc)) continue;
         if (npc.x < startCol - 1 || npc.x > endCol + 1 ||
             npc.y < startRow - 1 || npc.y > endRow + 1) {
           continue;
@@ -2706,7 +2999,7 @@
               (npc.x + 0.5) * S,
               (npc.y + 0.44) * S,
               S * 0.92,
-              npc.role || 'prof',
+              npc.style || npc.role || 'prof',
               npcDir,
               0,
               false
@@ -2903,6 +3196,7 @@
     if (!clickedNpc && Array.isArray(world.npcs)) {
       for (let i = 0; i < world.npcs.length; i++) {
         const n = world.npcs[i];
+        if (isNpcHidden(n)) continue;
         const ncx = (n.x + 0.5) * S;
         const ncy = (n.y + 0.45) * S;
         if (Math.hypot(worldX - ncx, worldY - ncy) <= S * 0.62) {

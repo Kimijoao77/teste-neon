@@ -50,11 +50,21 @@
       revivePct: 0.6,
       icon: '🌱',
       desc: 'Revive um HortaMon desmaiado com 60% do HP.'
+    },
+    adubo_compartilhado: {
+      id: 'adubo_compartilhado',
+      name: 'Adubo Compartilhado',
+      kind: 'key',
+      price: 0,
+      icon: '🌻',
+      desc: 'Presente do Prof. Pomar. Enquanto estiver na mochila, os HortaMons que não lutaram ganham metade do XP de cada vitória.'
     }
   };
 
   // =========================================================
-  // MAPA DO MUNDO (36 x 26 tiles, tileSize = 48)
+  // MAPA DO MUNDO (60 x 26 tiles, tileSize = 48)
+  // Colunas 0..35: mapa original (Vila, Rotas 1 e 2, Arena da Flora)
+  // Colunas 36..59: região Leste (Pomar Tropical ao sul, Horta Subterrânea ao norte)
   // Tile codes:
   //  0 = grama
   //  1 = caminho_terra
@@ -68,8 +78,13 @@
   //  9 = piso_estufa (andável)
   // 10 = ponte (andável)
   // 11 = balcao_cura (sólido)
+  // 12 = areia (andável)
+  // 13 = coqueiro (sólido)
+  // 14 = chao_caverna (andável)
+  // 15 = rocha (sólido)
+  // 16 = canteiro_sombrio (encontros selvagens na caverna)
   // =========================================================
-  const COLS = 36;
+  const COLS = 60;
   const ROWS = 26;
   const TILE_SIZE = 48;
 
@@ -101,6 +116,8 @@
   fillRect(0, ROWS - 1, COLS - 1, ROWS - 1, 4);
   fillRect(0, 0, 0, ROWS - 1, 4);
   fillRect(COLS - 1, 0, COLS - 1, ROWS - 1, 4);
+  // Antiga borda Leste (col 35) vira a divisa com a região nova
+  fillRect(35, 0, 35, ROWS - 1, 4);
 
   // 2) Cursos d'água: Riacho Fresco horizontal (row 12) + braço vertical (col 16, rows 1..11)
   fillRect(1, 12, COLS - 2, 12, 3);
@@ -223,6 +240,63 @@
   setTile(14, 10, 4);
   fillRect(1, 3, 2, 4, 3);
 
+
+  // =========================================================
+  // ZONA 5: POMAR TROPICAL (col 36..58, row 13..24)
+  // Passagem pela col 35 na linha 22 (o Guarda só libera com a 1ª insígnia)
+  // =========================================================
+  fillRect(28, 22, 34, 22, 1);  // trilha da Rota 1 até a divisa
+  setTile(35, 22, 12);
+  setTile(36, 22, 12);
+  fillRect(37, 21, 48, 22, 12); // trilha de areia principal
+  fillRect(47, 13, 48, 20, 12); // trilha subindo até a ponte
+  fillRect(40, 18, 40, 20, 12); // acesso ao Posto do Pomar
+  fillRect(39, 17, 41, 17, 12); // pátio do posto
+  fillRect(47, 12, 48, 12, 10); // Ponte do Pomar -> Horta Subterrânea
+  // Grama alta tropical (Nv. 10–14)
+  fillRect(42, 14, 45, 19, 2);
+  fillRect(50, 14, 56, 18, 2);
+  fillRect(50, 20, 57, 23, 2);
+  fillRect(38, 23, 44, 24, 2);
+  // Coqueiros
+  [
+    [36, 21], [36, 23], [36, 24], [37, 13], [39, 13], [44, 13], [46, 13], [50, 13], [53, 13],
+    [57, 13], [58, 14], [58, 19], [49, 19], [46, 24], [58, 24], [45, 23], [37, 15], [36, 18]
+  ].forEach(function (p) {
+    setTile(p[0], p[1], 13);
+  });
+  // Flores tropicais e laguinho
+  fillRect(42, 20, 45, 20, 8);
+  setTile(49, 21, 8);
+  setTile(49, 22, 8);
+  setTile(57, 16, 8);
+  setTile(57, 17, 8);
+  fillRect(53, 19, 55, 19, 3); // lagoinha de água de coco
+
+  // =========================================================
+  // ZONA 6: HORTA SUBTERRÂNEA (col 36..58, row 1..11) — caverna
+  // =========================================================
+  fillRect(36, 1, 58, 11, 14); // chão de caverna
+  // Paredes e pilares de rocha
+  fillRect(36, 1, 58, 1, 15);
+  fillRect(36, 2, 38, 4, 15);
+  fillRect(56, 2, 58, 2, 15);
+  setTile(58, 3, 15);
+  [
+    [36, 11], [37, 11], [39, 11], [44, 11], [45, 11], [50, 11], [56, 11], [58, 11],
+    [42, 9], [45, 7], [50, 7], [53, 7], [55, 5], [49, 2], [41, 6], [58, 7]
+  ].forEach(function (p) {
+    setTile(p[0], p[1], 15);
+  });
+  // Canteiros sombrios (Nv. 13–17)
+  fillRect(37, 6, 40, 10, 16);
+  fillRect(51, 3, 54, 6, 16);
+  fillRect(51, 8, 57, 10, 16);
+  fillRect(43, 9, 44, 10, 16);
+  // Pátio da Arena da Raiz Profunda (piso de pedra polida)
+  fillRect(39, 5, 46, 7, 9);
+  setTile(41, 6, 15); // pilar decorativo
+
   // =========================================================
   // PRÉDIOS (estampados no grid: corpo = 6, porta = 7)
   // =========================================================
@@ -270,6 +344,28 @@
       wallColor: '#fef9c3',
       doorX: 8,
       doorY: 4
+    },
+    {
+      x: 38,
+      y: 14,
+      w: 4,
+      h: 3,
+      label: 'Posto do Pomar',
+      roofColor: '#0d9488',
+      wallColor: '#fef3c7',
+      doorX: 40,
+      doorY: 16
+    },
+    {
+      x: 40,
+      y: 2,
+      w: 6,
+      h: 3,
+      label: 'Arena da Raiz Profunda',
+      roofColor: '#92400e',
+      wallColor: '#e7e5e4',
+      doorX: 43,
+      doorY: 4
     }
   ];
 
@@ -286,12 +382,14 @@
       id: 'vila',
       name: 'Vila da Horta',
       subtitle: 'Lar do Prof. Pomar, Estufa de Cura e Loja',
+      scene: 'jardim',
       wildPool: []
     },
     rota1: {
       id: 'rota1',
       name: 'Rota 1 — Canteiro Ensolarado',
       subtitle: 'HortaMons Selvagens Nv. 2–5',
+      scene: 'jardim',
       wildPool: [
         { speciesId: 'cenourito', minLv: 2, maxLv: 4, weight: 25 },
         { speciesId: 'limoninho', minLv: 2, maxLv: 4, weight: 23 },
@@ -305,6 +403,7 @@
       id: 'rota2',
       name: 'Rota 2 — Bosque dos Esporos',
       subtitle: 'HortaMons Selvagens Nv. 5–9',
+      scene: 'jardim',
       wildPool: [
         { speciesId: 'abacaxil', minLv: 5, maxLv: 8, weight: 16 },
         { speciesId: 'batatao', minLv: 5, maxLv: 8, weight: 16 },
@@ -320,8 +419,9 @@
       id: 'arena',
       name: 'Arena da Estufa Dourada',
       subtitle: 'Santuário da Líder Flora',
+      scene: 'jardim',
       wildPool: [
-        { speciesId: 'beterraboss', minLv: 8, maxLv: 10, weight: 20 },
+        { speciesId: 'beterraboss', minLv: 9, maxLv: 10, weight: 3 }, // raro de propósito: é o chefe da Flora
         { speciesId: 'abacaxil', minLv: 8, maxLv: 10, weight: 16 },
         { speciesId: 'berinjelux', minLv: 8, maxLv: 10, weight: 16 },
         { speciesId: 'batatao', minLv: 8, maxLv: 10, weight: 15 },
@@ -329,10 +429,46 @@
         { speciesId: 'melancito', minLv: 5, maxLv: 7, weight: 11 },
         { speciesId: 'brocolino', minLv: 5, maxLv: 7, weight: 11 }
       ]
+    },
+    pomar: {
+      id: 'pomar',
+      name: 'Pomar Tropical',
+      subtitle: 'HortaMons Selvagens Nv. 10–15',
+      scene: 'tropical',
+      wildPool: [
+        { speciesId: 'bananinja', minLv: 10, maxLv: 13, weight: 22 },
+        { speciesId: 'abacatinho', minLv: 10, maxLv: 13, weight: 20 },
+        { speciesId: 'cocoral', minLv: 11, maxLv: 14, weight: 16 },
+        { speciesId: 'rabanito', minLv: 10, maxLv: 12, weight: 12 },
+        { speciesId: 'morangelo', minLv: 11, maxLv: 13, weight: 10 },
+        { speciesId: 'limotrovao', minLv: 12, maxLv: 14, weight: 8 },
+        { speciesId: 'abacaxil', minLv: 12, maxLv: 14, weight: 8 },
+        { speciesId: 'abacatao', minLv: 15, maxLv: 15, weight: 4 }
+      ]
+    },
+    subterranea: {
+      id: 'subterranea',
+      name: 'Horta Subterrânea',
+      subtitle: 'Nv. 13–17 • Arena da Raiz Profunda',
+      scene: 'caverna',
+      wildPool: [
+        { speciesId: 'trufim', minLv: 13, maxLv: 16, weight: 22 },
+        { speciesId: 'rabanito', minLv: 13, maxLv: 16, weight: 16 },
+        { speciesId: 'batatao', minLv: 14, maxLv: 16, weight: 14 },
+        { speciesId: 'cogumago', minLv: 14, maxLv: 16, weight: 12 },
+        { speciesId: 'cenouraco', minLv: 14, maxLv: 17, weight: 10 },
+        { speciesId: 'berinjelux', minLv: 14, maxLv: 16, weight: 10 },
+        { speciesId: 'trufante', minLv: 16, maxLv: 17, weight: 5 },
+        { speciesId: 'mandiocao', minLv: 16, maxLv: 17, weight: 3 },
+        { speciesId: 'beterraboss', minLv: 15, maxLv: 17, weight: 3 }
+      ]
     }
   };
 
   function getZoneAt(col, row) {
+    if (col >= 36) {
+      return row <= 12 ? zones.subterranea : zones.pomar;
+    }
     if (row <= 12) {
       return col <= 16 ? zones.arena : zones.rota2;
     }
@@ -391,7 +527,7 @@
       y: 17,
       dir: 'down',
       dialogue:
-        'Vila da Horta — Leste: Rota 1 (Canteiro Ensolarado, Nv. 2–5) | Norte pela Ponte: Arena da Estufa Dourada (Recomendado Nv. 10+).'
+        'Vila da Horta — Leste: Rota 1 (Canteiro Ensolarado, Nv. 2–5) | Norte pela Ponte: Arena da Estufa Dourada (a Líder Flora só aceita quem venceu os 4 jardineiros das rotas).'
     },
     {
       id: 'sign_rota1',
@@ -482,18 +618,183 @@
       dialogue:
         'Bem-vindo à Arena da Estufa Dourada! Sou a Líder Flora. Mostre o vínculo que cultivou com seus HortaMons — que comece a grande colheita!',
       defeatedDialogue:
-        'Magnífico! Seu time floresceu com maestria e conquistou a Insígnia da Colheita Dourada! Sempre que quiser uma revanche, estarei aqui na Arena.',
+        'Magnífico! Seu time floresceu com maestria e conquistou a Insígnia da Colheita Dourada! Com ela o Guarda Tom libera a passagem a Leste da Rota 1, rumo ao Pomar Tropical. Quando quiser uma revanche, estarei aqui!',
       rewardCoins: 500,
       badge: 'Insígnia da Colheita Dourada',
+      arenaName: 'Arena da Estufa Dourada',
+      questBefore: 'Vença os jardineiros das Rotas 1 e 2 ({done}/{total}). Só depois disso a Líder Flora aceita seu desafio!',
+      questReady: 'Sua equipe está pronta! Siga até a Arena da Estufa Dourada e desafie a Líder Flora pela {badge}!',
+      requires: {
+        trainers: ['trainer_r1_1', 'trainer_r1_2', 'trainer_r2_1', 'trainer_r2_2'],
+        text: 'Ainda não posso aceitar seu desafio! Vença primeiro os 4 jardineiros das Rotas 1 e 2 e volte aqui.'
+      },
       party: [
         { speciesId: 'brocolao', level: 9 },
         { speciesId: 'limotrovao', level: 10 },
         { speciesId: 'beterraboss', level: 11 }
       ]
+    },
+    {
+      id: 'sign_leste',
+      name: 'Placa do Leste',
+      role: 'sign',
+      x: 34,
+      y: 21,
+      dir: 'down',
+      dialogue:
+        'Leste: Pomar Tropical (Nv. 10–15) e Horta Subterrânea (Nv. 13–17). Passagem liberada só para quem tem a Insígnia da Colheita Dourada.'
+    },
+    {
+      id: 'guarda_tom',
+      name: 'Guarda Tom',
+      role: 'guard',
+      style: 'guard',
+      x: 36,
+      y: 22,
+      dir: 'left',
+      hideIfBadge: 'Insígnia da Colheita Dourada',
+      dialogue: [
+        'Alto lá! Depois daqui fica o Pomar Tropical, com HortaMons bem mais fortes.',
+        'Só deixo passar quem tem a Insígnia da Colheita Dourada. Vença a Líder Flora e volte aqui!'
+      ]
+    },
+    {
+      id: 'sign_pomar',
+      name: 'Placa do Pomar',
+      role: 'sign',
+      x: 37,
+      y: 20,
+      dir: 'down',
+      dialogue:
+        'Pomar Tropical — coqueiros, bananas ninja e abacates. Posto do Pomar ao norte (cura e loja). A ponte a Leste desce para a Horta Subterrânea.'
+    },
+    {
+      id: 'enfermeira_jade',
+      name: 'Enfermeira Jade',
+      role: 'healer',
+      x: 41,
+      y: 17,
+      dir: 'down',
+      healSpot: { x: 40, y: 18, dir: 'up' },
+      dialogue:
+        'Bem-vindo ao Posto do Pomar! Um golinho de água de coco geladinha e... pronto, seu time está 100% recuperado!'
+    },
+    {
+      id: 'dona_coco',
+      name: 'Dona Coco',
+      role: 'shop',
+      x: 39,
+      y: 17,
+      dir: 'down',
+      dialogue:
+        'Oi, viajante! Trouxe os mesmos produtos do Seu Bento lá da Vila, fresquinhos para a sua jornada.'
+    },
+    {
+      id: 'trainer_r3_1',
+      name: 'Surfista Duda',
+      role: 'trainer',
+      x: 46,
+      y: 20,
+      dir: 'down',
+      dialogue: 'Opa! Acabei de voltar do mar e meus HortaMons estão cheios de energia. Bora?',
+      defeatedDialogue: 'Que onda! Dica: o Cocoral aguenta muito dano. Ataques de Folha e Raiz funcionam melhor nele.',
+      rewardCoins: 380,
+      party: [
+        { speciesId: 'bananinja', level: 11 },
+        { speciesId: 'cocoral', level: 12 }
+      ]
+    },
+    {
+      id: 'trainer_r3_2',
+      name: 'Colhedora Mel',
+      role: 'trainer',
+      x: 49,
+      y: 16,
+      dir: 'left',
+      dialogue: 'Colhi os HortaMons mais maduros do pomar! Quer provar um duelo bem docinho?',
+      defeatedDialogue: 'Você é forte! A ponte logo ali desce para a Horta Subterrânea. Lá embaixo é escuro e os HortaMons são ainda mais fortes.',
+      rewardCoins: 440,
+      party: [
+        { speciesId: 'abacatinho', level: 12 },
+        { speciesId: 'morangelo', level: 13 },
+        { speciesId: 'rabanito', level: 13 }
+      ]
+    },
+    {
+      id: 'sign_caverna',
+      name: 'Placa da Caverna',
+      role: 'sign',
+      x: 49,
+      y: 10,
+      dir: 'down',
+      dialogue:
+        'Horta Subterrânea — cuidado com os canteiros sombrios! A Arena da Raiz Profunda fica ao Norte, no fim do túnel.'
+    },
+    {
+      id: 'trainer_r4_1',
+      name: 'Minerador Zeca',
+      role: 'trainer',
+      x: 46,
+      y: 9,
+      dir: 'right',
+      dialogue: 'Cavei tão fundo que encontrei HortaMons que nunca viram o sol. Vamos ver se você aguenta!',
+      defeatedDialogue: 'Ufa! Dizem que bem lá no fundo vive a Mandiocão, a raiz mais antiga da horta. É raríssima!',
+      rewardCoins: 500,
+      party: [
+        { speciesId: 'batatao', level: 14 },
+        { speciesId: 'trufim', level: 15 }
+      ]
+    },
+    {
+      id: 'trainer_r4_2',
+      name: 'Micóloga Tina',
+      role: 'trainer',
+      x: 49,
+      y: 5,
+      dir: 'left',
+      dialogue: 'Estudo os fungos da caverna há anos. Meus HortaMons de esporos vão te deixar sonolento!',
+      defeatedDialogue: 'Incrível! O Líder Mandi está logo ali na Arena. Leve Super Regadores: o time dele é muito resistente.',
+      rewardCoins: 560,
+      party: [
+        { speciesId: 'cogumago', level: 15 },
+        { speciesId: 'rabanito', level: 16 },
+        { speciesId: 'trufante', level: 16 }
+      ]
+    },
+    {
+      id: 'leader_mandi',
+      name: 'Líder Mandi',
+      role: 'leader',
+      style: 'leader2',
+      x: 43,
+      y: 6,
+      dir: 'down',
+      scene: 'caverna',
+      dialogue:
+        'Bem-vindo às profundezas! Sou o Líder Mandi, guardião das raízes mais antigas da horta. Aqui embaixo só os times bem enraizados aguentam!',
+      defeatedDialogue:
+        'Que força! Suas raízes são mais fundas que as minhas. A Insígnia da Raiz Profunda é sua! Agora complete a BotaniDex e procure HortaMons Dourados.',
+      rewardCoins: 900,
+      badge: 'Insígnia da Raiz Profunda',
+      arenaName: 'Arena da Raiz Profunda',
+      questBefore: 'Vença os jardineiros do Pomar Tropical e da Horta Subterrânea ({done}/{total}) para desafiar o Líder Mandi!',
+      questReady: 'Hora do grande desafio! Entre na Arena da Raiz Profunda e enfrente o Líder Mandi pela {badge}!',
+      requires: {
+        badges: ['Insígnia da Colheita Dourada'],
+        badgeText: 'Você precisa da Insígnia da Colheita Dourada da Líder Flora antes de me desafiar!',
+        trainers: ['trainer_r3_1', 'trainer_r3_2', 'trainer_r4_1', 'trainer_r4_2'],
+        text: 'Só enfrento quem venceu os 4 jardineiros do Pomar Tropical e da Horta Subterrânea!'
+      },
+      party: [
+        { speciesId: 'trufante', level: 17 },
+        { speciesId: 'berinjelux', level: 18 },
+        { speciesId: 'cenouraco', level: 18 },
+        { speciesId: 'mandiocao', level: 20 }
+      ]
     }
   ];
 
-  const SOLID_TILES = { 3: true, 4: true, 5: true, 6: true, 11: true };
+  const SOLID_TILES = { 3: true, 4: true, 5: true, 6: true, 11: true, 13: true, 15: true };
 
   HM.WORLD = {
     cols: COLS,

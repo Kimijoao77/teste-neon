@@ -4,6 +4,14 @@
 
 ---
 
+## 🌐 Jogar Online (PC ou celular)
+
+**https://kimijoao77.github.io/teste-neon/** (precisa do GitHub Pages ligado em *Settings → Pages → Branch `main` / root*).
+
+No celular, abra o link no Chrome e use **⋮ → Adicionar à tela inicial** para instalar como app.
+
+---
+
 ## 🎮 Como Jogar (Abrir Localmente)
 
 1. Abra a pasta do projeto (`teste-neon`).
@@ -28,20 +36,26 @@
 | Salvar progresso | `K` (ou botão **Salvar**) |
 | Ligar / Mutar som | `M` (ou botão `🔊/🔇`) |
 | Menu / Ajuda / Fechar janela | `Esc` |
+| Celular | Toque no mapa para andar até o lugar, ou use o D-Pad e o botão **Interagir** |
 
 ---
 
 ## ✨ Recursos Implementados
 
-- **22 HortaMons originais em arte cartoon procedural (`Canvas 2D`)**: cada espécie possui desenho exclusivo, olhos expressivos, animação suave, sombras e efeitos de status (`Queimado`, `Dormindo`, `Paralisado`).
-- **6 Tipos Botânicos balanceados**: `Picante 🌶️`, `Folha 🥦`, `Fresco 🍉`, `Raiz 🥕`, `Cítrico 🍋` e `Fungo 🍄` — cada tipo vence 2 (2×) e resiste a 2 (0.5×), com **selo tático automático** (`SUPER 2×` / `POUCO 0.5×`) nos golpes em batalha.
-- **Mundo explorável top-down (36×26 tiles, 60 fps)**:
-  - **Vila da Horta**: Lab do Prof. Pomar, **Estufa de Cura** (Enfermeira Rosa cura 100% do time), **Loja de Sementes** (Seu Bento vende Vasos, Regadores e Adubo Vital) e **Terminal da Estufa** (Caixa de Depósito).
-  - **Rota 1 — Canteiro Ensolarado**: grama alta (Nv. 2–5) e 2 jardineiros desafiantes.
-  - **Rota 2 — Bosque dos Esporos**: grama alta (Nv. 5–9) e 2 treinadores avançados.
-  - **Arena da Estufa Dourada**: enfrente a **Líder Flora** pela **Insígnia da Colheita Dourada** (com suporte a revanche!).
-- **Batalha por turnos animada**: partículas temáticas por elemento, textos flutuantes de dano/crítico/efetividade, animação completa do **Vaso de Captura** / **Super Vaso**, sistema de XP, novos golpes, **modal comemorativo de evolução** e IA inteligente.
-- **Qualidade de Vida**: BotaniDex interativa com silhuetas, filtros e linha evolutiva; gerenciamento de líder do time; uso de itens dentro e fora da batalha; áudio procedural via Web Audio API; salvamento automático em `localStorage` (`hortamon_save_v1`).
+- **30 HortaMons originais em arte cartoon procedural (`Canvas 2D`)**, com versões **✨ Douradas** raríssimas (1 em 64 encontros).
+- **6 tipos em ciclo, cada um com identidade própria**: `🌶️ Picante → 🍄 Fungo → 🥦 Folha → 🥕 Raiz → 🍉 Fresco → 🍋 Cítrico → 🌶️`. Cada tipo vence os 2 seguintes (2×) e causa pouco dano nos 2 anteriores (0.5×). O triângulo dos iniciais continua: Picante > Folha > Fresco > Picante.
+- **Mundo de 60×26 tiles em 6 áreas**:
+  - **Vila da Horta**: Lab do Prof. Pomar, Estufa de Cura, Loja do Seu Bento e Terminal da Estufa.
+  - **Rota 1 — Canteiro Ensolarado** (Nv. 2–5) e **Rota 2 — Bosque dos Esporos** (Nv. 5–9), com 4 jardineiros.
+  - **Arena da Estufa Dourada**: a **Líder Flora** só aceita o desafio depois que você vence os 4 jardineiros.
+  - **Pomar Tropical** (Nv. 10–15): liberado pelo **Guarda Tom** depois da 1ª insígnia; tem o **Posto do Pomar** (cura e loja) e 2 jardineiros.
+  - **Horta Subterrânea** (Nv. 13–17): caverna com canteiros sombrios, 2 jardineiros e a **Arena da Raiz Profunda** do **Líder Mandi** (Nv. 17–20).
+- **Batalha por turnos animada** com cenários de jardim, pomar tropical e caverna, captura, evolução e IA tática.
+- **XP para o time**: quem entra no meio da luta ganha metade do XP; com o **Adubo Compartilhado** (presente do Prof. Pomar quando você tem 2 HortaMons) o time inteiro ganha.
+- **Apelidos** (botão ✏️ no Time), **BotaniDex**, **Caixa da Estufa** e **Tabela de Tipos**.
+- **Save**: automático no navegador (`localStorage`, chave `hortamon_save_v1`) e **Exportar/Importar Save** em arquivo `.json` (Menu) para levar o progresso entre PCs e celular.
+- **Álbum de Cartas** (`cartas.html`): cada carta é desbloqueada quando você captura o HortaMon (opção “Ver todas” para o modo galeria). Para imprimir: `cartas.html?sheet=1` até `?sheet=4`.
+- **Celular**: layout próprio para tela em pé e deitada, controles maiores e instalação como app (manifest + ícones).
 
 ---
 
@@ -50,17 +64,20 @@
 ```text
 teste-neon/
 ├── index.html              # Estrutura das telas, HUDs e modais
+├── cartas.html             # Álbum de cartas (desbloqueia pelo save)
+├── manifest.webmanifest    # Instalação como app no celular
+├── icons/                  # Ícones do app (192 e 512 px)
 ├── css/
 │   └── style.css           # Visual cartoon colorido de jardim (otimizado para 1280×720)
 ├── js/
 │   ├── data/
 │   │   ├── types.js        # 6 tipos botânicos e matriz de efetividade
-│   │   ├── moves.js        # 29 golpes originais com efeitos e partículas
-│   │   ├── species.js      # 22 espécies, stats base, learnsets e evoluções
-│   │   └── world.js        # Itens, mapa 36×26, prédios, zonas e 11 NPCs
+│   │   ├── moves.js        # 35 golpes originais com efeitos e partículas
+│   │   ├── species.js      # 30 espécies, stats base, learnsets e evoluções
+│   │   └── world.js        # Itens, mapa 60×26, prédios, 6 zonas e NPCs
 │   ├── engine/
 │   │   ├── audio.js        # Efeitos sonoros procedurais (Web Audio API)
-│   │   ├── sprites.js      # Arte cartoon das 22 criaturas, personagens e vasos
+│   │   ├── sprites.js      # Arte cartoon das 30 criaturas (e versões douradas), personagens e vasos
 │   │   ├── save.js         # Criação de criaturas, XP/evolução, curas e localStorage
 │   │   ├── battle.js       # Motor de batalha por turnos, partículas e captura
 │   │   └── overworld.js    # Mapa 60fps, movimento, minimapa, NPCs e encontros

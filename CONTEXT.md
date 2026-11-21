@@ -12,7 +12,7 @@ Este arquivo registra a arquitetura, o estado atual e os próximos passos do pro
 
 ---
 
-## ✅ Status Atual (Versão Jogável Completa)
+## ✅ Versão 1 (base — veja as mudanças da Versão 2 mais abaixo)
 
 Todos os módulos principais foram implementados e integrados:
 
@@ -54,8 +54,23 @@ Manter sempre esta ordem de `<script defer>`:
 - Sempre executar `git pull` antes de iniciar novas edições.
 - Ao encerrar uma sessão: `git add .`, `git commit -m "..."` e `git push`.
 
+## 🌟 Versão 2 (melhorias de 21/11/2026)
+
+- **Tabela de tipos refeita** (`types.js`): ciclo `picante → fungo → folha → raiz → fresco → citrico → picante`; cada tipo vence os 2 seguintes e causa 0.5× nos 2 anteriores. Antes, os tipos funcionavam como 3 duplas idênticas.
+- **Mapa 60×26** (`world.js`): colunas 36..58 são a região nova. Tiles novos: `12` areia, `13` coqueiro (sólido), `14` chão de caverna, `15` rocha (sólida), `16` canteiro sombrio (gera encontros). Zonas novas `pomar` (cena `tropical`) e `subterranea` (cena `caverna`).
+- **NPCs com regras** (`world.js`):
+  - `requires: { trainers: [...], badges: [...], text }` → líder só aceita desafio quando cumprido (Flora exige os 4 jardineiros das Rotas 1 e 2; Mandi exige a 1ª insígnia e os 4 jardineiros novos).
+  - `hideIfBadge` → NPC some depois da insígnia (Guarda Tom na passagem a Leste da Rota 1).
+  - `style` → visual do personagem (`guard`, `leader2`); `healSpot` → onde o jogador volta ao perder (salvo em `state.lastHealSpot`).
+  - `questBefore` / `questReady` → textos do "Objetivo Atual".
+- **8 espécies novas** (23..30): Bananinja, Abacatinho → Abacatão (Nv. 16), Cocoral, Rabanito, Trufim → Trufante (Nv. 16), Mandiocão. 6 golpes novos.
+- **XP do time** (`battle.js`): participantes ganham 50%; com o item-chave `adubo_compartilhado` (`kind: 'key'`), todo o time ganha 50%.
+- **Dourados**: `creature.golden = true` (chance 1/64 em `main.js`); `Sprites.drawCreature(..., { golden })` e `renderCreatureToDataURL(id, size, silhouette, golden)`.
+- **Save**: `HM.exportSaveData(state)` / `HM.importSaveData(texto)` em `save.js`; botões no Menu e na tela inicial.
+- **Celular**: regras no fim de `style.css` (toque, celular em pé e deitado).
+- **Beterraboss** ficou raro na natureza (peso 3, captura 0.15).
+
 ## 💡 Ideias para Futuras Expansões
 
-- Segunda Arena / Liga dos Jardineiros e novas rotas (ex.: Pomar Tropical e Horta Subterrânea).
-- Sistema de apelidos personalizados para HortaMons capturados e conquistas extras.
-- Exportação/importação manual de save em JSON para levar o progresso entre navegadores ou PCs.
+- Terceira Arena e Liga dos Jardineiros.
+- Conquistas extras (ex.: capturar todos os Dourados de um tipo).

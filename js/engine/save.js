@@ -440,6 +440,10 @@
         { battlesWon: 0, caughtCount: party.length + box.length, steps: 0 },
         raw.stats && typeof raw.stats === 'object' ? raw.stats : {}
       ),
+      lastHealSpot:
+        raw.lastHealSpot && typeof raw.lastHealSpot.x === 'number' && typeof raw.lastHealSpot.y === 'number'
+          ? { x: raw.lastHealSpot.x, y: raw.lastHealSpot.y, dir: raw.lastHealSpot.dir || 'up' }
+          : null,
       createdAt: raw.createdAt || Date.now(),
       updatedAt: raw.updatedAt || Date.now()
     };
@@ -450,6 +454,29 @@
 
     return state;
   }
+
+  // ---------------------------------------------------------------------------
+  // EXPORTAR / IMPORTAR SAVE (para levar o progresso entre PCs e navegadores)
+  // ---------------------------------------------------------------------------
+  HM.exportSaveData = function (state) {
+    if (!state) return null;
+    return JSON.stringify({ app: 'HortaMon', format: 1, exportedAt: new Date().toISOString(), save: state }, null, 2);
+  };
+
+  // Recebe o texto do arquivo .json; devolve o estado validado ou null
+  HM.importSaveData = function (text) {
+    let parsed;
+    try {
+      parsed = JSON.parse(text);
+    } catch (_err) {
+      return null;
+    }
+    const raw = parsed && parsed.save && typeof parsed.save === 'object' ? parsed.save : parsed;
+    const state = sanitizeState(raw);
+    if (!state) return null;
+    HM.saveGame(state);
+    return state;
+  };
 
   HM.saveGame = function (state) {
     const storage = getStorage();

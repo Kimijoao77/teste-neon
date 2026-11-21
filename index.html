@@ -9,6 +9,11 @@
     type="image/svg+xml"
     href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='14' y='34' width='36' height='22' rx='6' fill='%23d97706' stroke='%232b1d14' stroke-width='4'/%3E%3Crect x='10' y='28' width='44' height='10' rx='4' fill='%23f59e0b' stroke='%232b1d14' stroke-width='4'/%3E%3Cpath d='M32 28 C32 14 18 10 14 18 C12 24 24 28 32 28 Z' fill='%2322c55e' stroke='%232b1d14' stroke-width='4' stroke-linejoin='round'/%3E%3Cpath d='M32 28 C32 12 46 8 50 16 C52 22 40 28 32 28 Z' fill='%234ade80' stroke='%232b1d14' stroke-width='4' stroke-linejoin='round'/%3E%3C/svg%3E"
   />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <meta name="theme-color" content="#22c55e" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
   <link rel="stylesheet" href="css/style.css" />
 
   <!-- Ordem exata de carregamento (compatível com file:// sem ES modules) -->
@@ -33,7 +38,7 @@
         <div class="title-sun-deco" aria-hidden="true">☀️</div>
         <div class="title-badge-row">
           <span class="pill pill-leaf">🌱 RPG Botânico Cartoon</span>
-          <span class="pill pill-sun">📖 22 HortaMons Originais</span>
+          <span id="title-count-pill" class="pill pill-sun">📖 HortaMons Originais</span>
         </div>
 
         <header class="title-hero">
@@ -42,7 +47,7 @@
           </h1>
           <p class="game-subtitle">Aventura Botânica</p>
           <p class="game-tagline">
-            Explore a Vila da Horta, capture frutas, verduras e fungos incríveis, evolua sua equipe e conquiste a Insígnia da Colheita Dourada!
+            Explore a Vila da Horta, capture frutas, verduras e fungos incríveis, evolua sua equipe e conquiste as insígnias das duas Arenas!
           </p>
         </header>
 
@@ -68,6 +73,12 @@
           </button>
           <button id="btn-title-sound" type="button" class="btn btn-cream btn-sm">
             🔊 Som: Ligado
+          </button>
+          <a id="btn-title-cards" class="btn btn-cream btn-sm" href="cartas.html">
+            🃏 Álbum de Cartas
+          </a>
+          <button id="btn-title-import" type="button" class="btn btn-cream btn-sm">
+            📥 Importar Save
           </button>
         </div>
       </div>
@@ -132,7 +143,7 @@
               🏅 <strong id="hud-badges">0</strong>
             </span>
             <span class="stat-pill stat-dex" title="Espécies capturadas na BotaniDex">
-              📖 <strong id="hud-dex">1/22</strong>
+              📖 <strong id="hud-dex">1/30</strong>
             </span>
           </div>
         </div>
