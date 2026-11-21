@@ -54,7 +54,7 @@ No celular, abra o link no Chrome e use **⋮ → Adicionar à tela inicial** pa
 - **XP para o time**: quem entra no meio da luta ganha metade do XP; com o **Adubo Compartilhado** (presente do Prof. Pomar quando você tem 2 HortaMons) o time inteiro ganha.
 - **Apelidos** (botão ✏️ no Time), **BotaniDex**, **Caixa da Estufa** e **Tabela de Tipos**.
 - **Save**: automático no navegador (`localStorage`, chave `hortamon_save_v1`) e **Exportar/Importar Save** em arquivo `.json` (Menu) para levar o progresso entre PCs e celular.
-- **Álbum de Cartas** (`cartas.html`): cada carta é desbloqueada quando você captura o HortaMon (opção “Ver todas” para o modo galeria). Para imprimir: `cartas.html?sheet=1` até `?sheet=4`.
+- **Álbum de Cartas** (`cartas.html`): cartas giratórias — a frente mostra só o personagem e, ao tocar, a carta vira e mostra a ficha (stats, golpes, forte/fraco contra). Cada carta é liberada quando você captura o HortaMon (“Ver todas” abre o modo galeria; “Virar todas” gira todas de uma vez). Para imprimir: `cartas.html?sheet=1` até `?sheet=8` (frente e verso lado a lado — recorte, dobre e cole).
 - **Celular**: layout próprio para tela em pé e deitada, controles maiores e instalação como app (manifest + ícones).
 
 ---

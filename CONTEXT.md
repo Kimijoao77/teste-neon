@@ -69,6 +69,7 @@ Manter sempre esta ordem de `<script defer>`:
 - **Save**: `HM.exportSaveData(state)` / `HM.importSaveData(texto)` em `save.js`; botões no Menu e na tela inicial.
 - **Celular**: regras no fim de `style.css` (toque, celular em pé e deitado).
 - **Beterraboss** ficou raro na natureza (peso 3, captura 0.15).
+- **Álbum de cartas giratórias** (`cartas.html`): `.tcard > .flip-inner > .face-front / .face-back`; a classe `.flipped` gira a carta (CSS 3D). Cartas nunca vistas ficam cinza; vistas mostram silhueta. Modo impressão `?sheet=N` mostra 4 pares frente|verso por folha.
 
 ## 💡 Ideias para Futuras Expansões
 
