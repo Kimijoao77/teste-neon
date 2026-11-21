@@ -34,54 +34,37 @@
          TELA 1: TÍTULO / MENU INICIAL
     ========================================================== -->
     <section id="screen-title" class="screen screen-title active" aria-label="Tela Inicial">
-      <div class="title-card cartoon-card">
-        <div class="title-sun-deco" aria-hidden="true">☀️</div>
-        <div class="title-badge-row">
-          <span class="pill pill-leaf">🌱 RPG Botânico Cartoon</span>
-          <span id="title-count-pill" class="pill pill-sun">📖 HortaMons Originais</span>
-        </div>
+      <canvas id="title-scene" class="title-scene" aria-hidden="true"></canvas>
 
+      <div class="title-layout">
         <header class="title-hero">
           <h1 class="game-logo">
             <span class="logo-horta">Horta</span><span class="logo-mon">Mon</span>
           </h1>
           <p class="game-subtitle">Aventura Botânica</p>
-          <p class="game-tagline">
-            Explore a Vila da Horta, capture frutas, verduras e fungos incríveis, evolua sua equipe e conquiste as insígnias das duas Arenas!
-          </p>
         </header>
 
-        <div id="title-showcase" class="title-showcase" aria-hidden="true"></div>
-
-        <div id="title-save-preview" class="save-preview hidden"></div>
-
-        <div class="title-actions">
-          <button id="btn-continue" type="button" class="btn btn-primary btn-lg hidden">
-            ▶ Continuar Aventura
+        <nav class="title-menu" aria-label="Menu principal">
+          <button id="btn-continue" type="button" class="menu-item menu-item-main hidden">
+            <span class="mi-label">Continuar</span>
+            <span id="title-save-preview" class="mi-sub hidden"></span>
           </button>
-          <button id="btn-new-game" type="button" class="btn btn-sun btn-lg">
-            🌱 Começar Aventura
+          <button id="btn-new-game" type="button" class="menu-item">
+            <span class="mi-label">Novo jogo</span>
           </button>
-        </div>
-
-        <div class="title-secondary-actions">
-          <button id="btn-title-types" type="button" class="btn btn-cream btn-sm">
-            ⚖️ Tabela de Tipos
-          </button>
-          <button id="btn-title-help" type="button" class="btn btn-cream btn-sm">
-            ❓ Como Jogar
-          </button>
-          <button id="btn-title-sound" type="button" class="btn btn-cream btn-sm">
-            🔊 Som: Ligado
-          </button>
-          <a id="btn-title-cards" class="btn btn-cream btn-sm" href="cartas.html">
-            🃏 Álbum de Cartas
+          <a id="btn-title-cards" class="menu-item" href="cartas.html">
+            <span class="mi-label">Álbum de cartas</span>
           </a>
-          <button id="btn-title-import" type="button" class="btn btn-cream btn-sm">
-            📥 Importar Save
+          <button id="btn-title-options" type="button" class="menu-item">
+            <span class="mi-label">Opções</span>
           </button>
-        </div>
+        </nav>
       </div>
+
+      <footer class="title-footer">
+        <span>v2.2</span>
+        <span id="title-count-pill"></span>
+      </footer>
     </section>
 
     <!-- =========================================================
@@ -128,7 +111,7 @@
       <header class="top-bar cartoon-card">
         <div class="top-bar-left">
           <div class="zone-pill">
-            <span class="zone-pin">📍</span>
+            <span class="zone-pin"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="color:#15803d"><path d="M12 21s-6-6.2-6-11a6 6 0 0 1 12 0c0 4.8-6 11-6 11z"/><circle cx="12" cy="10" r="2.2"/></svg></span>
             <div class="zone-texts">
               <strong id="hud-zone-name">Vila da Horta</strong>
               <small id="hud-zone-sub">Um jardim tranquilo</small>
@@ -137,13 +120,13 @@
 
           <div class="hud-counters">
             <span class="stat-pill stat-coins" title="Moedas">
-              🪙 <strong id="hud-coins">350</strong>
+              <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="color:#ca8a04"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/></svg> <strong id="hud-coins">350</strong>
             </span>
             <span class="stat-pill stat-badges" title="Insígnias conquistadas">
-              🏅 <strong id="hud-badges">0</strong>
+              <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="color:#ea580c"><path d="M8 3l4 6 4-6"/><circle cx="12" cy="15" r="5"/></svg> <strong id="hud-badges">0</strong>
             </span>
             <span class="stat-pill stat-dex" title="Espécies capturadas na BotaniDex">
-              📖 <strong id="hud-dex">1/30</strong>
+              <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="color:#0369a1"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5z"/><path d="M20 5.5c0-.8-.7-1.5-1.5-1.5H13v16h5.5c.8 0 1.5-.7 1.5-1.5z"/></svg> <strong id="hud-dex">1/30</strong>
             </span>
           </div>
         </div>
@@ -211,7 +194,7 @@
         <aside class="side-panel">
           <div class="side-card quest-card cartoon-card">
             <div class="side-card-head">
-              <span class="side-title">🧭 Objetivo Atual</span>
+              <span class="side-title">Objetivo</span>
             </div>
             <p id="quest-text" class="quest-text">
               Explore a Vila da Horta e converse com o Prof. Pomar!
@@ -220,7 +203,7 @@
 
           <div class="side-card party-side-card cartoon-card">
             <div class="side-card-head">
-              <span class="side-title">🌿 Seu Time (<span id="sidebar-party-count">1</span>/6)</span>
+              <span class="side-title">Time (<span id="sidebar-party-count">1</span>/6)</span>
               <button id="btn-sidebar-party" type="button" class="link-btn">Detalhes</button>
             </div>
             <div id="sidebar-party-list" class="sidebar-party-list"></div>
@@ -230,13 +213,13 @@
             <div class="dpad" aria-label="Controles direcionais">
               <button type="button" class="dpad-btn dpad-up" data-dir="up" aria-label="Mover para cima">▲</button>
               <button type="button" class="dpad-btn dpad-left" data-dir="left" aria-label="Mover para esquerda">◀</button>
-              <span class="dpad-center" aria-hidden="true">🌱</span>
+              <span class="dpad-center" aria-hidden="true"></span>
               <button type="button" class="dpad-btn dpad-right" data-dir="right" aria-label="Mover para direita">▶</button>
               <button type="button" class="dpad-btn dpad-down" data-dir="down" aria-label="Mover para baixo">▼</button>
             </div>
             <div class="interact-stack">
               <button id="btn-dpad-interact" type="button" class="btn btn-primary btn-interact">
-                💬 Interagir
+                Interagir
                 <small>(Espaço)</small>
               </button>
             </div>

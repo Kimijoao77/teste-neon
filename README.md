@@ -56,6 +56,8 @@ No celular, abra o link no Chrome e use **⋮ → Adicionar à tela inicial** pa
 - **Save**: automático no navegador (`localStorage`, chave `hortamon_save_v1`) e **Exportar/Importar Save** em arquivo `.json` (Menu) para levar o progresso entre PCs e celular.
 - **Álbum de Cartas** (`cartas.html`): cartas giratórias — a frente mostra só o personagem e, ao tocar, a carta vira e mostra a ficha (stats, golpes, forte/fraco contra). Cada carta é liberada quando você captura o HortaMon (“Ver todas” abre o modo galeria; “Virar todas” gira todas de uma vez). Para imprimir: `cartas.html?sheet=1` até `?sheet=8` (frente e verso lado a lado — recorte, dobre e cole).
 - **Celular**: layout próprio para tela em pé e deitada, controles maiores e instalação como app (manifest + ícones).
+- **Tela inicial viva**: os HortaMons passeiam num jardim animado atrás do logo; menu de jogo com Continuar (mostra onde você parou), Novo jogo, Álbum e Opções (navegável pelas setas do teclado).
+- **Visual**: fontes Fredoka (títulos e botões) e Nunito (textos) embutidas; ícones desenhados no lugar dos emojis nos botões; menu de pausa em lista com resumo do progresso.
 
 ---
 
@@ -67,6 +69,7 @@ teste-neon/
 ├── cartas.html             # Álbum de cartas (desbloqueia pelo save)
 ├── manifest.webmanifest    # Instalação como app no celular
 ├── icons/                  # Ícones do app (192 e 512 px)
+├── fonts/                  # Fredoka e Nunito embutidas (licença OFL), funcionam sem internet
 ├── css/
 │   └── style.css           # Visual cartoon colorido de jardim (otimizado para 1280×720)
 ├── js/
