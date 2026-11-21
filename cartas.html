@@ -46,6 +46,11 @@
       -webkit-font-smoothing: antialiased;
     }
 
+    body {
+      min-height: 100vh;
+      background-attachment: fixed;
+    }
+
     body::before {
       content: '';
       position: fixed;
@@ -256,297 +261,456 @@
       color: var(--leaf-dark);
     }
 
-    /* Grade de Cartas */
+    /* =====================================================================
+       GRADE E CARTAS GIRATÓRIAS
+       Frente: só o personagem. Verso: a ficha. Toque/clique para virar.
+    ===================================================================== */
     .cards-grid {
-      display: flex;
-      flex-wrap: wrap;
+      --card-w: 228px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, var(--card-w));
       justify-content: center;
-      gap: 16px;
+      gap: 24px 20px;
     }
 
-    /* Carta Colecionável Cartoon */
     .tcard {
-      width: 326px;
-      height: 360px;
-      padding: 7px;
-      border-radius: 18px;
-      border: 3.5px solid var(--ink);
+      position: relative;
+      width: var(--card-w);
+      aspect-ratio: 5 / 7;
+      perspective: 1200px;
+      container-type: inline-size;
+      cursor: pointer;
+      outline: none;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    .flip-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+      transition: transform 0.7s cubic-bezier(0.3, 0.85, 0.25, 1);
+    }
+
+    .tcard.flipped .flip-inner {
+      transform: rotateY(180deg);
+    }
+
+    @media (hover: hover) {
+      .tcard:not(.static):hover .flip-inner {
+        transform: translateY(-5px);
+      }
+      .tcard.flipped:not(.static):hover .flip-inner {
+        transform: translateY(-5px) rotateY(180deg);
+      }
+    }
+
+    .tcard:focus-visible .face {
+      outline: 3px solid #2563eb;
+      outline-offset: 3px;
+    }
+
+    .face {
+      position: absolute;
+      inset: 0;
+      border-radius: 6cqw;
+      border: 3px solid var(--ink);
       box-shadow: 0 5px 0 var(--ink);
-      background: linear-gradient(155deg, var(--t-color) 0%, var(--t-dark) 100%);
+      overflow: hidden;
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+    }
+
+    .face-back {
+      transform: rotateY(180deg);
+    }
+
+    /* ---------- Frente ---------- */
+    .face-front {
+      background: var(--t-color);
+      padding: 5cqw;
+    }
+
+    .front-window {
       position: relative;
-      display: flex;
-      transition: transform 0.14s ease, box-shadow 0.14s ease;
-    }
-
-    body:not(.sheet-mode) .tcard:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 9px 0 var(--ink);
-    }
-
-    .tcard-inner {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      padding: 6px 8px 6px;
-      border-radius: 12px;
+      width: 100%;
+      height: 100%;
+      border-radius: 3.5cqw;
       border: 2.5px solid var(--ink);
-      background: linear-gradient(180deg, #fffdf5 0%, #fffdf5 55%, var(--t-bg) 100%);
+      background: radial-gradient(circle at 50% 44%, #fffdf5 0%, var(--t-bg) 52%, var(--t-color) 135%);
       overflow: hidden;
-    }
-
-    /* Topo da Carta */
-    .tcard-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 6px;
-      min-height: 32px;
-    }
-
-    .tcard-id-group {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      min-width: 0;
-    }
-
-    .tcard-dex {
-      flex-shrink: 0;
-      padding: 2px 6px;
-      border-radius: 7px;
-      background: var(--ink);
-      color: var(--sun);
-      font-size: 0.72rem;
-      font-weight: 900;
-      letter-spacing: 0.02em;
-    }
-
-    .tcard-name-wrap {
-      min-width: 0;
-      line-height: 1.05;
-    }
-
-    .tcard-name {
-      margin: 0;
-      font-size: 1rem;
-      font-weight: 900;
-      color: var(--ink);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .tcard-title {
-      display: block;
-      font-size: 0.67rem;
-      font-weight: 800;
-      color: var(--ink-soft);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .type-badge {
-      flex-shrink: 0;
-      display: inline-flex;
-      align-items: center;
-      gap: 3px;
-      padding: 2px 8px;
-      border-radius: 999px;
-      background: var(--t-bg);
-      color: var(--t-dark);
-      border: 2px solid var(--t-color);
-      font-size: 0.7rem;
-      font-weight: 900;
-      line-height: 1.2;
-      white-space: nowrap;
-    }
-
-    /* Janela da Ilustração */
-    .tcard-art {
-      position: relative;
-      height: 128px;
-      border-radius: 11px;
-      border: 2.5px solid var(--ink);
-      background:
-        radial-gradient(circle at 50% 88%, rgba(134, 239, 172, 0.52) 0%, rgba(134, 239, 172, 0.16) 44%, transparent 66%),
-        radial-gradient(circle at 50% 38%, #ffffff 0%, var(--t-bg) 100%);
       display: flex;
       align-items: center;
       justify-content: center;
-      overflow: hidden;
     }
 
-    .tcard-art::after {
+    /* Textura de pontinhos, como papel de carta impressa */
+    .front-window::before {
       content: '';
       position: absolute;
-      left: 50%;
-      bottom: 8px;
-      transform: translateX(-50%);
-      width: 116px;
-      height: 18px;
-      border-radius: 50%;
-      background: rgba(21, 128, 61, 0.16);
+      inset: 0;
+      background-image: radial-gradient(var(--t-dark) 1px, transparent 1.3px);
+      background-size: 9px 9px;
+      opacity: 0.13;
+    }
+
+    /* Brilho que acompanha o mouse */
+    .front-window::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at var(--mx, 30%) var(--my, 20%), rgba(255, 255, 255, 0.55), transparent 48%);
+      opacity: 0;
+      transition: opacity 0.25s ease;
       pointer-events: none;
     }
 
-    .tcard-art img {
+    @media (hover: hover) {
+      .tcard:hover .front-window::after {
+        opacity: 1;
+      }
+    }
+
+    .front-window img {
       position: relative;
-      z-index: 1;
-      width: 116px;
-      height: 116px;
-      object-fit: contain;
-      filter: drop-shadow(0 3px 2px rgba(43, 29, 20, 0.18));
+      width: 100%;
+      height: auto;
+      transform: translateY(2%);
     }
 
-    .stage-pill {
+    .flip-hint {
       position: absolute;
-      top: 5px;
-      left: 5px;
-      z-index: 2;
-      padding: 1.5px 7px;
-      border-radius: 999px;
-      background: rgba(255, 253, 245, 0.94);
-      border: 1.8px solid var(--ink);
-      font-size: 0.64rem;
-      font-weight: 900;
-      color: var(--ink);
-      line-height: 1.25;
-      max-width: calc(100% - 10px);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    /* Barras de Stats */
-    .tcard-stats {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 5px;
-      padding: 4px 6px;
-      background: rgba(255, 253, 245, 0.92);
-      border: 2px solid var(--ink);
-      border-radius: 9px;
-    }
-
-    .stat-col {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-
-    .stat-top {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      font-size: 0.64rem;
+      right: 7cqw;
+      bottom: 6cqw;
+      font-size: 7cqw;
       font-weight: 900;
       line-height: 1;
-    }
-
-    .stat-lbl {
-      color: var(--ink-soft);
-    }
-
-    .stat-val {
       color: var(--ink);
-      font-size: 0.7rem;
+      opacity: 0.3;
     }
 
-    .stat-track {
-      height: 6px;
-      border-radius: 999px;
-      background: #e7dec6;
-      border: 1.5px solid var(--ink);
+    /* Dourado: moldura de ouro + película holográfica */
+    .tcard.golden .face-front {
+      background: linear-gradient(135deg, #fde68a 0%, #f59e0b 35%, #fef3c7 52%, #d97706 78%, #fcd34d 100%);
+    }
+
+    .foil {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: linear-gradient(115deg, transparent 20%, rgba(255, 0, 128, 0.35) 32%, rgba(255, 230, 0, 0.35) 42%,
+        rgba(0, 255, 170, 0.35) 52%, rgba(0, 170, 255, 0.35) 62%, transparent 75%);
+      background-size: 250% 250%;
+      mix-blend-mode: color-dodge;
+      opacity: 0.55;
+      animation: foilMove 5s ease-in-out infinite alternate;
+    }
+
+    @keyframes foilMove {
+      from { background-position: 0% 0%; }
+      to { background-position: 100% 100%; }
+    }
+
+    /* ---------- Verso ---------- */
+    .face-back {
+      display: flex;
+      flex-direction: column;
+      background: #fffdf5;
+      font-size: clamp(9px, 5.3cqw, 13px);
+    }
+
+    .back-head {
+      display: flex;
+      align-items: center;
+      gap: 0.55em;
+      padding: 0.6em 0.75em 0.55em;
+      background: var(--t-bg);
+      border-bottom: 2.5px solid var(--ink);
+    }
+
+    .back-thumb {
+      flex: none;
+      width: 2.7em;
+      height: 2.7em;
+      border: 2px solid var(--ink);
+      border-radius: 0.6em;
+      background: #fffdf5;
       overflow: hidden;
     }
 
-    .stat-fill {
+    .back-thumb img {
+      width: 100%;
       height: 100%;
-      border-radius: 999px;
+      display: block;
     }
 
-    /* Golpes Principais */
-    .tcard-moves {
+    .back-names {
+      min-width: 0;
       display: flex;
       flex-direction: column;
-      gap: 3px;
     }
 
-    .move-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 6px;
-      padding: 2.5px 6px;
-      border-radius: 7px;
-      background: rgba(255, 253, 245, 0.94);
-      border: 1.8px solid var(--ink);
-      font-size: 0.7rem;
-      line-height: 1.15;
-    }
-
-    .move-left {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      min-width: 0;
+    .back-name {
+      margin: 0;
+      font-size: 1.28em;
       font-weight: 900;
-      color: var(--ink);
-    }
-
-    .move-left span.mv-name {
+      line-height: 1.05;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
-    .move-right {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      flex-shrink: 0;
-      font-weight: 800;
-      font-size: 0.64rem;
-      color: var(--ink-soft);
-    }
-
-    .move-pwr {
-      padding: 1px 5px;
-      border-radius: 5px;
-      border: 1.5px solid var(--ink);
-      background: var(--mv-bg, #fef9c3);
-      color: var(--mv-color, var(--ink));
-      font-weight: 900;
-    }
-
-    /* Descrição */
-    .tcard-desc {
-      margin: 0;
-      padding: 4px 6px;
-      flex: 1;
-      display: flex;
-      align-items: center;
-      border-radius: 8px;
-      background: rgba(255, 253, 245, 0.85);
-      border: 1.8px dashed rgba(43, 29, 20, 0.35);
-      font-size: 0.655rem;
-      line-height: 1.22;
+    .back-title {
+      font-size: 0.78em;
       font-weight: 700;
       color: var(--ink-soft);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .back-num {
+      margin-left: auto;
+      align-self: flex-start;
+      font-size: 0.82em;
+      font-weight: 900;
+      color: var(--t-dark);
+    }
+
+    .back-body {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5em;
+      padding: 0.6em 0.8em 0.75em;
+    }
+
+    .back-meta {
+      font-size: 0.8em;
+      font-weight: 800;
+      color: var(--t-dark);
+    }
+
+    .stat-list {
+      display: grid;
+      grid-template-columns: 2.3em 1.8em 1fr;
+      align-items: center;
+      gap: 0.28em 0.45em;
+      font-size: 0.82em;
+      font-weight: 800;
+    }
+
+    .stat-list .lbl {
+      color: var(--ink-soft);
+    }
+
+    .stat-list .val {
+      text-align: right;
+    }
+
+    .stat-bar {
+      height: 0.6em;
+      border: 1.5px solid var(--ink);
+      border-radius: 99px;
+      background: #efe7d2;
       overflow: hidden;
     }
 
-    .tcard-desc span {
-      display: -webkit-box;
-      -webkit-line-clamp: 3;
-      -webkit-box-orient: vertical;
+    .stat-bar i {
+      display: block;
+      height: 100%;
+      background: var(--t-color);
+    }
+
+    .back-label {
+      padding-top: 0.45em;
+      border-top: 1.5px dashed rgba(43, 29, 20, 0.28);
+      font-size: 0.68em;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ink-soft);
+    }
+
+    .move-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3em;
+      font-size: 0.8em;
+      font-weight: 800;
+    }
+
+    .move-list li {
+      display: grid;
+      grid-template-columns: 0.6em 1fr auto 2em;
+      align-items: center;
+      gap: 0.45em;
+    }
+
+    .mv-dot {
+      width: 0.6em;
+      height: 0.6em;
+      border-radius: 50%;
+      border: 1.5px solid var(--ink);
+    }
+
+    .mv-name {
+      white-space: nowrap;
       overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .mv-lv {
+      font-weight: 700;
+      color: var(--ink-soft);
+    }
+
+    .mv-pwr {
+      text-align: right;
+    }
+
+    .matchups {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3em;
+      font-size: 0.76em;
+      font-weight: 800;
+    }
+
+    .matchups > div {
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+      flex-wrap: wrap;
+    }
+
+    .mu-lbl {
+      min-width: 6.6em;
+      color: var(--ink-soft);
+      font-weight: 700;
+    }
+
+    .mu-type {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3em;
+    }
+
+    .back-desc {
+      margin: auto 0 0;
+      font-size: 0.74em;
+      font-weight: 600;
+      font-style: italic;
+      line-height: 1.3;
+      color: var(--ink-soft);
+    }
+
+    .back-gold {
+      font-size: 0.74em;
+      font-weight: 900;
+      color: #a16207;
+    }
+
+    @container (max-width: 205px) {
+      .back-desc {
+        display: none;
+      }
+    }
+
+    /* ---------- Cartas bloqueadas ---------- */
+    .tcard.locked {
+      --t-color: #a8a29e;
+      --t-bg: #f5f5f4;
+      --t-dark: #57534e;
+    }
+
+    .tcard.locked .front-window {
+      background: radial-gradient(circle at 50% 44%, #fafaf9 0%, #e7e5e4 70%);
+    }
+
+    .tcard.locked .front-window img {
+      opacity: 0.85;
+    }
+
+    .locked-q {
+      position: relative;
+      font-size: 34cqw;
+      font-weight: 900;
+      color: rgba(43, 29, 20, 0.2);
+    }
+
+    .locked-msg {
+      margin: auto 0;
+      text-align: center;
+      font-size: 0.9em;
+      font-weight: 800;
+      line-height: 1.35;
+      color: var(--ink-soft);
+    }
+
+    /* ---------- Cabeçalho da coleção ---------- */
+    .collect-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      font-weight: 800;
+      font-size: 0.85rem;
+      color: var(--ink-soft);
+    }
+
+    .collect-track {
+      width: 160px;
+      height: 12px;
+      border: 2px solid var(--ink);
+      border-radius: 999px;
+      background: #fff;
+      overflow: hidden;
+    }
+
+    .collect-fill {
+      display: block;
+      height: 100%;
+      background: var(--leaf);
+    }
+
+    .filter-tools {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .show-all-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 800;
+      font-size: 0.82rem;
+      cursor: pointer;
+    }
+
+    @media (max-width: 560px) {
+      .page-wrap {
+        padding: 10px 10px 24px;
+      }
+      .cards-grid {
+        --card-w: calc((100vw - 34px) / 2);
+        gap: 16px 12px;
+      }
+      .filter-bar {
+        gap: 8px;
+      }
     }
 
     /* =====================================================================
-       MODO ?sheet=1|2|3 (Captura limpa 1400x820 sem rolagem)
+       MODO ?sheet=N (folha para imprimir/recortar: frente e verso lado a lado,
+       é só recortar o par, dobrar no meio e colar)
     ===================================================================== */
     body.sheet-mode {
       background: #fdf8e7;
@@ -575,84 +739,39 @@
     }
 
     body.sheet-mode .cards-grid {
-      gap: 14px;
+      --card-w: 236px;
+      grid-template-columns: repeat(2, auto);
+      gap: 22px 48px;
     }
 
-    body.sheet-mode.sheet-last .cards-grid {
-      max-width: 1060px;
-      margin: 0 auto;
-    }
-
-    body.sheet-mode .tcard {
-      width: 328px;
-      height: 360px;
-    }
-
-    /* ---------- Coleção ligada ao save ---------- */
-    .collect-bar {
+    .print-pair {
       display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-      font-weight: 800;
-      font-size: 0.85rem;
-      color: var(--ink-soft);
     }
-    .collect-track {
-      width: 160px;
-      height: 12px;
-      border: 2px solid var(--ink);
-      border-radius: 999px;
-      background: #fff;
-      overflow: hidden;
+
+    .tcard.static {
+      cursor: default;
+      perspective: none;
     }
-    .collect-fill {
-      height: 100%;
-      background: linear-gradient(90deg, #4ade80, #facc15);
+
+    .tcard.static .face {
+      transform: none;
+      box-shadow: none;
     }
-    .show-all-toggle {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-weight: 800;
-      font-size: 0.82rem;
-      cursor: pointer;
+
+    .tcard.static .flip-hint {
+      display: none;
     }
-    .tcard.locked {
-      --t-color: #a8a29e !important;
-      --t-bg: #f5f5f4 !important;
-      --t-dark: #57534e !important;
+
+    .print-pair .tcard.static:first-child .face {
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+      border-right: 1.5px dashed var(--ink);
     }
-    .tcard.locked .tcard-art img {
-      opacity: 0.85;
-    }
-    .locked-body {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      text-align: center;
-      font-weight: 800;
-      color: var(--ink-soft);
-      padding: 10px;
-      font-size: 0.86rem;
-    }
-    .locked-q {
-      font-size: 3.4rem;
-      line-height: 1;
-      color: #a8a29e;
-    }
-    .gold-chip {
-      display: inline-block;
-      margin-left: 6px;
-      padding: 1px 7px;
-      border: 2px solid var(--ink);
-      border-radius: 999px;
-      background: #fde047;
-      font-size: 0.7rem;
-      font-weight: 900;
+
+    .print-pair .tcard.static:last-child .face {
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+      border-left: 1.5px dashed var(--ink);
     }
   </style>
 </head>
@@ -666,14 +785,17 @@
         <span id="brand-sub" class="brand-sub">🃏 Álbum de Cartas Colecionáveis</span>
       </div>
       <div class="header-actions">
-        <a href="index.html" class="btn btn-primary">🎮 Jogar HortaMon</a>
+        <a href="index.html" class="btn btn-primary">← Voltar ao jogo</a>
       </div>
     </header>
 
     <section class="filter-bar" aria-label="Filtrar cartas por tipo">
       <div id="filter-pills" class="filter-pills"></div>
-      <span id="filter-count" class="filter-count"></span>
-      <label class="show-all-toggle"><input id="show-all" type="checkbox" /> 👁️ Ver todas</label>
+      <div class="filter-tools">
+        <span id="filter-count" class="filter-count"></span>
+        <button id="flip-all" type="button" class="btn">↻ Virar todas</button>
+        <label class="show-all-toggle"><input id="show-all" type="checkbox" /> Ver todas</label>
+      </div>
     </section>
 
     <header id="sheet-banner" class="sheet-banner">
@@ -693,6 +815,8 @@
     (function () {
       'use strict';
 
+      const PAIRS_PER_SHEET = 4;
+
       function escapeHtml(str) {
         return String(str == null ? '' : str)
           .replace(/&/g, '&amp;')
@@ -711,6 +835,12 @@
         return null;
       }
 
+      function spriteUrl(HM, id, size, silhouette, golden) {
+        return HM.Sprites && typeof HM.Sprites.renderCreatureToDataURL === 'function'
+          ? HM.Sprites.renderCreatureToDataURL(id, size, !!silhouette, !!golden)
+          : '';
+      }
+
       function pickSignatureMoves(sp, HM) {
         const learnset = Array.isArray(sp.learnset) ? sp.learnset : [];
         const unique = [];
@@ -721,35 +851,20 @@
           seen.add(entry.moveId);
           unique.push(entry);
         });
-
-        // Prefere golpes temáticos (evita 'investida' se houver 3+ golpes melhores)
         const nonBasic = unique.filter((e) => e.moveId !== 'investida');
         const pool = nonBasic.length >= 3 ? nonBasic : unique;
         if (pool.length <= 3) return pool;
-
-        // Pega inicial, intermediário e golpe assinatura final
-        const first = pool[0];
-        const mid = pool[Math.floor(pool.length / 2)];
-        const last = pool[pool.length - 1];
-        const chosen = [];
-        [first, mid, last].forEach((m) => {
-          if (m && !chosen.includes(m)) chosen.push(m);
-        });
-        return chosen;
+        const picks = [pool[0], pool[Math.floor(pool.length / 2)], pool[pool.length - 1]];
+        return picks.filter((m, i) => m && picks.indexOf(m) === i);
       }
 
       function getStageLabel(sp, HM) {
         const all = HM.SPECIES_LIST || [];
-        const hasPrev = all.some((other) => other.evolvesTo === sp.id);
-        const nextSp = sp.evolvesTo && HM.SPECIES && HM.SPECIES[sp.evolvesTo];
-
-        if (nextSp) {
-          return `Estágio ${sp.stage} • ➔ ${nextSp.name} Nv.${sp.evolveLevel}`;
-        }
-        if (hasPrev) {
-          return `Estágio ${sp.stage} • Forma Final`;
-        }
-        return 'Estágio Único';
+        const prev = all.find((other) => other.evolvesTo === sp.id);
+        const next = sp.evolvesTo && HM.SPECIES && HM.SPECIES[sp.evolvesTo];
+        if (next) return `Estágio ${sp.stage} · evolui para ${next.name} no Nv. ${sp.evolveLevel}`;
+        if (prev) return `Estágio ${sp.stage} · evolução de ${prev.name}`;
+        return 'Estágio único';
       }
 
       // Lê o save do jogo (mesmo navegador) para saber o que já foi visto/capturado
@@ -770,124 +885,165 @@
         return out;
       }
 
-      function renderLockedCard(sp, HM, seen) {
-        const t = (HM.TYPES && HM.TYPES[sp.type]) || { name: sp.type, icon: '🌱' };
-        const num = String(sp.dexNum || 0).padStart(2, '0');
-        const imgUrl =
-          seen && HM.Sprites && typeof HM.Sprites.renderCreatureToDataURL === 'function'
-            ? HM.Sprites.renderCreatureToDataURL(sp.id, 180, true)
-            : '';
-        return `
-          <article class="tcard locked">
-            <div class="tcard-inner">
-              <header class="tcard-head">
-                <div class="tcard-id-group">
-                  <span class="tcard-dex">#${num}</span>
-                  <div class="tcard-name-wrap">
-                    <h2 class="tcard-name">${seen ? escapeHtml(sp.name) : '???'}</h2>
-                    <span class="tcard-title">${seen ? 'Visto na natureza' : 'Ainda desconhecido'}</span>
-                  </div>
-                </div>
-                <span class="type-badge">${seen ? `${t.icon} ${escapeHtml(t.name)}` : '❔'}</span>
-              </header>
-              <div class="tcard-art">
-                <span class="stage-pill">🔒 Bloqueada</span>
-                ${imgUrl ? `<img src="${imgUrl}" alt="Silhueta" />` : '<span class="locked-q">?</span>'}
-              </div>
-              <div class="locked-body">
-                <span>${seen ? '🏺 Capture este HortaMon no jogo para desbloquear a carta!' : '🌿 Explore a grama alta para encontrar este HortaMon.'}</span>
-              </div>
-            </div>
-          </article>
-        `;
+      function typeOf(sp, HM) {
+        return (HM.TYPES && HM.TYPES[sp.type]) || { name: sp.type, icon: '', color: '#22c55e', bg: '#dcfce7', dark: '#166534' };
       }
 
-      function renderCard(sp, HM, golden) {
-        const t = (HM.TYPES && HM.TYPES[sp.type]) || {
-          name: sp.type,
-          icon: '🌱',
-          color: '#22c55e',
-          bg: '#dcfce7',
-          dark: '#166534'
-        };
-        const num = String(sp.dexNum || 0).padStart(2, '0');
-        const imgUrl =
-          HM.Sprites && typeof HM.Sprites.renderCreatureToDataURL === 'function'
-            ? HM.Sprites.renderCreatureToDataURL(sp.id, 180, false, !!golden)
-            : '';
-        const stageText = getStageLabel(sp, HM);
-        const bs = sp.baseStats || { hp: 50, atk: 50, def: 50, spd: 50 };
+      function typeVars(t) {
+        return `--t-color:${t.color};--t-bg:${t.bg};--t-dark:${t.dark};`;
+      }
 
-        const statCol = (label, val, color) => {
-          const pct = Math.max(12, Math.min(100, Math.round((val / 110) * 100)));
-          return `
-            <div class="stat-col">
-              <div class="stat-top">
-                <span class="stat-lbl">${label}</span>
-                <span class="stat-val">${val}</span>
-              </div>
-              <div class="stat-track">
-                <div class="stat-fill" style="width:${pct}%;background:${color};"></div>
-              </div>
+      // ---------------- Faces ----------------
+      function frontFace(sp, HM, golden) {
+        return `
+          <div class="face face-front">
+            <div class="front-window">
+              <img src="${spriteUrl(HM, sp.id, 260, false, golden)}" alt="${escapeHtml(sp.name)}" draggable="false" />
+              ${golden ? '<span class="foil"></span>' : ''}
+              <span class="flip-hint" aria-hidden="true">↻</span>
             </div>
-          `;
-        };
+          </div>`;
+      }
 
-        const moves = pickSignatureMoves(sp, HM);
-        const movesHtml = moves
+      // "Forte contra" / "Fraco contra" a partir da tabela de tipos
+      function matchupLine(sp, HM) {
+        const chart = HM.TYPE_CHART || {};
+        const list = HM.TYPE_LIST || Object.keys(HM.TYPES || {});
+        const strong = list.filter((d) => (chart[sp.type] || {})[d] >= 2);
+        const weak = list.filter((a) => (chart[a] || {})[sp.type] >= 2);
+        const names = (ids) =>
+          ids
+            .map((id) => {
+              const t = HM.TYPES[id];
+              return `<span class="mu-type"><span class="mv-dot" style="background:${t.color}"></span>${escapeHtml(t.name)}</span>`;
+            })
+            .join(' ');
+        return `
+          <div class="back-label">Tipos</div>
+          <div class="matchups">
+            <div><span class="mu-lbl">Forte contra</span>${names(strong)}</div>
+            <div><span class="mu-lbl">Fraco contra</span>${names(weak)}</div>
+          </div>`;
+      }
+
+      function backFace(sp, HM, golden) {
+        const t = typeOf(sp, HM);
+        const num = String(sp.dexNum || 0).padStart(3, '0');
+        const bs = sp.baseStats || { hp: 50, atk: 50, def: 50, spd: 50 };
+        const stat = (label, val) => {
+          const pct = Math.max(8, Math.min(100, Math.round((val / 110) * 100)));
+          return `<span class="lbl">${label}</span><span class="val">${val}</span><span class="stat-bar"><i style="width:${pct}%"></i></span>`;
+        };
+        const moves = pickSignatureMoves(sp, HM)
           .map((entry) => {
             const mv = HM.MOVES[entry.moveId];
             const mt = (HM.TYPES && HM.TYPES[mv.type]) || t;
-            const pwrText = mv.category === 'attack' ? `POD ${mv.power}` : 'STATUS';
-            const mvBg = mv.category === 'attack' ? mt.bg : '#e0f2fe';
-            const mvColor = mv.category === 'attack' ? mt.dark : '#075985';
-            return `
-              <div class="move-row">
-                <span class="move-left">
-                  <span>${mt.icon}</span>
-                  <span class="mv-name">${escapeHtml(mv.name)}</span>
-                </span>
-                <span class="move-right">
-                  <span>Nv.${entry.level}</span>
-                  <span class="move-pwr" style="--mv-bg:${mvBg};--mv-color:${mvColor};">${pwrText}</span>
-                </span>
-              </div>
-            `;
+            const pwr = mv.category === 'attack' ? mv.power : '—';
+            return `<li title="${escapeHtml(mv.desc || '')}"><span class="mv-dot" style="background:${mt.color}"></span><span class="mv-name">${escapeHtml(mv.name)}</span><span class="mv-lv">Nv.${entry.level}</span><span class="mv-pwr">${pwr}</span></li>`;
           })
           .join('');
-
         return `
-          <article class="tcard" style="--t-color:${t.color};--t-bg:${t.bg};--t-dark:${t.dark};">
-            <div class="tcard-inner">
-              <header class="tcard-head">
-                <div class="tcard-id-group">
-                  <span class="tcard-dex">#${num}</span>
-                  <div class="tcard-name-wrap">
-                    <h2 class="tcard-name">${escapeHtml(sp.name)}${golden ? '<span class="gold-chip">✨ Dourado</span>' : ''}</h2>
-                    <span class="tcard-title">${escapeHtml(sp.title || '')}</span>
-                  </div>
-                </div>
-                <span class="type-badge">${t.icon} ${escapeHtml(t.name)}</span>
-              </header>
-
-              <div class="tcard-art">
-                <span class="stage-pill">${escapeHtml(stageText)}</span>
-                <img src="${imgUrl}" alt="${escapeHtml(sp.name)}" />
+          <div class="face face-back">
+            <header class="back-head">
+              <span class="back-thumb"><img src="${spriteUrl(HM, sp.id, 72, false, golden)}" alt="" draggable="false" /></span>
+              <span class="back-names">
+                <h2 class="back-name">${escapeHtml(sp.name)}</h2>
+                <span class="back-title">${escapeHtml(sp.title || '')}</span>
+              </span>
+              <span class="back-num">#${num}</span>
+            </header>
+            <div class="back-body">
+              <div class="back-meta">${t.icon || ''} ${escapeHtml(t.name)} · ${escapeHtml(getStageLabel(sp, HM))}</div>
+              <div class="stat-list">
+                ${stat('HP', bs.hp)}${stat('ATK', bs.atk)}${stat('DEF', bs.def)}${stat('VEL', bs.spd)}
               </div>
-
-              <div class="tcard-stats">
-                ${statCol('HP', bs.hp, '#22c55e')}
-                ${statCol('ATK', bs.atk, '#ef4444')}
-                ${statCol('DEF', bs.def, '#f59e0b')}
-                ${statCol('VEL', bs.spd, '#0ea5e9')}
-              </div>
-
-              <div class="tcard-moves">${movesHtml}</div>
-
-              <p class="tcard-desc"><span>${escapeHtml(sp.desc || '')}</span></p>
+              <div class="back-label">Golpes</div>
+              <ul class="move-list">${moves}</ul>
+              ${matchupLine(sp, HM)}
+              ${golden ? '<div class="back-gold">✨ Você tem a versão Dourada</div>' : ''}
+              <p class="back-desc">${escapeHtml(sp.desc || '')}</p>
             </div>
-          </article>
-        `;
+          </div>`;
+      }
+
+      function lockedFront(sp, HM, seen) {
+        return `
+          <div class="face face-front">
+            <div class="front-window">
+              ${seen ? `<img src="${spriteUrl(HM, sp.id, 260, true)}" alt="Silhueta" draggable="false" />` : '<span class="locked-q">?</span>'}
+              <span class="flip-hint" aria-hidden="true">↻</span>
+            </div>
+          </div>`;
+      }
+
+      function lockedBack(sp, seen) {
+        const num = String(sp.dexNum || 0).padStart(3, '0');
+        return `
+          <div class="face face-back">
+            <header class="back-head">
+              <span class="back-names">
+                <h2 class="back-name">${seen ? escapeHtml(sp.name) : '???'}</h2>
+                <span class="back-title">${seen ? 'Já visto na natureza' : 'Ainda desconhecido'}</span>
+              </span>
+              <span class="back-num">#${num}</span>
+            </header>
+            <div class="back-body">
+              <p class="locked-msg">${seen ? 'Capture este HortaMon no jogo para liberar a carta.' : 'Procure na grama alta. Quem sabe ele aparece?'}</p>
+            </div>
+          </div>`;
+      }
+
+      function flipCard(sp, HM, opts) {
+        const o = opts || {};
+        const t = typeOf(sp, HM);
+        const label = o.locked ? (o.seen ? sp.name : 'Carta bloqueada') : sp.name;
+        const cls = ['tcard'];
+        if (o.locked) cls.push('locked');
+        if (o.golden) cls.push('golden');
+        // Carta nunca vista fica cinza (não entrega o tipo); vista mostra a cor do tipo
+        const style = o.locked && !o.seen ? '' : typeVars(t);
+        return `
+          <article class="${cls.join(' ')}" style="${style}" tabindex="0" role="button" aria-pressed="false" aria-label="${escapeHtml(label)} — toque para virar">
+            <div class="flip-inner">
+              ${o.locked ? lockedFront(sp, HM, o.seen) + lockedBack(sp, o.seen) : frontFace(sp, HM, o.golden) + backFace(sp, HM, o.golden)}
+            </div>
+          </article>`;
+      }
+
+      function printPair(sp, HM) {
+        const t = typeOf(sp, HM);
+        return `
+          <div class="print-pair">
+            <div class="tcard static" style="${typeVars(t)}">${frontFace(sp, HM, false)}</div>
+            <div class="tcard static" style="${typeVars(t)}">${backFace(sp, HM, false)}</div>
+          </div>`;
+      }
+
+      // ---------------- Interação ----------------
+      function toggle(card) {
+        const flipped = card.classList.toggle('flipped');
+        card.setAttribute('aria-pressed', flipped ? 'true' : 'false');
+      }
+
+      function bindCards(grid) {
+        grid.addEventListener('click', (ev) => {
+          const card = ev.target.closest('.tcard:not(.static)');
+          if (card) toggle(card);
+        });
+        grid.addEventListener('keydown', (ev) => {
+          if (ev.key !== 'Enter' && ev.key !== ' ') return;
+          const card = ev.target.closest('.tcard:not(.static)');
+          if (!card) return;
+          ev.preventDefault();
+          toggle(card);
+        });
+        grid.addEventListener('pointermove', (ev) => {
+          const card = ev.target.closest('.tcard');
+          if (!card || ev.pointerType !== 'mouse') return;
+          const r = card.getBoundingClientRect();
+          card.style.setProperty('--mx', `${Math.round(((ev.clientX - r.left) / r.width) * 100)}%`);
+          card.style.setProperty('--my', `${Math.round(((ev.clientY - r.top) / r.height) * 100)}%`);
+        });
       }
 
       function init() {
@@ -898,48 +1054,43 @@
         const filterPills = document.getElementById('filter-pills');
         const filterCount = document.getElementById('filter-count');
         const sheetPill = document.getElementById('sheet-pill');
-
         const total = HM.SPECIES_LIST.length;
-        const pages = Math.ceil(total / 8);
+
+        // Modo folha para imprimir: pares frente|verso
+        const pages = Math.ceil(total / PAIRS_PER_SHEET);
         const sheet = getSheetParam(pages);
         if (sheet) {
-          // Modo folha para impressão: mostra todas as cartas, 8 por página
           document.body.classList.add('sheet-mode', `sheet-${sheet}`);
-          if (sheet === pages && total % 8 !== 0) document.body.classList.add('sheet-last');
-          const start = (sheet - 1) * 8;
-          const end = Math.min(total, start + 8);
-          const pad = (n) => String(n).padStart(2, '0');
-          sheetPill.textContent = `Página ${sheet}/${pages} • #${pad(start + 1)}–#${pad(end)}`;
-          const slice = HM.SPECIES_LIST.slice(start, end);
-          grid.innerHTML = slice.map((sp) => renderCard(sp, HM)).join('');
+          const start = (sheet - 1) * PAIRS_PER_SHEET;
+          const end = Math.min(total, start + PAIRS_PER_SHEET);
+          const pad = (n) => String(n).padStart(3, '0');
+          sheetPill.textContent = `Folha ${sheet}/${pages} • #${pad(start + 1)}–#${pad(end)} • recorte, dobre e cole`;
+          grid.innerHTML = HM.SPECIES_LIST.slice(start, end).map((sp) => printPair(sp, HM)).join('');
           return;
         }
 
         const col = readCollection();
         const showAllBox = document.getElementById('show-all');
+        const flipAllBtn = document.getElementById('flip-all');
         const brandSub = document.getElementById('brand-sub');
         const caughtCount = HM.SPECIES_LIST.filter((sp) => col.caught[sp.id]).length;
         if (col.hasSave) {
           const pct = Math.round((caughtCount / total) * 100);
-          brandSub.innerHTML = `<span class="collect-bar">🃏 Sua coleção: ${caughtCount}/${total} cartas <span class="collect-track"><span class="collect-fill" style="display:block;width:${pct}%"></span></span></span>`;
+          brandSub.innerHTML = `<span class="collect-bar">Sua coleção: ${caughtCount}/${total} <span class="collect-track"><span class="collect-fill" style="width:${pct}%"></span></span></span>`;
         } else {
-          brandSub.textContent = `🃏 Álbum com ${total} cartas — jogue para desbloquear as suas!`;
-        }
-        if (showAllBox) {
-          showAllBox.checked = false;
-          showAllBox.addEventListener('change', () => renderCards());
+          brandSub.textContent = `${total} cartas para colecionar — jogue para liberar as suas`;
         }
 
         let activeType = 'all';
+        let allFlipped = false;
 
         function renderFilters() {
-          const allCount = HM.SPECIES_LIST.length;
           const btns = [
-            `<button type="button" class="filter-btn${activeType === 'all' ? ' active' : ''}" data-type="all" style="--f-bg:#fde047;--f-color:#2b1d14;">🌿 Todos (${allCount})</button>`
+            `<button type="button" class="filter-btn${activeType === 'all' ? ' active' : ''}" data-type="all" style="--f-bg:#fde047;--f-color:#2b1d14;">Todas (${total})</button>`
           ];
           (HM.TYPE_LIST || []).forEach((tid) => {
             const t = HM.TYPES[tid];
-            const count = HM.SPECIES_LIST.filter((s) => s.type === tid).length;
+            const count = HM.SPECIES_LIST.filter((sp) => sp.type === tid).length;
             btns.push(
               `<button type="button" class="filter-btn${activeType === tid ? ' active' : ''}" data-type="${escapeHtml(tid)}" style="--f-bg:${t.bg};--f-color:${t.dark};">${t.icon} ${escapeHtml(t.name)} (${count})</button>`
             );
@@ -955,23 +1106,37 @@
         }
 
         function renderCards() {
-          const list =
-            activeType === 'all'
-              ? HM.SPECIES_LIST
-              : HM.SPECIES_LIST.filter((sp) => sp.type === activeType);
+          const list = activeType === 'all' ? HM.SPECIES_LIST : HM.SPECIES_LIST.filter((sp) => sp.type === activeType);
           const showAll = !!(showAllBox && showAllBox.checked);
           const unlocked = list.filter((sp) => col.caught[sp.id]).length;
-          filterCount.textContent = showAll
-            ? `Exibindo ${list.length} cartas (modo galeria)`
-            : `Desbloqueadas: ${unlocked} de ${list.length}`;
+          filterCount.textContent = showAll ? `${list.length} cartas (modo galeria)` : `Liberadas: ${unlocked} de ${list.length}`;
           grid.innerHTML = list
             .map((sp) => {
-              if (showAll || col.caught[sp.id]) return renderCard(sp, HM, col.golden[sp.id]);
-              return renderLockedCard(sp, HM, !!col.seen[sp.id]);
+              const open = showAll || col.caught[sp.id];
+              return flipCard(sp, HM, {
+                locked: !open,
+                seen: !!col.seen[sp.id],
+                golden: open && !!col.golden[sp.id]
+              });
             })
             .join('');
+          if (allFlipped) grid.querySelectorAll('.tcard').forEach((c) => toggle(c));
         }
 
+        if (showAllBox) {
+          showAllBox.checked = false;
+          showAllBox.addEventListener('change', renderCards);
+        }
+        if (flipAllBtn) {
+          flipAllBtn.addEventListener('click', () => {
+            allFlipped = !allFlipped;
+            grid.querySelectorAll('.tcard').forEach((c) => {
+              if (c.classList.contains('flipped') !== allFlipped) toggle(c);
+            });
+          });
+        }
+
+        bindCards(grid);
         renderFilters();
         renderCards();
       }
