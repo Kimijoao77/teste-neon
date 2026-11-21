@@ -71,6 +71,13 @@ Manter sempre esta ordem de `<script defer>`:
 - **Beterraboss** ficou raro na natureza (peso 3, captura 0.15).
 - **Álbum de cartas giratórias** (`cartas.html`): `.tcard > .flip-inner > .face-front / .face-back`; a classe `.flipped` gira a carta (CSS 3D). Cartas nunca vistas ficam cinza; vistas mostram silhueta. Modo impressão `?sheet=N` mostra 4 pares frente|verso por folha.
 
+## 🎨 Versão 2.2 — tela inicial e menus
+
+- Tela inicial: `<canvas id="title-scene">` desenhado por `drawTitleScene()` em `main.js` (só roda enquanto a tela de título está ativa). Menu com `.menu-item`; Opções em `openOptionsModal()`.
+- Menu de pausa (`openMenuModal`) e Opções usam `.menu-list` / `.menu-row`.
+- Ícones SVG: `icon(nome)` em `main.js` (`team`, `bag`, `book`, `types`, `save`, `sound`, `mute`, `menu`); os da barra do mapa estão direto no `index.html`.
+- Fontes em `/fonts` com `@font-face` no topo do `style.css`: `--font-display` (Fredoka) e `--font-main` (Nunito).
+
 ## 💡 Ideias para Futuras Expansões
 
 - Terceira Arena e Liga dos Jardineiros.

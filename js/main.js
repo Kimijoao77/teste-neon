@@ -4,7 +4,6 @@
   const HM = (global.HortaMon = global.HortaMon || {});
 
   const STARTER_IDS = ['pimentico', 'melancito', 'brocolino'];
-  const SHOWCASE_IDS = ['pimentico', 'melancito', 'brocolino', 'bananinja', 'cogumim', 'cocoral', 'mandiocao'];
 
   const STATUS_META = {
     burn: { label: '🔥 Queimado', cls: 'status-burn' },
@@ -56,6 +55,36 @@
       // Ignora erros de áudio em navegadores restritivos
     }
     return undefined;
+  }
+
+  // Ícones desenhados em SVG (traço na cor do texto) — substituem os emojis dos botões
+  const ICON_PATHS = {
+    team: '<path d="M12 21c-4-2-7-5.5-7-10 3 0 5.5 1.5 7 4 1.5-2.5 4-4 7-4 0 4.5-3 8-7 10z"/><path d="M12 15V9"/><circle cx="12" cy="6" r="2.5"/>',
+    bag: '<path d="M6 8h12l1 12H5z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/><path d="M9 13h6"/>',
+    book: '<path d="M4 5.5C4 4.7 4.7 4 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5z"/><path d="M20 5.5c0-.8-.7-1.5-1.5-1.5H13v16h5.5c.8 0 1.5-.7 1.5-1.5z"/>',
+    types: '<circle cx="12" cy="12" r="8"/><path d="M12 4v4M12 16v4M4 12h4M16 12h4"/><circle cx="12" cy="12" r="2"/>',
+    save: '<path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7V4"/><rect x="8" y="13" width="8" height="5" rx="1"/>',
+    sound: '<path d="M4 10v4h4l5 4V6L8 10z"/><path d="M16.5 9a4 4 0 0 1 0 6"/><path d="M19 6.5a7.5 7.5 0 0 1 0 11"/>',
+    mute: '<path d="M4 10v4h4l5 4V6L8 10z"/><path d="M17 10l4 4M21 10l-4 4"/>',
+    menu: '<path d="M5 7h14M5 12h14M5 17h14"/>'
+  };
+
+  function icon(name) {
+    return `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">${ICON_PATHS[name] || ''}</svg>`;
+  }
+
+  function applyToolbarIcons() {
+    const set = (id, name, label) => {
+      const el = $(id);
+      if (el) el.innerHTML = label ? `${icon(name)}<span>${label}</span>` : icon(name);
+    };
+    set('btn-open-party', 'team', 'Time');
+    set('btn-open-bag', 'bag', 'Mochila');
+    set('btn-open-dex', 'book', 'BotaniDex');
+    set('btn-open-types', 'types', 'Tipos');
+    set('btn-save-game', 'save', 'Salvar');
+    set('btn-open-menu', 'menu', 'Menu');
+    set('btn-battle-types', 'types', 'Tipos');
   }
 
   function spriteUrl(speciesId, size, silhouette, golden) {
@@ -238,11 +267,13 @@
 
   function syncSoundButtons() {
     const muted = !!(HM.Audio && HM.Audio.muted);
-    const icon = muted ? '🔇' : '🔊';
-    if (dom.btnToggleSound) dom.btnToggleSound.textContent = icon;
-    if (dom.btnBattleSound) dom.btnBattleSound.textContent = icon;
-    if (dom.btnTitleSound) {
-      dom.btnTitleSound.textContent = muted ? '🔇 Som: Mudo' : '🔊 Som: Ligado';
+    const svg = icon(muted ? 'mute' : 'sound');
+    if (dom.btnToggleSound) dom.btnToggleSound.innerHTML = svg;
+    if (dom.btnBattleSound) dom.btnBattleSound.innerHTML = svg;
+    const pill = $('opt-sound-state');
+    if (pill) {
+      pill.textContent = muted ? 'Desligado' : 'Ligado';
+      pill.classList.toggle('off', muted);
     }
   }
 
@@ -278,53 +309,297 @@
 
   function renderTitleScreen() {
     const countPill = $('title-count-pill');
-    if (countPill) countPill.textContent = `📖 ${(HM.SPECIES_LIST || []).length} HortaMons Originais`;
-    if (dom.titleShowcase) {
-      dom.titleShowcase.innerHTML = SHOWCASE_IDS.map((id) => {
-        const sp = HM.SPECIES && HM.SPECIES[id];
-        const url = spriteUrl(id, 96, false);
-        const name = sp ? sp.name : id;
-        return `<div class="showcase-mon" title="${escapeHtml(name)}"><img src="${url}" alt="${escapeHtml(name)}" /></div>`;
-      }).join('');
-    }
+    if (countPill) countPill.textContent = `${(HM.SPECIES_LIST || []).length} HortaMons para descobrir`;
+    startTitleScene();
 
     const saveExists = typeof HM.hasSave === 'function' && HM.hasSave();
-    if (saveExists) {
-      const saved = ensureStateShape(typeof HM.loadGame === 'function' ? HM.loadGame() : null);
-      if (saved && saved.party && saved.party.length > 0) {
-        dom.btnContinue.classList.remove('hidden');
-        dom.btnNewGame.textContent = '🌱 Novo Jogo';
-        const dex = countDex(saved);
-        const zoneObj =
-          HM.WORLD && HM.WORLD.zones && HM.WORLD.zones[saved.zone]
-            ? HM.WORLD.zones[saved.zone]
-            : { name: 'Vila da Horta' };
-        const partyImgs = saved.party
-          .slice(0, 6)
-          .map((c) => {
-            const sp = HM.SPECIES && HM.SPECIES[c.speciesId];
-            return `<img src="${spriteUrl(c.speciesId, 56, false, c.golden)}" alt="${escapeHtml(sp ? sp.name : c.speciesId)}" title="${escapeHtml(getCreatureName(c))} Nv.${c.level}" />`;
-          })
-          .join('');
-        dom.titleSavePreview.innerHTML = `
-          <div class="save-preview-info">
-            <strong>💾 Aventura Salva — ${escapeHtml(zoneObj.name)}</strong>
-            <div class="save-preview-meta">
-              <span>🪙 ${saved.coins} moedas</span>
-              <span>🏅 ${(saved.badges || []).length} insígnia(s)</span>
-              <span>📖 ${dex.caught}/${dex.total} capturados</span>
-            </div>
-          </div>
-          <div class="save-preview-party">${partyImgs}</div>
-        `;
-        dom.titleSavePreview.classList.remove('hidden');
+    const saved = saveExists ? ensureStateShape(typeof HM.loadGame === 'function' ? HM.loadGame() : null) : null;
+    if (saved && saved.party && saved.party.length > 0) {
+      const dex = countDex(saved);
+      const zoneObj =
+        HM.WORLD && HM.WORLD.zones && HM.WORLD.zones[saved.zone] ? HM.WORLD.zones[saved.zone] : { name: 'Vila da Horta' };
+      const zoneName = zoneObj.name.split(' — ')[0];
+      const badges = (saved.badges || []).length;
+      const partyImgs = saved.party
+        .slice(0, 3)
+        .map((c) => `<img src="${spriteUrl(c.speciesId, 52, false, c.golden)}" alt="" />`)
+        .join('');
+      dom.titleSavePreview.innerHTML = `${partyImgs}<span>${escapeHtml(zoneName)} · ${badges} ${badges === 1 ? 'insígnia' : 'insígnias'} · ${dex.caught}/${dex.total}</span>`;
+      dom.titleSavePreview.classList.remove('hidden');
+      dom.btnContinue.classList.remove('hidden');
+    } else {
+      dom.btnContinue.classList.add('hidden');
+      dom.titleSavePreview.classList.add('hidden');
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Cenário animado da tela inicial: jardim com HortaMons passeando
+  // ---------------------------------------------------------------------------
+  const titleScene = {
+    running: false,
+    raf: 0,
+    clouds: [
+      { x: 0.12, y: 0.14, s: 1.1, v: 0.006 },
+      { x: 0.55, y: 0.08, s: 0.8, v: 0.004 },
+      { x: 0.86, y: 0.2, s: 1.3, v: 0.007 }
+    ],
+    // x em fração da largura, d = profundidade (0 fundo, 1 frente), walk = velocidade
+    mons: [
+      { id: 'brocolino', x: 0.16, d: 0.55, walk: 0 },
+      { id: 'pimentico', x: 0.3, d: 0.9, walk: 0.012 },
+      { id: 'melancito', x: 0.78, d: 0.75, walk: 0 },
+      { id: 'cenourito', x: 0.62, d: 0.35, walk: -0.009 },
+      { id: 'cogumim', x: 0.9, d: 0.95, walk: 0 },
+      { id: 'limoninho', x: 0.45, d: 0.2, walk: 0.007 },
+      { id: 'bananinja', x: 0.05, d: 0.25, walk: 0 }
+    ]
+  };
+
+  function startTitleScene() {
+    const canvas = $('title-scene');
+    if (!canvas || titleScene.running) return;
+    titleScene.running = true;
+    let last = performance.now();
+    const loop = (now) => {
+      if (ui.screen !== 'title' || !titleScene.running) {
+        titleScene.running = false;
         return;
       }
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+      drawTitleScene(canvas, now, dt);
+      titleScene.raf = requestAnimationFrame(loop);
+    };
+    titleScene.raf = requestAnimationFrame(loop);
+  }
+
+  function drawTitleScene(canvas, now, dt) {
+    const dpr = Math.min(2, global.devicePixelRatio || 1);
+    const W = global.innerWidth;
+    const H = global.innerHeight;
+    if (canvas.width !== Math.round(W * dpr) || canvas.height !== Math.round(H * dpr)) {
+      canvas.width = Math.round(W * dpr);
+      canvas.height = Math.round(H * dpr);
+    }
+    const c = canvas.getContext('2d');
+    c.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const t = now / 1000;
+    const horizon = H * 0.62;
+
+    // Céu
+    const sky = c.createLinearGradient(0, 0, 0, horizon);
+    sky.addColorStop(0, '#7cc8f2');
+    sky.addColorStop(1, '#d9f4dd');
+    c.fillStyle = sky;
+    c.fillRect(0, 0, W, H);
+
+    // Sol
+    const sx = W * 0.84;
+    const sy = H * 0.15;
+    const glow = c.createRadialGradient(sx, sy, 10, sx, sy, 110);
+    glow.addColorStop(0, 'rgba(254, 240, 138, 0.9)');
+    glow.addColorStop(1, 'rgba(254, 240, 138, 0)');
+    c.fillStyle = glow;
+    c.fillRect(sx - 110, sy - 110, 220, 220);
+    c.fillStyle = '#fde047';
+    c.strokeStyle = '#2b1d14';
+    c.lineWidth = 3;
+    c.beginPath();
+    c.arc(sx, sy, 34, 0, Math.PI * 2);
+    c.fill();
+    c.stroke();
+
+    // Nuvens
+    titleScene.clouds.forEach((cl) => {
+      cl.x += cl.v * dt;
+      if (cl.x > 1.2) cl.x = -0.2;
+      drawTitleCloud(c, cl.x * W, cl.y * H, cl.s * Math.max(0.7, W / 1400));
+    });
+
+    // Colinas
+    const hill = (yTop, color, amp, phase) => {
+      c.fillStyle = color;
+      c.strokeStyle = '#2b1d14';
+      c.lineWidth = 3;
+      c.beginPath();
+      c.moveTo(-10, H);
+      c.lineTo(-10, yTop);
+      for (let x = 0; x <= W + 20; x += 20) {
+        c.lineTo(x, yTop - Math.sin(x / (W * 0.22) + phase) * amp - Math.sin(x / (W * 0.09) + phase * 2) * amp * 0.25);
+      }
+      c.lineTo(W + 10, H);
+      c.closePath();
+      c.fill();
+      c.stroke();
+    };
+    hill(horizon - H * 0.12, '#a7e08a', H * 0.05, 0.6);
+    hill(horizon - H * 0.03, '#86d26a', H * 0.035, 2.1);
+
+    // Árvores no horizonte
+    [0.07, 0.24, 0.69, 0.95].forEach((fx, k) => drawTitleTree(c, fx * W, horizon - H * 0.03, 26 + k * 3, t + k));
+
+    // Campo
+    const field = c.createLinearGradient(0, horizon, 0, H);
+    field.addColorStop(0, '#79c94f');
+    field.addColorStop(1, '#5aae3b');
+    c.fillStyle = field;
+    c.fillRect(0, horizon, W, H - horizon);
+    c.strokeStyle = '#2b1d14';
+    c.lineWidth = 3;
+    c.beginPath();
+    c.moveTo(0, horizon);
+    c.lineTo(W, horizon);
+    c.stroke();
+
+    // Cerquinha
+    c.fillStyle = '#c98f55';
+    c.lineWidth = 2.5;
+    const fenceY = horizon + 6;
+    for (let x = 12; x < W; x += 46) {
+      c.beginPath();
+      c.rect(x, fenceY - 26, 10, 30);
+      c.fill();
+      c.stroke();
+    }
+    c.beginPath();
+    c.rect(0, fenceY - 18, W, 7);
+    c.fill();
+    c.stroke();
+
+    // HortaMons (do fundo para a frente)
+    if (HM.Sprites && typeof HM.Sprites.drawCreature === 'function') {
+      const base = W > H ? Math.min(W, H * 1.6) : W * 1.55;
+      titleScene.mons
+        .slice()
+        .sort((a, b) => a.d - b.d)
+        .forEach((m, k) => {
+          if (m.walk) {
+            m.x += m.walk * dt;
+            if (m.x > 1.1) m.x = -0.1;
+            if (m.x < -0.1) m.x = 1.1;
+          }
+          const y = horizon + 26 + m.d * (H - horizon - 70);
+          const size = base * (0.085 + m.d * 0.07);
+          const hop = m.walk ? Math.abs(Math.sin(t * 6 + k)) * size * 0.08 : 0;
+          HM.Sprites.drawCreature(c, m.id, m.x * W, y - size * 0.35 - hop, size, {
+            time: now + k * 700,
+            facing: m.walk < 0 ? 'left' : 'right',
+            shadow: true
+          });
+        });
     }
 
-    dom.btnContinue.classList.add('hidden');
-    dom.titleSavePreview.classList.add('hidden');
-    dom.btnNewGame.textContent = '🌱 Começar Aventura';
+    // Tufos de grama na frente
+    c.strokeStyle = '#2f7d24';
+    c.lineWidth = 2.5;
+    c.lineCap = 'round';
+    for (let x = 20; x < W; x += 64) {
+      const gy = H - 14 - ((x * 7) % 30);
+      const sway = Math.sin(t * 2 + x) * 3;
+      c.beginPath();
+      c.moveTo(x, gy);
+      c.quadraticCurveTo(x - 4, gy - 10, x - 7 + sway, gy - 16);
+      c.moveTo(x, gy);
+      c.quadraticCurveTo(x + 1, gy - 12, x + sway, gy - 20);
+      c.moveTo(x, gy);
+      c.quadraticCurveTo(x + 5, gy - 9, x + 9 + sway, gy - 14);
+      c.stroke();
+    }
+  }
+
+  function drawTitleCloud(c, x, y, s) {
+    const shapes = (ctx) => {
+      ctx.beginPath();
+      ctx.arc(-26, 6, 18, 0, Math.PI * 2);
+      ctx.moveTo(26, -4);
+      ctx.arc(0, -4, 26, 0, Math.PI * 2);
+      ctx.moveTo(46, 6);
+      ctx.arc(28, 6, 18, 0, Math.PI * 2);
+      ctx.moveTo(-40, 10);
+      ctx.roundRect ? ctx.roundRect(-44, 4, 90, 20, 10) : ctx.rect(-44, 4, 90, 20);
+    };
+    c.save();
+    c.translate(x, y);
+    c.scale(s, s);
+    // 1) contorno grosso de todas as formas; 2) preenchimento por cima esconde os traços internos
+    c.strokeStyle = '#2b1d14';
+    c.lineWidth = 6;
+    c.lineJoin = 'round';
+    shapes(c);
+    c.stroke();
+    c.fillStyle = '#ffffff';
+    shapes(c);
+    c.fill();
+    c.restore();
+  }
+
+  function drawTitleTree(c, x, y, r, t) {
+    const sway = Math.sin(t * 0.8) * 1.5;
+    c.save();
+    c.strokeStyle = '#2b1d14';
+    c.lineWidth = 2.5;
+    c.fillStyle = '#8b5a2b';
+    c.beginPath();
+    c.rect(x - 5, y - r * 0.9, 10, r * 0.9);
+    c.fill();
+    c.stroke();
+    c.fillStyle = '#2f9e44';
+    c.beginPath();
+    c.arc(x - r * 0.55 + sway, y - r * 1.05, r * 0.62, 0, Math.PI * 2);
+    c.arc(x + r * 0.55 + sway, y - r * 1.05, r * 0.62, 0, Math.PI * 2);
+    c.arc(x + sway, y - r * 1.55, r * 0.72, 0, Math.PI * 2);
+    c.fill();
+    c.stroke();
+    c.fillStyle = '#f87171';
+    [[-0.5, -1.1], [0.35, -1.5], [0.6, -0.95]].forEach((p) => {
+      c.beginPath();
+      c.arc(x + p[0] * r + sway, y + p[1] * r, 3.2, 0, Math.PI * 2);
+      c.fill();
+    });
+    c.restore();
+  }
+
+  // Setas do teclado navegam pelo menu da tela inicial
+  function handleTitleMenuKeys(ev) {
+    if (ui.screen !== 'title' || ui.modal) return;
+    if (ev.key !== 'ArrowDown' && ev.key !== 'ArrowUp') return;
+    const items = Array.from(document.querySelectorAll('.title-menu .menu-item')).filter(
+      (el) => !el.classList.contains('hidden')
+    );
+    if (items.length === 0) return;
+    ev.preventDefault();
+    const idx = items.indexOf(document.activeElement);
+    const next = ev.key === 'ArrowDown' ? (idx + 1) % items.length : (idx - 1 + items.length) % items.length;
+    items[idx < 0 ? 0 : next].focus();
+    audio('playSelect');
+  }
+
+  function openOptionsModal() {
+    audio('playSelect');
+    const muted = !!(HM.Audio && HM.Audio.muted);
+    openModal({ kind: 'options', title: 'Opções', sizeClass: 'modal-narrow' });
+    dom.modalBody.innerHTML = `
+      <div class="menu-list">
+        <button type="button" class="menu-row" id="opt-sound">Som <span id="opt-sound-state" class="toggle-pill${muted ? ' off' : ''}">${muted ? 'Desligado' : 'Ligado'}</span></button>
+        <button type="button" class="menu-row" id="opt-help">Como jogar</button>
+        <button type="button" class="menu-row" id="opt-types">Tabela de tipos</button>
+        <button type="button" class="menu-row" id="opt-import">Importar save <small>arquivo .json</small></button>
+      </div>
+    `;
+    $('opt-sound').addEventListener('click', () => toggleSound());
+    $('opt-help').addEventListener('click', () => {
+      closeModal(true);
+      openHelpModal();
+    });
+    $('opt-types').addEventListener('click', () => {
+      closeModal(true);
+      openTypesModal();
+    });
+    $('opt-import').addEventListener('click', () => {
+      closeModal(true);
+      askImportSave();
+    });
   }
 
   function handleContinueGame() {
@@ -347,9 +622,9 @@
     const saveExists = typeof HM.hasSave === 'function' && HM.hasSave();
     if (saveExists) {
       openConfirmModal({
-        title: '🌱 Começar Novo Jogo?',
-        message: 'Você já possui uma aventura salva. Iniciar um novo jogo substituirá o progresso anterior assim que escolher seu novo inicial.',
-        confirmLabel: 'Sim, Novo Jogo',
+        title: 'Começar do zero?',
+        message: 'Você já tem uma aventura salva. Se escolher um inicial novo, o progresso antigo será apagado.',
+        confirmLabel: 'Começar do zero',
         confirmClass: 'btn-sun',
         onConfirm: () => openStarterScreen()
       });
@@ -411,7 +686,7 @@
           </div>
           <div class="starter-adv">Forte contra: ${escapeHtml(strongAgainst || 'Equilibrado')}</div>
           <button type="button" class="btn btn-primary btn-sm" data-choose-starter="${escapeHtml(id)}">
-            ${t.icon} Escolher ${escapeHtml(sp.name)}!
+            Escolher ${escapeHtml(sp.name)}
           </button>
         </article>
       `;
@@ -1492,8 +1767,7 @@
     ui.renaming = false;
     openModal({
       kind: 'party',
-      title: '🌿 Seu Time de HortaMons',
-      subtitle: 'Escolha o líder, dê apelidos, confira golpes e use itens de cura.',
+      title: 'Time',
       sizeClass: 'modal-wide'
     });
     renderPartyModalBody();
@@ -1792,8 +2066,7 @@
     ui.pendingBagItem = null;
     openModal({
       kind: 'bag',
-      title: '🎒 Mochila do Jardineiro',
-      subtitle: 'Use regadores e adubo no seu time ou leve vasos para capturar HortaMons selvagens.'
+      title: 'Mochila'
     });
     renderBagModalBody();
   }
@@ -1902,8 +2175,7 @@
     audio('playSelect');
     openModal({
       kind: 'shop',
-      title: '🛒 Loja do Seu Bento',
-      subtitle: 'Suprimentos frescos de jardim para capturar e cuidar dos seus HortaMons!'
+      title: 'Loja'
     });
     renderShopModalBody();
   }
@@ -1980,8 +2252,8 @@
     audio('playSelect');
     openModal({
       kind: 'box',
-      title: '📦 Caixa da Estufa',
-      subtitle: 'Organize seu Time (mínimo 1, máximo 6) e o Depósito climatizado.',
+      title: 'Caixa da Estufa',
+      subtitle: 'Time: de 1 a 6 HortaMons. O resto fica guardado aqui.',
       sizeClass: 'modal-wide'
     });
     renderBoxModalBody();
@@ -2105,8 +2377,8 @@
     }
     openModal({
       kind: 'dex',
-      title: '📖 BotaniDex Oficial',
-      subtitle: `Catálogo completo da Vila da Horta — ${dex.caught}/${dex.total} capturados • ${dex.seen}/${dex.total} vistos`,
+      title: 'BotaniDex',
+      subtitle: `${dex.caught} capturados · ${dex.seen} vistos · ${dex.total} no total`,
       sizeClass: 'modal-wide'
     });
     renderDexModalBody();
@@ -2293,8 +2565,8 @@
     audio('playSelect');
     openModal({
       kind: 'types',
-      title: '⚖️ Tabela de Tipos Botânicos',
-      subtitle: 'Ciclo: 🌶️ Picante → 🍄 Fungo → 🥦 Folha → 🥕 Raiz → 🍉 Fresco → 🍋 Cítrico → 🌶️. Cada tipo vence os 2 seguintes (SUPER 2×) e causa pouco dano nos 2 anteriores (POUCO 0.5×).',
+      title: 'Tabela de tipos',
+      subtitle: 'Picante → Fungo → Folha → Raiz → Fresco → Cítrico → Picante. Cada tipo vence os 2 seguintes (2×) e causa pouco dano nos 2 anteriores (½×).',
       sizeClass: 'modal-wide'
     });
 
@@ -2361,14 +2633,13 @@
     audio('playSelect');
     openModal({
       kind: 'help',
-      title: '❓ Como Jogar HortaMon',
-      subtitle: 'Dicas rápidas para dominar a Aventura Botânica!'
+      title: 'Como jogar'
     });
 
     dom.modalBody.innerHTML = `
       <div class="help-grid">
         <div class="help-box">
-          <h4>🚶 Exploração</h4>
+          <h4>Exploração</h4>
           <ul>
             <li>Use <strong>WASD</strong>, <strong>Setas</strong> ou o <strong>D-Pad</strong> na tela para caminhar.</li>
             <li>Pressione <strong>Espaço / Enter</strong> ou clique em NPCs e placas para conversar.</li>
@@ -2377,7 +2648,7 @@
           </ul>
         </div>
         <div class="help-box">
-          <h4>⚔️ Batalha & Captura</h4>
+          <h4>Batalha & Captura</h4>
           <ul>
             <li>Observe os selos automáticos <strong>SUPER 2×</strong> e <strong>POUCO 0.5×</strong> nos golpes!</li>
             <li>Enfraqueça HortaMons selvagens e use um <strong>Vaso de Captura</strong> na Mochila para capturá-los.</li>
@@ -2387,7 +2658,7 @@
           </ul>
         </div>
         <div class="help-box">
-          <h4>🏡 Locais da Vila da Horta</h4>
+          <h4>Locais da Vila da Horta</h4>
           <ul>
             <li><strong>Estufa de Cura (Enf. Rosa):</strong> cura 100% do time de graça!</li>
             <li><strong>Loja do Seu Bento:</strong> compre Vasos, Regadores e Adubo Vital.</li>
@@ -2396,7 +2667,7 @@
           </ul>
         </div>
         <div class="help-box">
-          <h4>🌴 Depois da 1ª Insígnia</h4>
+          <h4>Depois da 1ª Insígnia</h4>
           <ul>
             <li>O <strong>Guarda Tom</strong> libera a passagem a Leste da Rota 1.</li>
             <li><strong>Pomar Tropical:</strong> Posto do Pomar com cura e loja.</li>
@@ -2404,7 +2675,7 @@
           </ul>
         </div>
         <div class="help-box">
-          <h4>💾 Save e Álbum</h4>
+          <h4>Save e Álbum</h4>
           <ul>
             <li>Use <strong>Menu → Exportar Save</strong> para levar seu progresso para outro PC ou celular.</li>
             <li>No <strong>Time</strong>, toque em ✏️ para dar apelidos.</li>
@@ -2418,25 +2689,39 @@
   function openMenuModal() {
     audio('playSelect');
     const muted = !!(HM.Audio && HM.Audio.muted);
-    openModal({
-      kind: 'menu',
-      title: '🏠 Menu do Jardineiro',
-      subtitle: 'Gerencie sua aventura, som e progresso salvo.',
-      sizeClass: 'modal-narrow'
-    });
+    const st = ui.state;
+    const dex = countDex(st);
+    const zone = st && HM.WORLD && HM.WORLD.zones && HM.WORLD.zones[st.zone];
+    openModal({ kind: 'menu', title: 'Menu', sizeClass: 'modal-narrow' });
 
     dom.modalBody.innerHTML = `
-      <div class="menu-actions-stack">
-        <button type="button" id="menu-save-btn" class="btn btn-primary">💾 Salvar Progresso Agora</button>
-        <button type="button" id="menu-sound-btn" class="btn btn-cream">${muted ? '🔇 Som: Desligado (Ligar)' : '🔊 Som: Ligado (Desligar)'}</button>
-        <button type="button" id="menu-help-btn" class="btn btn-sky">❓ Como Jogar</button>
-        <a id="menu-cards-btn" class="btn btn-cream" href="cartas.html">🃏 Álbum de Cartas</a>
-        <button type="button" id="menu-export-btn" class="btn btn-cream">📤 Exportar Save (arquivo)</button>
-        <button type="button" id="menu-import-btn" class="btn btn-cream">📥 Importar Save (arquivo)</button>
-        <button type="button" id="menu-title-btn" class="btn btn-sun">🏡 Voltar à Tela Inicial</button>
-        <button type="button" id="menu-reset-btn" class="btn btn-danger">🗑️ Apagar Save e Recomeçar</button>
+      ${
+        st
+          ? `<div class="pause-summary">
+              <span><b>${escapeHtml(zone ? zone.name.split(' — ')[0] : 'Vila da Horta')}</b></span>
+              <span><b>${(st.badges || []).length}</b> ${(st.badges || []).length === 1 ? 'insígnia' : 'insígnias'}</span>
+              <span><b>${dex.caught}/${dex.total}</b> capturados</span>
+              <span><b>${st.coins || 0}</b> moedas</span>
+            </div>`
+          : ''
+      }
+      <div class="menu-list">
+        <button type="button" id="menu-resume-btn" class="menu-row">Continuar jogando</button>
+        <button type="button" id="menu-save-btn" class="menu-row">Salvar agora</button>
+        <button type="button" id="menu-sound-btn" class="menu-row">Som <span id="opt-sound-state" class="toggle-pill${muted ? ' off' : ''}">${muted ? 'Desligado' : 'Ligado'}</span></button>
+        <button type="button" id="menu-help-btn" class="menu-row">Como jogar</button>
+        <a id="menu-cards-btn" class="menu-row" href="cartas.html">Álbum de cartas</a>
+        <button type="button" id="menu-export-btn" class="menu-row">Exportar save <small>arquivo .json</small></button>
+        <button type="button" id="menu-import-btn" class="menu-row">Importar save <small>arquivo .json</small></button>
+        <button type="button" id="menu-title-btn" class="menu-row">Tela inicial</button>
+      </div>
+      <div class="menu-gap"></div>
+      <div class="menu-list">
+        <button type="button" id="menu-reset-btn" class="menu-row danger">Apagar save e recomeçar</button>
       </div>
     `;
+
+    $('menu-resume-btn').addEventListener('click', () => closeModal());
 
     $('menu-save-btn').addEventListener('click', () => {
       if (ui.state && typeof HM.saveGame === 'function') {
@@ -2447,11 +2732,7 @@
       closeModal(true);
     });
 
-    $('menu-sound-btn').addEventListener('click', () => {
-      toggleSound();
-      const nowMuted = !!(HM.Audio && HM.Audio.muted);
-      $('menu-sound-btn').textContent = nowMuted ? '🔇 Som: Desligado (Ligar)' : '🔊 Som: Ligado (Desligar)';
-    });
+    $('menu-sound-btn').addEventListener('click', () => toggleSound());
 
     $('menu-help-btn').addEventListener('click', () => {
       closeModal(true);
@@ -2483,7 +2764,7 @@
     $('menu-reset-btn').addEventListener('click', () => {
       closeModal(true);
       openConfirmModal({
-        title: '🗑️ Apagar Progresso Salvo?',
+        title: 'Apagar o save?',
         message: 'Tem certeza que deseja apagar permanentemente o save atual e começar do zero?',
         confirmLabel: 'Sim, apagar tudo',
         confirmClass: 'btn-danger',
@@ -2531,7 +2812,7 @@
       return;
     }
     openConfirmModal({
-      title: '📥 Importar Save?',
+      title: 'Importar save?',
       message: 'O progresso salvo neste navegador será substituído pelo do arquivo. Quer continuar?',
       confirmLabel: 'Sim, escolher arquivo',
       confirmClass: 'btn-primary',
@@ -2608,11 +2889,9 @@
     // Tela Inicial
     dom.btnContinue.addEventListener('click', handleContinueGame);
     dom.btnNewGame.addEventListener('click', handleNewGameClick);
-    dom.btnTitleTypes.addEventListener('click', openTypesModal);
-    dom.btnTitleHelp.addEventListener('click', openHelpModal);
-    const importBtn = $('btn-title-import');
-    if (importBtn) importBtn.addEventListener('click', () => askImportSave());
-    dom.btnTitleSound.addEventListener('click', toggleSound);
+    const optionsBtn = $('btn-title-options');
+    if (optionsBtn) optionsBtn.addEventListener('click', openOptionsModal);
+    global.addEventListener('keydown', handleTitleMenuKeys);
 
     // Tela de Inicial
     dom.btnStarterBack.addEventListener('click', () => {
@@ -2777,9 +3056,6 @@
     dom.titleSavePreview = $('title-save-preview');
     dom.btnContinue = $('btn-continue');
     dom.btnNewGame = $('btn-new-game');
-    dom.btnTitleTypes = $('btn-title-types');
-    dom.btnTitleHelp = $('btn-title-help');
-    dom.btnTitleSound = $('btn-title-sound');
 
     dom.profAvatarCanvas = $('prof-avatar-canvas');
     dom.starterGrid = $('starter-grid');
@@ -2869,6 +3145,7 @@
 
   function init() {
     cacheDom();
+    applyToolbarIcons();
     bindGlobalEvents();
     bindDpad();
     syncSoundButtons();

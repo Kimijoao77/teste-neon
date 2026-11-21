@@ -1,3 +1,20 @@
+/* Fontes embutidas (licença OFL, arquivos em /fonts) — funcionam sem internet */
+@font-face {
+  font-family: 'Fredoka';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 300 700;
+  src: url('../fonts/fredoka-latin-wght-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Nunito';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 1000;
+  src: url('../fonts/nunito-latin-wght-normal.woff2') format('woff2');
+}
+
 /* ==========================================================================
    HortaMon — Aventura Botânica
    Tema Cartoon Colorido de Jardim (100% offline-friendly)
@@ -35,7 +52,8 @@
   --shadow-cartoon-sm: 0 3px 0 var(--ink);
   --shadow-cartoon-lg: 0 6px 0 var(--ink);
 
-  --font-main: 'Fredoka', 'Nunito', 'Quicksand', 'Trebuchet MS', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-main: 'Nunito', 'Trebuchet MS', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-display: 'Fredoka', 'Nunito', 'Trebuchet MS', 'Segoe UI', system-ui, sans-serif;
 }
 
 *,
@@ -338,58 +356,47 @@ body::before {
 }
 
 /* ==========================================================================
-   TELA 1: TÍTULO
+   TELA 1: TÍTULO — cenário vivo ao fundo + menu de jogo
    ========================================================================== */
 
 .screen-title {
-  justify-content: center;
-}
-
-.title-card {
   position: relative;
-  width: 100%;
-  max-width: 780px;
-  padding: 24px 28px 22px;
-  text-align: center;
-  background:
-    radial-gradient(circle at 50% 0%, #fffbe6 0%, #fffdf5 65%),
-    var(--cream);
-  box-shadow: var(--shadow-cartoon-lg);
-  overflow: hidden;
-}
-
-.title-sun-deco {
-  position: absolute;
-  top: 10px;
-  right: 16px;
-  font-size: 2.3rem;
-  animation: gentleSpin 14s linear infinite;
-  opacity: 0.9;
-}
-
-@keyframes gentleSpin {
-  0% { transform: rotate(0deg) scale(1); }
-  50% { transform: rotate(180deg) scale(1.08); }
-  100% { transform: rotate(360deg) scale(1); }
-}
-
-.title-badge-row {
-  display: flex;
+  min-height: calc(100vh - 16px);
+  min-height: calc(100dvh - 16px);
   justify-content: center;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 8px;
+}
+
+.title-scene {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  display: block;
+}
+
+.title-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(14px, 4vh, 34px);
+  margin-bottom: 18vh;
+}
+
+.title-hero {
+  text-align: center;
 }
 
 .game-logo {
   margin: 0;
-  font-size: clamp(2.8rem, 6vw, 4.1rem);
-  line-height: 1;
-  font-weight: 900;
-  letter-spacing: -0.02em;
-  -webkit-text-stroke: 3px var(--ink);
+  font-family: var(--font-display);
+  font-size: clamp(3.2rem, 9vw, 6rem);
+  line-height: 0.95;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  -webkit-text-stroke: 5px var(--ink);
   paint-order: stroke fill;
-  filter: drop-shadow(0 5px 0 var(--ink));
+  filter: drop-shadow(0 6px 0 var(--ink));
 }
 
 .logo-horta {
@@ -401,126 +408,226 @@ body::before {
 }
 
 .game-subtitle {
-  margin: 6px 0 8px;
-  font-size: 1.18rem;
-  font-weight: 900;
-  color: var(--wood);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.game-tagline {
-  margin: 0 auto 14px;
-  max-width: 580px;
-  font-size: 0.95rem;
-  line-height: 1.45;
-  color: var(--ink-soft);
+  display: inline-block;
+  margin: 10px 0 0;
+  padding: 3px 14px;
+  font-family: var(--font-display);
+  font-size: clamp(0.95rem, 2.2vw, 1.2rem);
   font-weight: 600;
+  color: var(--cream);
+  background: var(--wood);
+  border: 3px solid var(--ink);
+  border-radius: 10px;
+  letter-spacing: 0.04em;
 }
 
-.title-showcase {
+.title-menu {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin: 0 auto 16px;
-  padding: 10px 14px;
-  background: linear-gradient(180deg, #ecfdf5 0%, #dcfce7 100%);
-  border: 2.5px solid var(--ink);
-  border-radius: 16px;
+  flex-direction: column;
+  gap: 9px;
+  width: min(300px, 82vw);
 }
 
-.showcase-mon {
-  width: 68px;
-  height: 68px;
+.menu-item {
+  position: relative;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
+  gap: 2px;
+  width: 100%;
+  padding: 10px 16px;
+  font-family: var(--font-display);
+  font-size: 1.12rem;
+  font-weight: 600;
+  color: var(--ink);
+  text-decoration: none;
   background: var(--cream);
+  border: 3px solid var(--ink);
+  border-radius: 14px;
+  box-shadow: 0 4px 0 var(--ink);
+  cursor: pointer;
+  transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.12s ease;
+}
+
+.menu-item::before {
+  content: '';
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  border-style: solid;
+  border-width: 7px 0 7px 10px;
+  border-color: transparent transparent transparent var(--ink);
+  transform: translateY(-50%) scale(0);
+  transition: transform 0.12s ease;
+}
+
+.menu-item:hover,
+.menu-item:focus-visible {
+  background: #fff7d6;
+  outline: none;
+}
+
+.menu-item:hover::before,
+.menu-item:focus-visible::before {
+  transform: translateY(-50%) scale(1);
+}
+
+.menu-item:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 var(--ink);
+}
+
+.menu-item-main {
+  background: #4ade80;
+}
+
+.menu-item-main:hover,
+.menu-item-main:focus-visible {
+  background: #6ee7a0;
+}
+
+.mi-sub {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-main);
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #14532d;
+}
+
+.mi-sub img {
+  width: 26px;
+  height: 26px;
+  margin: -4px -3px;
+}
+
+.title-footer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 14px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: rgba(20, 40, 20, 0.65);
+  pointer-events: none;
+}
+
+/* Lista de opções no estilo de menu de jogo (usada nos modais de Opções e Pausa) */
+.menu-list {
+  display: flex;
+  flex-direction: column;
   border: 2.5px solid var(--ink);
   border-radius: 14px;
-  box-shadow: 0 3px 0 var(--ink);
-  animation: bobSlow 2.6s ease-in-out infinite;
+  overflow: hidden;
+  background: var(--cream);
 }
 
-.showcase-mon:nth-child(2n) {
-  animation-delay: 0.35s;
-}
-
-.showcase-mon:nth-child(3n) {
-  animation-delay: 0.7s;
-}
-
-.showcase-mon img {
-  width: 58px;
-  height: 58px;
-  object-fit: contain;
-}
-
-@keyframes bobSlow {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-4px); }
-}
-
-.save-preview {
+.menu-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin: 0 auto 14px;
-  padding: 10px 14px;
-  background: var(--cream-warm);
-  border: 2.5px solid var(--ink);
-  border-radius: 14px;
-  text-align: left;
-}
-
-.save-preview-info strong {
-  display: block;
-  font-size: 0.9rem;
-  color: var(--ink);
-}
-
-.save-preview-meta {
-  display: flex;
   gap: 10px;
-  flex-wrap: wrap;
+  width: 100%;
+  padding: 12px 14px;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: left;
+  color: var(--ink);
+  text-decoration: none;
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid rgba(43, 29, 20, 0.12);
+  cursor: pointer;
+}
+
+.menu-row:last-child {
+  border-bottom: 0;
+}
+
+.menu-row:hover,
+.menu-row:focus-visible {
+  background: #fff7d6;
+  outline: none;
+}
+
+.menu-row small {
+  font-family: var(--font-main);
   font-size: 0.8rem;
   font-weight: 800;
   color: var(--ink-soft);
-  margin-top: 2px;
 }
 
-.save-preview-party {
+.menu-row.danger {
+  color: var(--berry-dark);
+}
+
+.menu-gap {
+  height: 12px;
+}
+
+.pause-summary {
   display: flex;
-  gap: 5px;
-  align-items: center;
-}
-
-.save-preview-party img {
-  width: 38px;
-  height: 38px;
-  background: var(--cream);
-  border: 2px solid var(--ink);
-  border-radius: 10px;
-  padding: 2px;
-}
-
-.title-actions {
-  display: flex;
-  justify-content: center;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 6px 14px;
   margin-bottom: 12px;
+  font-size: 0.86rem;
+  font-weight: 800;
+  color: var(--ink-soft);
 }
 
-.title-secondary-actions {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 8px;
+.pause-summary b {
+  color: var(--ink);
+}
+
+.toggle-pill {
+  min-width: 74px;
+  padding: 3px 10px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  font-family: var(--font-main);
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-align: center;
+  background: var(--leaf-soft);
+  color: var(--leaf-dark);
+}
+
+.toggle-pill.off {
+  background: #eee;
+  color: #57534e;
+}
+
+/* Ícones desenhados (substituem os emojis nos botões) */
+.ico {
+  width: 1.15em;
+  height: 1.15em;
+  flex: none;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Títulos e botões usam a fonte de display */
+.btn,
+.btab-btn,
+.modal-title,
+.side-title,
+.speaker-pill,
+.zone-texts strong,
+.starter-head h3,
+.help-box h4 {
+  font-family: var(--font-display);
+}
+
+.btn {
+  font-weight: 600;
 }
 
 /* ==========================================================================
@@ -2862,5 +2969,22 @@ button,
   .modal-dialog {
     max-height: 96vh;
     max-height: 96dvh;
+  }
+}
+
+/* Tela inicial com o celular deitado: logo à esquerda, menu à direita */
+@media (orientation: landscape) and (max-height: 560px) {
+  .title-layout {
+    flex-direction: row;
+    align-items: center;
+    gap: 7vw;
+    margin-bottom: 0;
+  }
+  .game-logo {
+    font-size: clamp(2.6rem, 8vw, 4.4rem);
+  }
+  .menu-item {
+    padding: 7px 14px;
+    font-size: 1rem;
   }
 }
