@@ -2062,6 +2062,468 @@
     }
   };
 
+  // =========================================================================
+  // NOVAS ESPÉCIES — POMAR TROPICAL E HORTA SUBTERRÂNEA (23..30)
+  // =========================================================================
+  Object.assign(SPECIES_DRAWERS, {
+    // 23. BANANINJA: banana curvinha com faixa ninja vermelha
+    bananinja: function (ctx, t, sleep) {
+      const sway = Math.sin(t * 5.2);
+      const bob = Math.sin(t * 4.0) * 1.8;
+      ctx.translate(0, bob);
+
+      // Fitas da faixa ninja tremulando para trás
+      ctx.save();
+      ctx.translate(-20, -17);
+      ctx.beginPath();
+      ctx.moveTo(0, -3);
+      ctx.quadraticCurveTo(-10, -8 + sway * 3, -22, -6 + sway * 4);
+      ctx.lineTo(-20, 0 + sway * 4);
+      ctx.quadraticCurveTo(-10, -2 + sway * 2, 0, 3);
+      ctx.closePath();
+      fillStroke(ctx, '#ef4444', 2.4);
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.quadraticCurveTo(-8, 4 - sway * 2, -18, 10 - sway * 3);
+      ctx.lineTo(-14, 14 - sway * 3);
+      ctx.quadraticCurveTo(-6, 7, 1, 4);
+      ctx.closePath();
+      fillStroke(ctx, '#dc2626', 2.4);
+      ctx.restore();
+
+      // Pezinhos
+      drawFoot(ctx, -13, 32, 6.4, 4, '#a16207', -0.2);
+      drawFoot(ctx, 5, 32, 6.4, 4, '#ca8a04', 0.2);
+
+      // Corpo de banana (curva, lado de dentro côncavo)
+      ctx.beginPath();
+      ctx.moveTo(-2, -34);
+      ctx.bezierCurveTo(-24, -24, -28, 12, -10, 30);
+      ctx.quadraticCurveTo(0, 36, 12, 29);
+      ctx.bezierCurveTo(2, 14, 4, -14, 7, -33);
+      ctx.closePath();
+      fillStroke(ctx, linGrad(ctx, -24, 0, 10, 0, [
+        [0, '#ca8a04'],
+        [0.35, '#facc15'],
+        [0.75, '#fde047'],
+        [1, '#eab308']
+      ]), 3.2);
+      // Linhas da casca
+      ctx.strokeStyle = 'rgba(161, 98, 7, 0.45)';
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.moveTo(-1, -30);
+      ctx.bezierCurveTo(-14, -18, -16, 10, -4, 28);
+      ctx.stroke();
+      drawHighlight(ctx, -16, -8, 3, 9, 0.1, 0.5);
+
+      // Cabinho e pontinha marrom
+      ctx.beginPath();
+      ctx.moveTo(-1, -33);
+      ctx.lineTo(1, -41);
+      ctx.lineTo(7, -40);
+      ctx.lineTo(6, -32);
+      ctx.closePath();
+      fillStroke(ctx, '#78350f', 2.4);
+      drawEllipse(ctx, 2, 31, 3.4, 2.4, 0, '#78350f', 2);
+
+      // Bracinhos
+      drawEllipse(ctx, -24, 6, 5, 3.4, -0.6, '#facc15', 2.4);
+      drawEllipse(ctx, 9, 4, 4.6, 3.2, 0.6, '#facc15', 2.4);
+
+      // Faixa na testa
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(-21, -21);
+      ctx.quadraticCurveTo(-8, -24, 5, -21);
+      ctx.lineTo(4, -13);
+      ctx.quadraticCurveTo(-8, -16, -22, -13);
+      ctx.closePath();
+      fillStroke(ctx, '#ef4444', 2.4);
+      drawCircle(ctx, -8, -17.5, 2.6, '#e5e7eb', 1.6);
+      ctx.restore();
+
+      // Rosto determinado
+      drawEye(ctx, -14, -5, 3.8, { sleeping: sleep, brow: 0.35 });
+      drawEye(ctx, -2, -5, 3.8, { sleeping: sleep, brow: -0.35 });
+      drawCheek(ctx, -19, 3, 3.4, 2, 'rgba(251, 146, 60, 0.55)');
+      drawMouth(ctx, -8, 5, 4, sleep ? 'serene' : 'smirk');
+    },
+
+    // 24. ABACATINHO: meio abacate fofo com caroço na barriga
+    abacatinho: function (ctx, t, sleep) {
+      const sway = Math.sin(t * 3.4);
+      const roll = Math.sin(t * 2.6) * 0.05;
+      ctx.rotate(roll);
+
+      drawFoot(ctx, -11, 31, 7, 4.2, '#365314', -0.2);
+      drawFoot(ctx, 11, 31, 7, 4.2, '#3f6212', 0.2);
+
+      // Casca (formato de pera)
+      ctx.beginPath();
+      ctx.moveTo(0, -32);
+      ctx.bezierCurveTo(15, -32, 19, -12, 23, 6);
+      ctx.bezierCurveTo(29, 31, -29, 31, -23, 6);
+      ctx.bezierCurveTo(-19, -12, -15, -32, 0, -32);
+      ctx.closePath();
+      fillStroke(ctx, linGrad(ctx, -24, 0, 24, 0, [[0, '#365314'], [0.5, '#4d7c0f'], [1, '#3f6212']]), 3.2);
+
+      // Polpa clarinha
+      ctx.beginPath();
+      ctx.moveTo(0, -25);
+      ctx.bezierCurveTo(11, -25, 14, -10, 17, 6);
+      ctx.bezierCurveTo(22, 25, -22, 25, -17, 6);
+      ctx.bezierCurveTo(-14, -10, -11, -25, 0, -25);
+      ctx.closePath();
+      fillStroke(ctx, radGrad(ctx, -4, -6, 2, 0, 4, 26, [[0, '#f7fee7'], [0.55, '#d9f99d'], [1, '#a3e635']]), 0);
+
+      // Caroço
+      drawCircle(ctx, 0, 13, 9.5, radGrad(ctx, -3, 9, 1, 0, 13, 10, [[0, '#d97706'], [0.6, '#a16207'], [1, '#78350f']]), 2.6);
+      drawHighlight(ctx, -3, 9, 2.6, 1.8, -0.4, 0.6);
+
+      // Brotinho no topo
+      drawLeaf(ctx, 0, -31, 13, 5, -1.9 + sway * 0.1, '#a3e635', '#4d7c0f', 2.2);
+
+      drawEye(ctx, -7, -8, 3.6, { sleeping: sleep });
+      drawEye(ctx, 7, -8, 3.6, { sleeping: sleep });
+      drawCheek(ctx, -12, -2, 3.4, 2);
+      drawCheek(ctx, 12, -2, 3.4, 2);
+      drawMouth(ctx, 0, -1, 3.6, sleep ? 'serene' : 'smile');
+    },
+
+    // 25. ABACATAO: abacate guardião com coroa de folhas e caroço-escudo
+    abacatao: function (ctx, t, sleep) {
+      const sway = Math.sin(t * 3.0);
+
+      drawFoot(ctx, -14, 34, 8.5, 5, '#1a2e05', -0.15);
+      drawFoot(ctx, 14, 34, 8.5, 5, '#365314', 0.15);
+
+      // Braços fortes
+      drawEllipse(ctx, -31, 6, 7, 11, 0.35, '#3f6212', 2.8);
+      drawEllipse(ctx, 31, 4, 7, 11, -0.35, '#3f6212', 2.8);
+
+      // Casca grande
+      ctx.beginPath();
+      ctx.moveTo(0, -38);
+      ctx.bezierCurveTo(19, -38, 24, -14, 29, 8);
+      ctx.bezierCurveTo(35, 37, -35, 37, -29, 8);
+      ctx.bezierCurveTo(-24, -14, -19, -38, 0, -38);
+      ctx.closePath();
+      fillStroke(ctx, linGrad(ctx, -30, 0, 30, 0, [[0, '#1a2e05'], [0.5, '#3f6212'], [1, '#365314']]), 3.4);
+
+      ctx.beginPath();
+      ctx.moveTo(0, -30);
+      ctx.bezierCurveTo(14, -30, 18, -12, 22, 8);
+      ctx.bezierCurveTo(27, 30, -27, 30, -22, 8);
+      ctx.bezierCurveTo(-18, -12, -14, -30, 0, -30);
+      ctx.closePath();
+      fillStroke(ctx, radGrad(ctx, -4, -8, 2, 0, 6, 32, [[0, '#ecfccb'], [0.55, '#bef264'], [1, '#84cc16']]), 0);
+
+      // Caroço-escudo com rachadura
+      drawCircle(ctx, 0, 15, 12.5, radGrad(ctx, -4, 10, 1, 0, 15, 13, [[0, '#d97706'], [0.6, '#92400e'], [1, '#78350f']]), 2.8);
+      ctx.strokeStyle = 'rgba(43, 29, 20, 0.6)';
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.moveTo(-4, 5);
+      ctx.lineTo(1, 12);
+      ctx.lineTo(-2, 17);
+      ctx.lineTo(3, 24);
+      ctx.stroke();
+      drawHighlight(ctx, -5, 9, 3.2, 2, -0.4, 0.55);
+
+      // Coroa de folhas
+      drawLeaf(ctx, 0, -36, 17, 6, -2.4 + sway * 0.06, '#a3e635', '#3f6212', 2.4);
+      drawLeaf(ctx, 0, -37, 19, 6.4, -1.57, '#bef264', '#4d7c0f', 2.4);
+      drawLeaf(ctx, 0, -36, 17, 6, -0.75 - sway * 0.06, '#a3e635', '#3f6212', 2.4);
+
+      drawEye(ctx, -8, -12, 4, { sleeping: sleep, brow: 0.22 });
+      drawEye(ctx, 8, -12, 4, { sleeping: sleep, brow: -0.22 });
+      drawCheek(ctx, -14, -5, 3.6, 2.1);
+      drawCheek(ctx, 14, -5, 3.6, 2.1);
+      drawMouth(ctx, 0, -4, 4.4, sleep ? 'serene' : 'grin');
+    },
+
+    // 26. COCORAL: coco cascudo com raminho de palmeira e gota de água
+    cocoral: function (ctx, t, sleep) {
+      const sway = Math.sin(t * 3.2);
+      const bob = Math.sin(t * 2.4) * 1.4;
+      ctx.translate(0, bob);
+
+      drawDroplet(ctx, 30, -14 + Math.sin(t * 3) * 2, 0.9, 0.3, '#38bdf8');
+
+      drawFoot(ctx, -13, 31, 7.5, 4.4, '#451a03', -0.15);
+      drawFoot(ctx, 13, 31, 7.5, 4.4, '#78350f', 0.15);
+
+      // Raminho de palmeira
+      ctx.save();
+      ctx.translate(0, -24);
+      drawLeaf(ctx, 0, 0, 20, 5.6, -2.6 + sway * 0.08, '#4ade80', '#15803d', 2.3);
+      drawLeaf(ctx, 0, 0, 22, 6, -1.5, '#22c55e', '#166534', 2.3);
+      drawLeaf(ctx, 0, 0, 20, 5.6, -0.5 - sway * 0.08, '#4ade80', '#15803d', 2.3);
+      ctx.restore();
+
+      // Casca redonda
+      drawCircle(ctx, 0, 5, 28, radGrad(ctx, -9, -6, 3, 0, 5, 30, [[0, '#b45309'], [0.55, '#92400e'], [1, '#5b2a0b']]), 3.3);
+      // Fibras
+      ctx.strokeStyle = 'rgba(254, 215, 170, 0.45)';
+      ctx.lineWidth = 1.5;
+      [[-22, -4, -16, -12], [20, -6, 25, 2], [-24, 14, -18, 20], [22, 16, 15, 24], [-6, 28, 2, 31]].forEach(function (f) {
+        ctx.beginPath();
+        ctx.moveTo(f[0], f[1]);
+        ctx.lineTo(f[2], f[3]);
+        ctx.stroke();
+      });
+      // Os três "olhinhos" do coco no topo
+      drawCircle(ctx, -7, -15, 2.2, '#451a03', 0);
+      drawCircle(ctx, 0, -18, 2.2, '#451a03', 0);
+      drawCircle(ctx, 7, -15, 2.2, '#451a03', 0);
+
+      // Rosto num círculo de polpa branca
+      drawEllipse(ctx, 0, 8, 17, 13, 0, '#fef3c7', 2.4);
+      drawEye(ctx, -6, 6, 3.6, { sleeping: sleep });
+      drawEye(ctx, 6, 6, 3.6, { sleeping: sleep });
+      drawCheek(ctx, -11, 12, 3, 1.8, 'rgba(56, 189, 248, 0.45)');
+      drawCheek(ctx, 11, 12, 3, 1.8, 'rgba(56, 189, 248, 0.45)');
+      drawMouth(ctx, 0, 13, 3.4, sleep ? 'serene' : 'smile');
+    },
+
+    // 27. RABANITO: rabanete vermelho com folhas e uma chaminha
+    rabanito: function (ctx, t, sleep) {
+      const hop = Math.abs(Math.sin(t * 3.6)) * -4;
+      const sway = Math.sin(t * 4.4);
+      ctx.translate(0, hop);
+
+      // Folhas
+      ctx.save();
+      ctx.translate(0, -18);
+      ctx.rotate(sway * 0.1);
+      drawLeaf(ctx, 0, 0, 18, 6, -2.3, '#86efac', '#16a34a', 2.4);
+      drawLeaf(ctx, 0, 0, 22, 6.6, -1.57, '#4ade80', '#15803d', 2.4);
+      drawLeaf(ctx, 0, 0, 18, 6, -0.84, '#86efac', '#16a34a', 2.4);
+      ctx.restore();
+      drawFlame(ctx, 13, -36, 0.55, 0.4, sway);
+
+      // Raiz branquinha embaixo
+      ctx.beginPath();
+      ctx.moveTo(-7, 24);
+      ctx.quadraticCurveTo(-1, 34, 2, 42);
+      ctx.quadraticCurveTo(4, 34, 8, 24);
+      ctx.closePath();
+      fillStroke(ctx, '#fff1f2', 2.4);
+
+      drawFoot(ctx, -15, 26, 5.6, 3.6, '#be123c', -0.4);
+      drawFoot(ctx, 16, 26, 5.6, 3.6, '#be123c', 0.4);
+
+      // Bulbo redondo
+      ctx.beginPath();
+      ctx.moveTo(0, -20);
+      ctx.bezierCurveTo(22, -20, 28, 2, 18, 18);
+      ctx.quadraticCurveTo(0, 32, -18, 18);
+      ctx.bezierCurveTo(-28, 2, -22, -20, 0, -20);
+      ctx.closePath();
+      fillStroke(ctx, radGrad(ctx, -7, -8, 3, 0, 4, 28, [[0, '#fda4af'], [0.4, '#f43f5e'], [1, '#9f1239']]), 3.2);
+      // Parte de baixo clarinha (rabanete bicolor)
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(-19, 12);
+      ctx.quadraticCurveTo(0, 22, 19, 12);
+      ctx.quadraticCurveTo(10, 26, 0, 27);
+      ctx.quadraticCurveTo(-10, 26, -19, 12);
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(255, 241, 242, 0.85)';
+      ctx.fill();
+      ctx.restore();
+      drawHighlight(ctx, -10, -8, 4, 7, -0.3, 0.5);
+
+      drawEye(ctx, -7, -2, 4, { sleeping: sleep, brow: 0.3 });
+      drawEye(ctx, 8, -2, 4, { sleeping: sleep, brow: -0.3 });
+      drawCheek(ctx, -13, 6, 3.4, 2, 'rgba(255, 200, 120, 0.6)');
+      drawCheek(ctx, 14, 6, 3.4, 2, 'rgba(255, 200, 120, 0.6)');
+      drawMouth(ctx, 0.5, 7, 4.4, sleep ? 'serene' : 'grin');
+    },
+
+    // 28. TRUFIM: trufa escura e encaroçada com narizinho farejador
+    trufim: function (ctx, t, sleep) {
+      const sniff = Math.max(0, Math.sin(t * 6)) * 1.2;
+      const bob = Math.sin(t * 2.8) * 1.5;
+      ctx.translate(0, bob);
+
+      // Esporinhos brilhando
+      ctx.save();
+      for (let i = 0; i < 3; i++) {
+        const ph = (t * 0.6 + i * 0.33) % 1;
+        ctx.globalAlpha = Math.sin(ph * Math.PI) * 0.9;
+        drawStar4(ctx, -22 + i * 20, -22 - ph * 16, 2.6, '#e9d5ff', false);
+      }
+      ctx.restore();
+
+      drawFoot(ctx, -11, 31, 6.4, 3.8, '#1c1917', -0.2);
+      drawFoot(ctx, 11, 31, 6.4, 3.8, '#292524', 0.2);
+
+      // Calombos ao redor
+      const bumps = [[-20, -8, 9], [-6, -19, 10], [11, -17, 9], [22, -2, 9], [20, 16, 9], [-21, 15, 9], [0, 25, 9]];
+      const fill = radGrad(ctx, -6, -6, 2, 0, 6, 32, [[0, '#78716c'], [0.5, '#57534e'], [1, '#292524']]);
+      bumps.forEach(function (b) {
+        drawCircle(ctx, b[0], b[1], b[2], fill, 3);
+      });
+      drawCircle(ctx, 0, 4, 23, fill, 0);
+      // Pintinhas de textura
+      ctx.fillStyle = 'rgba(28, 25, 23, 0.55)';
+      [[-12, 16], [14, 12], [-16, -4], [6, -12], [16, -6], [-4, 20]].forEach(function (p) {
+        ctx.beginPath();
+        ctx.arc(p[0], p[1], 1.6, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      drawHighlight(ctx, -10, -10, 5, 3, -0.4, 0.3);
+
+      drawEye(ctx, -7, 0, 3.4, { sleeping: sleep, sclera: '#fafaf9' });
+      drawEye(ctx, 7, 0, 3.4, { sleeping: sleep, sclera: '#fafaf9' });
+      // Narizinho rosa farejando
+      drawEllipse(ctx, 0, 7, 4.2 + sniff, 3 + sniff * 0.6, 0, '#f9a8d4', 2);
+      drawHighlight(ctx, -1.2, 6, 1.3, 0.9, 0, 0.8);
+      drawMouth(ctx, 0, 12, 2.8, sleep ? 'serene' : 'smile');
+    },
+
+    // 29. TRUFANTE: trufa majestosa com coroa de cogumelos e olhos místicos
+    trufante: function (ctx, t, sleep) {
+      const bob = Math.sin(t * 2.2) * 1.6;
+      const glow = 0.5 + 0.5 * Math.sin(t * 2.6);
+      ctx.translate(0, bob);
+
+      // Aura roxa
+      ctx.save();
+      ctx.globalAlpha = 0.18 + glow * 0.14;
+      drawCircle(ctx, 0, 2, 44, '#a855f7', 0);
+      ctx.restore();
+
+      drawFoot(ctx, -15, 34, 8, 4.6, '#1c1917', -0.2);
+      drawFoot(ctx, 15, 34, 8, 4.6, '#292524', 0.2);
+
+      const bumps = [[-27, -6, 11], [-12, -21, 12], [12, -21, 12], [27, -6, 11], [26, 18, 11], [-26, 18, 11], [0, 30, 11]];
+      const fill = radGrad(ctx, -8, -8, 2, 0, 6, 38, [[0, '#6b6461'], [0.5, '#44403c'], [1, '#1c1917']]);
+      bumps.forEach(function (b) {
+        drawCircle(ctx, b[0], b[1], b[2], fill, 3.2);
+      });
+      drawCircle(ctx, 0, 5, 29, fill, 0);
+      ctx.fillStyle = 'rgba(12, 10, 9, 0.55)';
+      [[-15, 20], [17, 15], [-20, -2], [8, -15], [20, -4], [-5, 24], [-10, -14]].forEach(function (p) {
+        ctx.beginPath();
+        ctx.arc(p[0], p[1], 1.9, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // Coroa de cogumelinhos
+      [[-14, -30, 0.85, '#c084fc'], [0, -35, 1.05, '#a855f7'], [14, -30, 0.85, '#c084fc']].forEach(function (m) {
+        ctx.save();
+        ctx.translate(m[0], m[1]);
+        ctx.scale(m[2], m[2]);
+        ctx.beginPath();
+        ctx.moveTo(-3, 6);
+        ctx.lineTo(-2.5, -2);
+        ctx.lineTo(2.5, -2);
+        ctx.lineTo(3, 6);
+        ctx.closePath();
+        fillStroke(ctx, '#f5f5f4', 2);
+        ctx.beginPath();
+        ctx.moveTo(-10, -1);
+        ctx.quadraticCurveTo(0, -16, 10, -1);
+        ctx.closePath();
+        fillStroke(ctx, m[3], 2.2);
+        drawCircle(ctx, -3, -6, 1.6, '#faf5ff', 0);
+        drawCircle(ctx, 3, -8, 1.2, '#faf5ff', 0);
+        ctx.restore();
+      });
+
+      drawEye(ctx, -9, 0, 4.4, { sleeping: sleep, sclera: '#f5f3ff', iris: '#3b0764', innerGlow: 'rgba(192, 132, 252, 0.9)', brow: 0.25, browColor: '#e9d5ff' });
+      drawEye(ctx, 9, 0, 4.4, { sleeping: sleep, sclera: '#f5f3ff', iris: '#3b0764', innerGlow: 'rgba(192, 132, 252, 0.9)', brow: -0.25, browColor: '#e9d5ff' });
+      drawEllipse(ctx, 0, 9, 5, 3.4, 0, '#f0abfc', 2);
+      drawMouth(ctx, 0, 15, 3.6, sleep ? 'serene' : 'smirk');
+    },
+
+    // 30. MANDIOCAO: mandioca colossal com casca de raiz, topo cortado e folhas palmadas
+    mandiocao: function (ctx, t, sleep) {
+      const sway = Math.sin(t * 2.4);
+
+      // Folhas de mandioca (palmadas) saindo do topo
+      ctx.save();
+      ctx.translate(0, -30);
+      [-2.75, -2.25, -1.57, -0.9, -0.4].forEach(function (a, i) {
+        drawLeaf(ctx, 0, 0, i === 2 ? 22 : 18, 4.6, a + sway * 0.05, '#4ade80', '#15803d', 2.2);
+      });
+      ctx.restore();
+
+      // Raízes-pés
+      ctx.strokeStyle = INK;
+      ctx.lineCap = 'round';
+      [[-12, 30, -24, 40], [12, 30, 24, 40]].forEach(function (r) {
+        ctx.lineWidth = 9;
+        ctx.strokeStyle = INK;
+        ctx.beginPath();
+        ctx.moveTo(r[0], r[1]);
+        ctx.quadraticCurveTo((r[0] + r[2]) / 2, r[3], r[2], r[3] - 2);
+        ctx.stroke();
+        ctx.lineWidth = 5;
+        ctx.strokeStyle = '#a16207';
+        ctx.stroke();
+      });
+
+      // Braços de raiz
+      [[-22, -4, -38, 10, -40, 20], [22, -4, 38, 8, 41, 18]].forEach(function (r) {
+        ctx.lineWidth = 9;
+        ctx.strokeStyle = INK;
+        ctx.beginPath();
+        ctx.moveTo(r[0], r[1]);
+        ctx.quadraticCurveTo(r[2], r[3], r[4], r[5]);
+        ctx.stroke();
+        ctx.lineWidth = 5;
+        ctx.strokeStyle = '#b45309';
+        ctx.stroke();
+      });
+
+      // Corpo de raiz grossa
+      ctx.beginPath();
+      ctx.moveTo(-23, -26);
+      ctx.quadraticCurveTo(0, -34, 23, -26);
+      ctx.bezierCurveTo(28, -4, 22, 22, 10, 34);
+      ctx.quadraticCurveTo(0, 38, -10, 34);
+      ctx.bezierCurveTo(-22, 22, -28, -4, -23, -26);
+      ctx.closePath();
+      fillStroke(ctx, linGrad(ctx, -26, 0, 26, 0, [[0, '#713f12'], [0.45, '#a16207'], [1, '#78350f']]), 3.4);
+      // Anéis da casca
+      ctx.strokeStyle = 'rgba(69, 26, 3, 0.55)';
+      ctx.lineWidth = 2;
+      [[-6, 0.0], [8, 0.1], [20, -0.05]].forEach(function (b) {
+        ctx.beginPath();
+        ctx.moveTo(-21, b[0]);
+        ctx.quadraticCurveTo(0, b[0] + 6, 21, b[0] - 2);
+        ctx.stroke();
+      });
+
+      // Topo cortado mostrando a polpa branca
+      drawEllipse(ctx, 0, -27, 21, 7, 0, '#fef3c7', 2.8);
+      ctx.strokeStyle = '#fbbf24';
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.ellipse(0, -27, 12, 3.8, 0, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Rosto de chefão
+      drawEye(ctx, -9, -10, 4.4, { sleeping: sleep, brow: 0.32, sclera: '#fef3c7' });
+      drawEye(ctx, 9, -10, 4.4, { sleeping: sleep, brow: -0.32, sclera: '#fef3c7' });
+      // Bigodão de raizinhas
+      ctx.strokeStyle = INK;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(-1, 0);
+      ctx.quadraticCurveTo(-8, -3, -14, 3);
+      ctx.moveTo(1, 0);
+      ctx.quadraticCurveTo(8, -3, 14, 3);
+      ctx.stroke();
+      drawMouth(ctx, 0, 6, 4.6, sleep ? 'serene' : 'smirk');
+    }
+  });
+
+
   function drawFallbackCreature(ctx, t, sleep) {
     drawCircle(ctx, 0, 6, 22, '#4ade80', 3.2);
     drawLeaf(ctx, 0, -16, 14, 6, -1.1, '#86efac', '#16a34a', 2.4);
@@ -2124,6 +2586,71 @@
     ctx.restore();
   }
 
+  // =========================================================================
+  // VERSÃO DOURADA (rara, tipo "shiny")
+  // =========================================================================
+
+  let goldScratch = null;
+  let goldScratchCtx = null;
+  let canvasFilterSupport = null;
+
+  function supportsCanvasFilter(ctx) {
+    if (canvasFilterSupport === null) {
+      canvasFilterSupport = typeof ctx.filter === 'string';
+    }
+    return canvasFilterSupport;
+  }
+
+  // Desenha a imagem com tom dourado (mantendo o contorno escuro)
+  function drawGoldenImage(ctx, img, x, y) {
+    if (typeof document === 'undefined') {
+      ctx.drawImage(img, x, y);
+      return;
+    }
+    if (!goldScratch) {
+      goldScratch = document.createElement('canvas');
+      goldScratchCtx = goldScratch.getContext('2d');
+    }
+    if (goldScratch.width !== img.width || goldScratch.height !== img.height) {
+      goldScratch.width = img.width;
+      goldScratch.height = img.height;
+    } else {
+      goldScratchCtx.clearRect(0, 0, img.width, img.height);
+    }
+    const g = goldScratchCtx;
+    g.save();
+    if (supportsCanvasFilter(g)) {
+      g.filter = 'sepia(1) saturate(2.6) hue-rotate(-6deg) brightness(1.12)';
+    }
+    g.drawImage(img, 0, 0);
+    g.restore();
+    // Véu dourado só sobre a criatura (source-atop não pinta o fundo)
+    g.save();
+    g.globalCompositeOperation = 'source-atop';
+    const grad = g.createLinearGradient(0, 0, img.width, img.height);
+    grad.addColorStop(0, 'rgba(254, 240, 138, 0.42)');
+    grad.addColorStop(0.5, 'rgba(250, 204, 21, 0.26)');
+    grad.addColorStop(1, 'rgba(202, 138, 4, 0.32)');
+    g.fillStyle = grad;
+    g.fillRect(0, 0, img.width, img.height);
+    g.restore();
+    ctx.drawImage(goldScratch, x, y);
+  }
+
+  function drawGoldenSparkles(ctx, size, t) {
+    const s = size / 100;
+    const spots = [[-34, -30, 0], [36, -18, 1.7], [-30, 22, 3.1], [30, 28, 4.4]];
+    ctx.save();
+    ctx.scale(s, s);
+    for (let i = 0; i < spots.length; i++) {
+      const p = spots[i];
+      const pulse = t > 0 ? 0.5 + 0.5 * Math.sin(t * 3.2 + p[2]) : (i % 2 === 0 ? 1 : 0.6);
+      ctx.globalAlpha = 0.35 + pulse * 0.65;
+      drawStar4(ctx, p[0], p[1], 3.5 + pulse * 3.5, '#fde047', true);
+    }
+    ctx.restore();
+  }
+
   function getScratch(w, h) {
     if (!scratchCanvas && typeof document !== 'undefined') {
       scratchCanvas = document.createElement('canvas');
@@ -2162,6 +2689,7 @@
     const scaleY = o.scaleY !== undefined ? o.scaleY : 1;
     const status = o.status || null;
     const silhouette = Boolean(o.silhouette);
+    const golden = Boolean(o.golden) && !silhouette;
     const showShadow = o.shadow !== false;
     const sleeping = status === 'sleep';
 
@@ -2196,7 +2724,7 @@
     const unitScale = size / 100;
 
     // 2. Render creature body (use offscreen scratch for exact silhouette or hitFlash)
-    const needsScratch = silhouette || hitFlash > 0.01;
+    const needsScratch = silhouette || hitFlash > 0.01 || golden;
     let usedScratch = false;
 
     if (needsScratch) {
@@ -2221,8 +2749,12 @@
           sctx.restore();
           ctx.drawImage(scratch.canvas, -box / 2, -box / 2);
         } else {
-          // Normal creature first
-          ctx.drawImage(scratch.canvas, -box / 2, -box / 2);
+          // Normal creature first (versão Dourada recebe um banho de ouro)
+          if (golden) {
+            drawGoldenImage(ctx, scratch.canvas, -box / 2, -box / 2);
+          } else {
+            ctx.drawImage(scratch.canvas, -box / 2, -box / 2);
+          }
           // Then crisp shape-matched white hitFlash overlay
           sctx.save();
           sctx.globalCompositeOperation = 'source-in';
@@ -2244,6 +2776,11 @@
       ctx.restore();
     }
 
+    // 2b. Brilhos da versão Dourada
+    if (golden) {
+      drawGoldenSparkles(ctx, size, t);
+    }
+
     // 3. Status effect overlay (unflipped so 'Zzz' stays legible)
     if (!silhouette && status) {
       drawStatusOverlay(ctx, status, size * Math.max(Math.abs(scaleX), Math.abs(scaleY)), t);
@@ -2256,10 +2793,11 @@
   // PUBLIC: HM.Sprites.renderCreatureToDataURL
   // =========================================================================
 
-  function renderCreatureToDataURL(speciesId, size, silhouette) {
+  function renderCreatureToDataURL(speciesId, size, silhouette, golden) {
     const px = size || 128;
     const sil = Boolean(silhouette);
-    const key = speciesId + '|' + px + '|' + (sil ? '1' : '0');
+    const gold = Boolean(golden) && !sil;
+    const key = speciesId + '|' + px + '|' + (sil ? '1' : '0') + (gold ? '|g' : '');
     if (dataUrlCache.has(key)) return dataUrlCache.get(key);
     if (typeof document === 'undefined') return '';
 
@@ -2273,6 +2811,7 @@
       facing: 'right',
       time: 0,
       silhouette: sil,
+      golden: gold,
       shadow: true
     });
 
@@ -2398,6 +2937,14 @@
       leader: {
         skin: '#fde0c2', hair: '#92400e', shirt: '#fef08a', outfit: '#15803d',
         pants: '#065f46', boot: '#a16207', hat: 'flowerCrown', cape: true
+      },
+      leader2: {
+        skin: '#e8b98f', hair: '#3f2a19', shirt: '#fde68a', outfit: '#92400e',
+        pants: '#44403c', boot: '#1c1917', hat: 'cap', cape: true
+      },
+      guard: {
+        skin: '#f7d2ae', hair: '#1c1917', shirt: '#e0f2fe', outfit: '#1d4ed8',
+        pants: '#1e3a8a', boot: '#0f172a', hat: 'cap'
       }
     };
     const th = themes[style] || themes.player;

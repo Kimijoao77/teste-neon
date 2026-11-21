@@ -602,7 +602,7 @@
       stage: 1,
       evolvesTo: null,
       evolveLevel: null,
-      catchRate: 0.28,
+      catchRate: 0.15,
       baseXp: 160,
       desc: 'Imponente soberano das raízes coroado por folhas reais. Um único pisão seu faz todo o canteiro estremecer.',
       baseStats: { hp: 96, atk: 92, def: 88, spd: 70 },
@@ -619,6 +619,197 @@
         accent: '#facc15',
         leaf: '#16a34a'
       }
+    },
+
+    // =========================================================
+    // POMAR TROPICAL (23..27)
+    // =========================================================
+    {
+      id: 'bananinja',
+      dexNum: 23,
+      name: 'Bananinja',
+      title: 'Banana Ninja',
+      type: 'citrico',
+      stage: 1,
+      evolvesTo: null,
+      evolveLevel: null,
+      catchRate: 0.45,
+      baseXp: 120,
+      desc: 'Treina golpes de ninja nos coqueiros do pomar e some num piscar de olhos, deixando só a casca para trás.',
+      baseStats: { hp: 62, atk: 84, def: 56, spd: 96 },
+      learnset: [
+        { level: 1, moveId: 'investida' },
+        { level: 1, moveId: 'choque_limao' },
+        { level: 8, moveId: 'zeste_energia' },
+        { level: 10, moveId: 'raio_citrico' },
+        { level: 13, moveId: 'banana_bumerangue' },
+        { level: 17, moveId: 'coroa_abacaxi' }
+      ],
+      palette: { primary: '#facc15', secondary: '#a16207', accent: '#ef4444', leaf: '#65a30d' }
+    },
+    {
+      id: 'abacatinho',
+      dexNum: 24,
+      name: 'Abacatinho',
+      title: 'Abacate Semente',
+      type: 'folha',
+      stage: 1,
+      evolvesTo: 'abacatao',
+      evolveLevel: 16,
+      catchRate: 0.5,
+      baseXp: 95,
+      desc: 'Guarda um caroço enorme na barriga e sai rolando pela grama quando fica feliz.',
+      baseStats: { hp: 66, atk: 64, def: 70, spd: 50 },
+      learnset: [
+        { level: 1, moveId: 'investida' },
+        { level: 1, moveId: 'chicote_rama' },
+        { level: 9, moveId: 'fotossintese' },
+        { level: 11, moveId: 'folha_navalha' },
+        { level: 14, moveId: 'caroco_bomba' },
+        { level: 20, moveId: 'tempestade_brocolis' }
+      ],
+      palette: { primary: '#4d7c0f', secondary: '#365314', accent: '#d9f99d', leaf: '#84cc16' }
+    },
+    {
+      id: 'abacatao',
+      dexNum: 25,
+      name: 'Abacatão',
+      title: 'Abacate Guardião',
+      type: 'folha',
+      stage: 2,
+      evolvesTo: null,
+      evolveLevel: null,
+      catchRate: 0.25,
+      baseXp: 165,
+      desc: 'Protege o pomar inteiro com o caroço-escudo na barriga. Nenhum ladrão de frutas passa por ele.',
+      baseStats: { hp: 92, atk: 88, def: 94, spd: 58 },
+      learnset: [
+        { level: 1, moveId: 'chicote_rama' },
+        { level: 1, moveId: 'fotossintese' },
+        { level: 1, moveId: 'folha_navalha' },
+        { level: 14, moveId: 'caroco_bomba' },
+        { level: 17, moveId: 'espinho_cacto' },
+        { level: 20, moveId: 'tempestade_brocolis' }
+      ],
+      palette: { primary: '#3f6212', secondary: '#1a2e05', accent: '#d9f99d', leaf: '#84cc16' }
+    },
+    {
+      id: 'cocoral',
+      dexNum: 26,
+      name: 'Cocoral',
+      title: 'Coco Couraça',
+      type: 'fresco',
+      stage: 1,
+      evolvesTo: null,
+      evolveLevel: null,
+      catchRate: 0.4,
+      baseXp: 125,
+      desc: 'Sua casca é dura como pedra e, por dentro, guarda uma água de coco que recupera os amigos cansados.',
+      baseStats: { hp: 84, atk: 70, def: 96, spd: 40 },
+      learnset: [
+        { level: 1, moveId: 'investida' },
+        { level: 1, moveId: 'jato_suco' },
+        { level: 8, moveId: 'casca_dura' },
+        { level: 11, moveId: 'onda_melancia' },
+        { level: 13, moveId: 'agua_de_coco' },
+        { level: 18, moveId: 'tsunami_frutal' }
+      ],
+      palette: { primary: '#92400e', secondary: '#451a03', accent: '#fef3c7', leaf: '#22c55e' }
+    },
+    {
+      id: 'rabanito',
+      dexNum: 27,
+      name: 'Rabanito',
+      title: 'Rabanete Ardido',
+      type: 'picante',
+      stage: 1,
+      evolvesTo: null,
+      evolveLevel: null,
+      catchRate: 0.55,
+      baseXp: 100,
+      desc: 'Mora embaixo da terra e salta quente feito brasa quando alguém pisa no seu canteiro.',
+      baseStats: { hp: 56, atk: 80, def: 52, spd: 84 },
+      learnset: [
+        { level: 1, moveId: 'investida' },
+        { level: 1, moveId: 'faisca_pimenta' },
+        { level: 8, moveId: 'tempero_forte' },
+        { level: 11, moveId: 'rabanete_ardente' },
+        { level: 13, moveId: 'halito_alho' },
+        { level: 19, moveId: 'erupcao_habanero' }
+      ],
+      palette: { primary: '#e11d48', secondary: '#881337', accent: '#ffffff', leaf: '#22c55e' }
+    },
+
+    // =========================================================
+    // HORTA SUBTERRÂNEA (28..30)
+    // =========================================================
+    {
+      id: 'trufim',
+      dexNum: 28,
+      name: 'Trufim',
+      title: 'Trufa Farejadora',
+      type: 'fungo',
+      stage: 1,
+      evolvesTo: 'trufante',
+      evolveLevel: 16,
+      catchRate: 0.5,
+      baseXp: 98,
+      desc: 'Fareja tesouros enterrados na escuridão da Horta Subterrânea com seu narizinho rosado.',
+      baseStats: { hp: 60, atk: 62, def: 64, spd: 58 },
+      learnset: [
+        { level: 1, moveId: 'investida' },
+        { level: 1, moveId: 'nuvem_esporos' },
+        { level: 9, moveId: 'po_sonifero' },
+        { level: 12, moveId: 'pulso_micelio' },
+        { level: 15, moveId: 'trufa_sombria' },
+        { level: 18, moveId: 'sombra_berinjela' }
+      ],
+      palette: { primary: '#57534e', secondary: '#292524', accent: '#f9a8d4', leaf: '#a855f7' }
+    },
+    {
+      id: 'trufante',
+      dexNum: 29,
+      name: 'Trufante',
+      title: 'Trufa Majestosa',
+      type: 'fungo',
+      stage: 2,
+      evolvesTo: null,
+      evolveLevel: null,
+      catchRate: 0.25,
+      baseXp: 168,
+      desc: 'A trufa mais rara da caverna. Usa uma coroa de cogumelos e seu perfume deixa qualquer um tonto.',
+      baseStats: { hp: 84, atk: 94, def: 82, spd: 76 },
+      learnset: [
+        { level: 1, moveId: 'nuvem_esporos' },
+        { level: 1, moveId: 'po_sonifero' },
+        { level: 1, moveId: 'pulso_micelio' },
+        { level: 15, moveId: 'trufa_sombria' },
+        { level: 18, moveId: 'sombra_berinjela' }
+      ],
+      palette: { primary: '#44403c', secondary: '#1c1917', accent: '#c084fc', leaf: '#a855f7' }
+    },
+    {
+      id: 'mandiocao',
+      dexNum: 30,
+      name: 'Mandiocão',
+      title: 'Mandioca Colossal',
+      type: 'raiz',
+      stage: 1,
+      evolvesTo: null,
+      evolveLevel: null,
+      catchRate: 0.12,
+      baseXp: 175,
+      desc: 'Suas raízes atravessam a caverna inteira. Dizem que segura a Arena da Raiz Profunda nas costas.',
+      baseStats: { hp: 104, atk: 96, def: 92, spd: 60 },
+      learnset: [
+        { level: 1, moveId: 'soco_terra' },
+        { level: 1, moveId: 'casca_dura' },
+        { level: 1, moveId: 'broca_cenoura' },
+        { level: 10, moveId: 'dreno_clorofila' },
+        { level: 14, moveId: 'terremoto_horta' },
+        { level: 18, moveId: 'raiz_profunda' }
+      ],
+      palette: { primary: '#a16207', secondary: '#713f12', accent: '#fef3c7', leaf: '#16a34a' }
     }
   ];
 

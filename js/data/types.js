@@ -58,17 +58,26 @@
     }
   };
 
-  // Tabela balanceada: cada tipo vence 2 e perde para 2 (preservando Picante > Folha > Fresco > Picante)
+  // Tabela V2 — ciclo de 6 tipos, cada um com identidade própria.
+  // Ordem do ciclo: Picante → Fungo → Folha → Raiz → Fresco → Cítrico → (Picante)
+  // Cada tipo vence os 2 próximos do ciclo (2×) e causa pouco dano (0.5×) nos 2 que o vencem.
+  //   Picante: queima Folhas e seca Fungos       | sofre com Fresco e Cítrico
+  //   Fungo:   mofa Folhas e apodrece Raízes      | sofre com Cítrico e Picante
+  //   Folha:   cobre Raízes e absorve o Fresco    | sofre com Picante e Fungo
+  //   Raiz:    bebe o Fresco e aterra o Cítrico   | sofre com Fungo e Folha
+  //   Fresco:  dilui o Cítrico e apaga o Picante  | sofre com Folha e Raiz
+  //   Cítrico: corta o Picante e é antifúngico    | sofre com Raiz e Fresco
+  // O triângulo dos iniciais continua: Picante > Folha > Fresco > Picante.
   HM.TYPE_CHART = {
-    picante: { folha: 2, fungo: 2, fresco: 0.5, raiz: 0.5 },
-    folha: { fresco: 2, raiz: 2, picante: 0.5, citrico: 0.5 },
-    fresco: { picante: 2, citrico: 2, folha: 0.5, fungo: 0.5 },
-    raiz: { picante: 2, citrico: 2, folha: 0.5, fungo: 0.5 },
-    citrico: { folha: 2, fungo: 2, fresco: 0.5, raiz: 0.5 },
-    fungo: { fresco: 2, raiz: 2, picante: 0.5, citrico: 0.5 }
+    picante: { fungo: 2, folha: 2, fresco: 0.5, citrico: 0.5 },
+    fungo: { folha: 2, raiz: 2, citrico: 0.5, picante: 0.5 },
+    folha: { raiz: 2, fresco: 2, picante: 0.5, fungo: 0.5 },
+    raiz: { fresco: 2, citrico: 2, fungo: 0.5, folha: 0.5 },
+    fresco: { citrico: 2, picante: 2, folha: 0.5, raiz: 0.5 },
+    citrico: { picante: 2, fungo: 2, raiz: 0.5, fresco: 0.5 }
   };
 
-  HM.TYPE_LIST = ['picante', 'folha', 'fresco', 'raiz', 'citrico', 'fungo'];
+  HM.TYPE_LIST = ['picante', 'fungo', 'folha', 'raiz', 'fresco', 'citrico'];
 
   HM.getTypeEffectiveness = function (moveType, defenderType) {
     const row = HM.TYPE_CHART[moveType];

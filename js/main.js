@@ -4,7 +4,7 @@
   const HM = (global.HortaMon = global.HortaMon || {});
 
   const STARTER_IDS = ['pimentico', 'melancito', 'brocolino'];
-  const SHOWCASE_IDS = ['pimentico', 'melancito', 'brocolino', 'limoninho', 'cogumim', 'beterraboss'];
+  const SHOWCASE_IDS = ['pimentico', 'melancito', 'brocolino', 'bananinja', 'cogumim', 'cocoral', 'mandiocao'];
 
   const STATUS_META = {
     burn: { label: '🔥 Queimado', cls: 'status-burn' },
@@ -58,10 +58,10 @@
     return undefined;
   }
 
-  function spriteUrl(speciesId, size, silhouette) {
+  function spriteUrl(speciesId, size, silhouette, golden) {
     try {
       if (HM.Sprites && typeof HM.Sprites.renderCreatureToDataURL === 'function') {
-        return HM.Sprites.renderCreatureToDataURL(speciesId, size || 96, !!silhouette);
+        return HM.Sprites.renderCreatureToDataURL(speciesId, size || 96, !!silhouette, !!golden);
       }
     } catch (_) {}
     return '';
@@ -125,6 +125,27 @@
     return !!st.defeatedTrainers[npcId];
   }
 
+  // Retorna null se o NPC pode ser desafiado, ou {done,total,text} se falta algo
+  function getUnmetRequirement(npc) {
+    const req = npc && npc.requires;
+    if (!req) return null;
+    const st = ui.state || {};
+    if (Array.isArray(req.badges)) {
+      const owned = Array.isArray(st.badges) ? st.badges : [];
+      const have = req.badges.filter((b) => owned.indexOf(b) !== -1).length;
+      if (have < req.badges.length) {
+        return { done: have, total: req.badges.length, text: req.badgeText || req.text || 'Você ainda precisa de mais insígnias.' };
+      }
+    }
+    if (Array.isArray(req.trainers)) {
+      const done = req.trainers.filter((id) => isTrainerDefeated(id)).length;
+      if (done < req.trainers.length) {
+        return { done, total: req.trainers.length, text: req.text || 'Vença os jardineiros das rotas primeiro!' };
+      }
+    }
+    return null;
+  }
+
   function markTrainerDefeated(npcId) {
     const st = ui.state;
     if (!st || !npcId) return;
@@ -140,6 +161,12 @@
     if (!creature) return 'HortaMon';
     const sp = HM.SPECIES && HM.SPECIES[creature.speciesId];
     return creature.nickname || (sp ? sp.name : creature.speciesId);
+  }
+
+  // Nome com a marca ✨ dos HortaMons Dourados (HTML seguro)
+  function nameHtml(creature) {
+    const mark = creature && creature.golden ? '<span class="golden-mark" title="HortaMon Dourado">✨</span>' : '';
+    return mark + escapeHtml(getCreatureName(creature));
   }
 
   function getHpClass(pct) {
@@ -180,7 +207,7 @@
 
   function getItemList() {
     if (!HM.ITEMS) return [];
-    const order = ['vaso_comum', 'super_vaso', 'regador', 'super_regador', 'adubo_revive'];
+    const order = ['vaso_comum', 'super_vaso', 'regador', 'super_regador', 'adubo_revive', 'adubo_compartilhado'];
     const result = [];
     order.forEach((id) => {
       if (HM.ITEMS[id]) result.push(HM.ITEMS[id]);
@@ -250,6 +277,8 @@
   // =========================================================================
 
   function renderTitleScreen() {
+    const countPill = $('title-count-pill');
+    if (countPill) countPill.textContent = `📖 ${(HM.SPECIES_LIST || []).length} HortaMons Originais`;
     if (dom.titleShowcase) {
       dom.titleShowcase.innerHTML = SHOWCASE_IDS.map((id) => {
         const sp = HM.SPECIES && HM.SPECIES[id];
@@ -274,7 +303,7 @@
           .slice(0, 6)
           .map((c) => {
             const sp = HM.SPECIES && HM.SPECIES[c.speciesId];
-            return `<img src="${spriteUrl(c.speciesId, 56, false)}" alt="${escapeHtml(sp ? sp.name : c.speciesId)}" title="${escapeHtml(getCreatureName(c))} Nv.${c.level}" />`;
+            return `<img src="${spriteUrl(c.speciesId, 56, false, c.golden)}" alt="${escapeHtml(sp ? sp.name : c.speciesId)}" title="${escapeHtml(getCreatureName(c))} Nv.${c.level}" />`;
           })
           .join('');
         dom.titleSavePreview.innerHTML = `
@@ -309,7 +338,7 @@
     }
     ui.state = loaded;
     enterOverworld();
-    showToast('🌿 Bem-vindo de volta à Vila da Horta!', 'success');
+    showToast('🌿 Bem-vindo de volta, jardineiro!', 'success');
   }
 
   function handleNewGameClick() {
@@ -461,29 +490,31 @@
   function computeQuestHint(st) {
     if (!st) return 'Explore a Vila da Horta!';
     const dex = countDex(st);
-    const badges = (st.badges || []).length;
     const maxLv = st.party.reduce((acc, c) => Math.max(acc, c.level || 1), 1);
+    const owned = Array.isArray(st.badges) ? st.badges : [];
 
-    if (badges > 0) {
-      if (dex.caught >= dex.total) {
-        return '🌟 Mestre Botânico Supremo! Você conquistou a Insígnia e completou 100% da BotaniDex!';
-      }
-      return `🏆 Insígnia conquistada! Complete sua BotaniDex (${dex.caught}/${dex.total}) ou peça revanche à Mestra Flora!`;
-    }
-
-    const trainers = ((HM.WORLD && HM.WORLD.npcs) || []).filter((n) => n.role === 'trainer');
-    const defeatedCount = trainers.filter((n) => isTrainerDefeated(n.id)).length;
-
-    if (dex.caught <= 1 && maxLv < 6) {
+    if (dex.caught <= 1 && maxLv < 6 && owned.length === 0) {
       return 'Siga para a grama alta da Rota 1 para capturar novos HortaMons e subir de nível! Use a Estufa de Cura quando precisar.';
     }
-    if (defeatedCount < Math.min(2, trainers.length)) {
-      return 'Desafie os jardineiros da Rota 1 e compre Vasos ou Regadores com o Seu Bento para fortalecer seu time!';
+
+    // Próximo líder ainda sem insígnia (na ordem do mundo)
+    const leaders = ((HM.WORLD && HM.WORLD.npcs) || []).filter((n) => n.role === 'leader' && n.badge);
+    const next = leaders.find((n) => owned.indexOf(n.badge) === -1);
+    if (next) {
+      const unmet = getUnmetRequirement(next);
+      if (unmet) {
+        const tpl = next.questBefore || 'Vença os jardineiros das rotas ({done}/{total}) para poder desafiar {leader}!';
+        return tpl.replace('{done}', unmet.done).replace('{total}', unmet.total).replace('{leader}', next.name);
+      }
+      return (next.questReady || 'Sua equipe está pronta! Desafie {leader} pela {badge}!')
+        .replace('{leader}', next.name)
+        .replace('{badge}', next.badge);
     }
-    if (maxLv < 9) {
-      return 'Explore a Rota 2 para enfrentar jardineiros mais experientes e evoluir seus HortaMons antes da Arena!';
+
+    if (dex.caught >= dex.total) {
+      return '🌟 Mestre Botânico Supremo! Todas as insígnias e 100% da BotaniDex! Agora cace HortaMons ✨ Dourados (1 em 64 encontros).';
     }
-    return 'Sua equipe está pronta! Siga até a Arena da Estufa Dourada e desafie a Mestra Flora pela Insígnia da Colheita Dourada!';
+    return `🏆 Todas as insígnias conquistadas! Complete a BotaniDex (${dex.caught}/${dex.total}) e procure HortaMons ✨ Dourados na grama alta.`;
   }
 
   function refreshOverworldHud() {
@@ -523,7 +554,7 @@
 
         return `
           <div class="side-mon-row${leaderCls}${faintedCls}" data-party-idx="${idx}" title="Clique para ver detalhes de ${escapeHtml(getCreatureName(c))}">
-            <img class="side-mon-avatar" src="${spriteUrl(c.speciesId, 56, false)}" alt="${escapeHtml(getCreatureName(c))}" />
+            <img class="side-mon-avatar" src="${spriteUrl(c.speciesId, 56, false, c.golden)}" alt="${escapeHtml(getCreatureName(c))}" />
             <div class="side-mon-info">
               <div class="side-mon-top">
                 <span class="side-mon-name">${leaderMark}${escapeHtml(getCreatureName(c))}${statusShort}</span>
@@ -574,7 +605,7 @@
       onFinish: onFinish || null,
       openedAt: Date.now()
     };
-    drawCharOnCanvas(dom.dialoguePortrait, (npc && npc.role) || 'prof', 38);
+    drawCharOnCanvas(dom.dialoguePortrait, (npc && (npc.style || npc.role)) || 'prof', 38);
     dom.dialogueSpeaker.textContent = (npc && npc.name) || 'Aviso';
     dom.dialogueBox.classList.remove('hidden');
     renderDialoguePage();
@@ -655,6 +686,8 @@
             'Bem-vindo à Estufa de Cura! Deixe seus HortaMons descansarem um pouquinho sob nossa luz solar...'
           ),
           onFinish: () => {
+            if (npc.healSpot) ui.state.lastHealSpot = Object.assign({}, npc.healSpot);
+            else if (HM.WORLD && HM.WORLD.healSpot) ui.state.lastHealSpot = Object.assign({}, HM.WORLD.healSpot);
             if (typeof HM.healParty === 'function') HM.healParty(ui.state);
             if (typeof HM.saveGame === 'function') HM.saveGame(ui.state);
             audio('playHeal');
@@ -714,13 +747,21 @@
       case 'trainer':
       case 'leader': {
         const defeated = isTrainerDefeated(npc.id);
+        const unmet = defeated ? null : getUnmetRequirement(npc);
+        if (unmet) {
+          showDialogue({
+            npc,
+            lines: [`${unmet.text} (${unmet.done}/${unmet.total})`]
+          });
+          break;
+        }
         if (!defeated) {
           showDialogue({
             npc,
             lines: normalizeLines(
               npc.dialogue,
               npc.role === 'leader'
-                ? 'Bem-vindo à Arena da Estufa Dourada! Mostre a força do seu jardim!'
+                ? `Bem-vindo à ${npc.arenaName || 'Arena'}! Mostre a força do seu jardim!`
                 : 'Ei! Nossos olhares se cruzaram! Vamos duelar com nossos HortaMons!'
             ),
             actions: [
@@ -741,7 +782,7 @@
             npc,
             lines: normalizeLines(
               npc.defeatedDialogue,
-              'Parabéns novamente pela Insígnia da Colheita Dourada! Quer treinar comigo em uma revanche?'
+              `Parabéns novamente pela ${npc.badge || 'Insígnia'}! Quer treinar comigo em uma revanche?`
             ),
             actions: [
               {
@@ -763,6 +804,42 @@
               npc.defeatedDialogue,
               'Que batalha incrível! Seus HortaMons estão muito bem cuidados!'
             )
+          });
+        }
+        break;
+      }
+
+      case 'prof': {
+        const st = ui.state;
+        st.bag = st.bag || {};
+        const total = (st.party || []).length + (st.box || []).length;
+        const hasShare = (st.bag.adubo_compartilhado || 0) > 0;
+        if (!hasShare && total >= 2) {
+          showDialogue({
+            npc,
+            lines: [
+              'Olha só, você já tem um time de verdade! Tome este presente: o Adubo Compartilhado. 🌻',
+              'Enquanto ele estiver na sua mochila, os HortaMons que não lutaram também ganham metade do XP de cada vitória. Ótimo para treinar os mais fraquinhos!'
+            ],
+            onFinish: () => {
+              st.bag.adubo_compartilhado = 1;
+              if (typeof HM.saveGame === 'function') HM.saveGame(st);
+              audio('playVictory');
+              showToast('🌻 Você recebeu o Adubo Compartilhado!', 'gold');
+              refreshOverworldHud();
+            }
+          });
+        } else if (!hasShare) {
+          showDialogue({
+            npc,
+            lines: normalizeLines(npc.dialogue, 'Olá, jovem jardineiro!').concat([
+              'Ah, e capture um segundo HortaMon e volte aqui: tenho um presente que ajuda a treinar o time inteiro!'
+            ])
+          });
+        } else {
+          showDialogue({
+            npc,
+            lines: normalizeLines(npc.dialogue, 'Continue explorando a Vila da Horta e suas rotas!')
           });
         }
         break;
@@ -793,20 +870,31 @@
     startBattle({
       type: npc.role === 'leader' ? 'leader' : 'trainer',
       enemyParty,
-      trainerNpc: npc
+      trainerNpc: npc,
+      scene: npc.scene || getSceneAt(npc.x, npc.y)
     });
   }
 
-  function handleWildEncounter(wildCreature) {
+  const GOLDEN_CHANCE = 1 / 64;
+
+  function getSceneAt(x, y) {
+    const zone = HM.WORLD && typeof HM.WORLD.getZoneAt === 'function' ? HM.WORLD.getZoneAt(x, y) : null;
+    return (zone && zone.scene) || 'jardim';
+  }
+
+  function handleWildEncounter(wildCreature, zone) {
     if (!wildCreature || ui.screen !== 'overworld') return;
     if (!hasAliveCreature()) {
       if (typeof HM.healParty === 'function') HM.healParty(ui.state);
       showToast('💚 Seu time foi revitalizado!', 'success');
     }
+    if (Math.random() < GOLDEN_CHANCE) wildCreature.golden = true;
+    const p = (ui.state && ui.state.player) || { x: 0, y: 0 };
     startBattle({
       type: 'wild',
       enemyParty: [wildCreature],
-      trainerNpc: null
+      trainerNpc: null,
+      scene: (zone && zone.scene) || getSceneAt(p.x, p.y)
     });
   }
 
@@ -814,7 +902,7 @@
   // TELA 4: BATALHA POR TURNOS
   // =========================================================================
 
-  function startBattle({ type, enemyParty, trainerNpc }) {
+  function startBattle({ type, enemyParty, trainerNpc, scene }) {
     closeModal(true);
     closeDialogue(true);
     if (HM.Overworld) HM.Overworld.pause();
@@ -828,7 +916,7 @@
 
     if (type === 'leader') {
       dom.battleTypeBadge.className = 'pill pill-sun';
-      dom.battleTypeBadge.textContent = '👑 Arena da Estufa Dourada';
+      dom.battleTypeBadge.textContent = `👑 ${(trainerNpc && trainerNpc.arenaName) || 'Arena'}`;
       dom.battleHeaderTitle.textContent = trainerNpc ? trainerNpc.name : 'Líder da Arena';
     } else if (type === 'trainer') {
       dom.battleTypeBadge.className = 'pill pill-berry';
@@ -837,9 +925,9 @@
     } else {
       const lead = enemyParty && enemyParty[0];
       const sp = lead && HM.SPECIES && HM.SPECIES[lead.speciesId];
-      dom.battleTypeBadge.className = 'pill pill-leaf';
-      dom.battleTypeBadge.textContent = '🌿 Batalha Selvagem';
-      dom.battleHeaderTitle.textContent = sp ? `${sp.name} selvagem` : 'Encontro na Grama Alta';
+      dom.battleTypeBadge.className = lead && lead.golden ? 'pill pill-sun' : 'pill pill-leaf';
+      dom.battleTypeBadge.textContent = lead && lead.golden ? '✨ Encontro Dourado!' : '🌿 Batalha Selvagem';
+      dom.battleHeaderTitle.textContent = sp ? `${sp.name} ${lead.golden ? 'dourado' : 'selvagem'}` : 'Encontro na Grama Alta';
     }
 
     if (HM.Battle && typeof HM.Battle.start === 'function') {
@@ -848,6 +936,7 @@
         type,
         enemyParty,
         trainerNpc,
+        scene: scene || 'jardim',
         canvas: dom.battleCanvas,
         callbacks: {
           onStateChange: handleBattleStateChange,
@@ -867,7 +956,7 @@
     if (enemy) {
       const esp = HM.SPECIES && HM.SPECIES[enemy.speciesId];
       const et = esp && HM.TYPES && HM.TYPES[esp.type];
-      dom.enemyName.textContent = getCreatureName(enemy);
+      dom.enemyName.textContent = (enemy.golden ? '✨ ' : '') + getCreatureName(enemy);
       dom.enemyLevel.textContent = `Nv. ${enemy.level}`;
       dom.enemyCaughtMark.classList.toggle('hidden', !(snapshot.isWild && isSpeciesCaught(enemy.speciesId)));
       if (et) {
@@ -910,7 +999,7 @@
     if (player) {
       const psp = HM.SPECIES && HM.SPECIES[player.speciesId];
       const pt = psp && HM.TYPES && HM.TYPES[psp.type];
-      dom.playerName.textContent = getCreatureName(player);
+      dom.playerName.textContent = (player.golden ? '✨ ' : '') + getCreatureName(player);
       dom.playerLevel.textContent = `Nv. ${player.level}`;
       if (pt) {
         dom.playerTypeBadge.style.setProperty('--t-bg', pt.bg);
@@ -1081,9 +1170,9 @@
                     data-use-target="${idx}"
                     ${disabled || !canUse ? 'disabled' : ''}
                   >
-                    <img src="${spriteUrl(c.speciesId, 48, false)}" alt="${escapeHtml(getCreatureName(c))}" />
+                    <img src="${spriteUrl(c.speciesId, 48, false, c.golden)}" alt="${escapeHtml(getCreatureName(c))}" />
                     <div class="battle-party-info">
-                      <strong>${escapeHtml(getCreatureName(c))}</strong>
+                      <strong>${nameHtml(c)}</strong>
                       <small>HP ${c.hp}/${c.maxHp} ${c.hp <= 0 ? '💫' : ''}</small>
                       <div class="bar-track bar-sm">
                         <div class="bar-fill ${getHpClass(hpPct)}" style="width:${hpPct}%"></div>
@@ -1119,7 +1208,7 @@
         return;
       }
 
-      const items = getItemList().filter((it) => (ui.state.bag[it.id] || 0) > 0);
+      const items = getItemList().filter((it) => it.kind !== 'key' && (ui.state.bag[it.id] || 0) > 0);
       if (items.length === 0) {
         dom.battleActionPane.innerHTML =
           '<p style="margin:0;text-align:center;font-weight:800;color:var(--ink-soft);">Sua mochila está vazia! Visite a Loja do Seu Bento na Vila da Horta.</p>';
@@ -1194,9 +1283,9 @@
                   data-switch-idx="${idx}"
                   ${disabled || isActive || isFainted ? 'disabled' : ''}
                 >
-                  <img src="${spriteUrl(c.speciesId, 48, false)}" alt="${escapeHtml(getCreatureName(c))}" />
+                  <img src="${spriteUrl(c.speciesId, 48, false, c.golden)}" alt="${escapeHtml(getCreatureName(c))}" />
                   <div class="battle-party-info">
-                    <strong>${escapeHtml(getCreatureName(c))}</strong>
+                    <strong>${nameHtml(c)}</strong>
                     <small>${escapeHtml(statusTxt)}</small>
                     <div class="bar-track bar-sm">
                       <div class="bar-fill ${getHpClass(hpPct)}" style="width:${hpPct}%"></div>
@@ -1231,9 +1320,9 @@
     audio('playEvolve');
 
     dom.evoTitle.textContent = `${fromSp ? fromSp.name : fromId} evoluiu para ${toSp ? toSp.name : toId}!`;
-    dom.evoFromImg.src = spriteUrl(fromId, 136, false);
+    dom.evoFromImg.src = spriteUrl(fromId, 136, false, creature && creature.golden);
     dom.evoFromName.textContent = fromSp ? fromSp.name : fromId;
-    dom.evoToImg.src = spriteUrl(toId, 136, false);
+    dom.evoToImg.src = spriteUrl(toId, 136, false, creature && creature.golden);
     dom.evoToName.textContent = toSp ? toSp.name : toId;
     dom.evoDesc.textContent =
       (toSp && toSp.desc) || 'Seu parceiro ficou ainda mais forte e radiante!';
@@ -1297,13 +1386,17 @@
     } else if (outcome === 'caught') {
       const sp = result && result.caughtSpeciesId && HM.SPECIES && HM.SPECIES[result.caughtSpeciesId];
       const destMsg = result && result.destination === 'box' ? 'foi para a Caixa da Estufa!' : 'entrou no seu Time!';
-      showToast(`🏺 ${sp ? sp.name : 'HortaMon'} capturado e ${destMsg}`, 'gold');
+      const goldTxt = result && result.caughtGolden ? '✨ DOURADO ' : '';
+      showToast(`🏺 ${sp ? sp.name : 'HortaMon'} ${goldTxt}capturado e ${destMsg}`, 'gold');
       if (typeof HM.saveGame === 'function') HM.saveGame(ui.state);
     } else if (outcome === 'run') {
       showToast('🏃 Você fugiu com segurança!');
     } else if (outcome === 'lose') {
       if (typeof HM.healParty === 'function') HM.healParty(ui.state);
-      const healSpot = (HM.WORLD && (HM.WORLD.healSpot || HM.WORLD.spawn)) || { x: 10, y: 18, dir: 'up' };
+      const healSpot =
+        (ui.state && ui.state.lastHealSpot) ||
+        (HM.WORLD && (HM.WORLD.healSpot || HM.WORLD.spawn)) ||
+        { x: 10, y: 18, dir: 'up' };
       if (HM.Overworld && typeof HM.Overworld.teleport === 'function') {
         HM.Overworld.teleport(healSpot.x, healSpot.y, healSpot.dir || 'up');
       } else if (ui.state && ui.state.player) {
@@ -1312,7 +1405,7 @@
         ui.state.player.dir = healSpot.dir || 'up';
       }
       if (typeof HM.saveGame === 'function') HM.saveGame(ui.state);
-      showToast('💚 Você retornou à Estufa de Cura e seu time foi 100% recuperado!', 'success');
+      showToast('💚 Você voltou ao último posto de cura e seu time foi 100% recuperado!', 'success');
     }
 
     showScreen('overworld');
@@ -1396,10 +1489,11 @@
       Math.max(0, typeof initialIdx === 'number' ? initialIdx : ui.selectedPartyIdx),
       Math.max(0, ui.state.party.length - 1)
     );
+    ui.renaming = false;
     openModal({
       kind: 'party',
       title: '🌿 Seu Time de HortaMons',
-      subtitle: 'Escolha o líder da equipe, confira golpes e use itens de cura.',
+      subtitle: 'Escolha o líder, dê apelidos, confira golpes e use itens de cura.',
       sizeClass: 'modal-wide'
     });
     renderPartyModalBody();
@@ -1423,11 +1517,11 @@
         const selectedCls = idx === ui.selectedPartyIdx ? ' selected' : '';
         return `
           <div class="party-slot-card${selectedCls}" data-select-slot="${idx}">
-            <img src="${spriteUrl(c.speciesId, 72, false)}" alt="${escapeHtml(getCreatureName(c))}" />
+            <img src="${spriteUrl(c.speciesId, 72, false, c.golden)}" alt="${escapeHtml(getCreatureName(c))}" />
             <div class="party-slot-main">
               <div class="party-slot-top">
                 ${idx === 0 ? '<span class="leader-star">⭐ Líder</span>' : ''}
-                <strong>${escapeHtml(getCreatureName(c))}</strong>
+                <strong>${nameHtml(c)}</strong>
                 <span class="lv-pill">Nv. ${c.level}</span>
                 ${renderStatusChipHtml(c)}
               </div>
@@ -1496,12 +1590,23 @@
         <div class="party-cards-list">${listHtml}</div>
         <div class="party-detail-box">
           <div class="detail-hero">
-            <img src="${spriteUrl(sel.speciesId, 112, false)}" alt="${escapeHtml(getCreatureName(sel))}" />
+            <img src="${spriteUrl(sel.speciesId, 112, false, sel.golden)}" alt="${escapeHtml(getCreatureName(sel))}" />
             <div style="flex:1;min-width:0;">
               <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-                <strong style="font-size:1.1rem;">${escapeHtml(getCreatureName(sel))}</strong>
+                <strong style="font-size:1.1rem;">${nameHtml(sel)}</strong>
                 <span class="lv-pill">Nv. ${sel.level}</span>
+                <button type="button" id="btn-rename" class="btn btn-cream btn-xs" title="Dar um apelido">✏️ Apelido</button>
               </div>
+              ${sel.nickname && selSp ? `<small class="species-under-nick">${escapeHtml(selSp.name)}${sel.golden ? ' • ✨ Dourado' : ''}</small>` : sel.golden ? '<small class="species-under-nick">✨ HortaMon Dourado</small>' : ''}
+              ${
+                ui.renaming
+                  ? `<div class="rename-row">
+                      <input id="rename-input" type="text" maxlength="12" autocomplete="off" value="${escapeHtml(sel.nickname || '')}" placeholder="${escapeHtml(selSp ? selSp.name : '')}" aria-label="Apelido" />
+                      <button type="button" id="btn-rename-save" class="btn btn-primary btn-xs">Salvar</button>
+                      <button type="button" id="btn-rename-cancel" class="btn btn-cream btn-xs" title="Cancelar">✖</button>
+                    </div>`
+                  : ''
+              }
               <div style="display:flex;gap:5px;flex-wrap:wrap;margin:5px 0;">
                 ${selSp ? renderTypeChipHtml(selSp.type) : ''}
                 ${renderStatusChipHtml(sel)}
@@ -1547,10 +1652,56 @@
     dom.modalBody.querySelectorAll('[data-select-slot]').forEach((el) => {
       el.addEventListener('click', () => {
         ui.selectedPartyIdx = Number(el.getAttribute('data-select-slot')) || 0;
+        ui.renaming = false;
         audio('playSelect');
         renderPartyModalBody();
       });
     });
+
+    const renameBtn = $('btn-rename');
+    if (renameBtn) {
+      renameBtn.addEventListener('click', () => {
+        ui.renaming = !ui.renaming;
+        audio('playSelect');
+        renderPartyModalBody();
+        const inp = $('rename-input');
+        if (inp) {
+          inp.focus();
+          inp.select();
+        }
+      });
+    }
+    const saveNick = () => {
+      const inp = $('rename-input');
+      if (!inp) return;
+      const clean = inp.value.replace(/[<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 12);
+      const spName = selSp ? selSp.name : '';
+      sel.nickname = clean && clean !== spName ? clean : null;
+      ui.renaming = false;
+      if (typeof HM.saveGame === 'function') HM.saveGame(ui.state);
+      audio('playSelect');
+      refreshOverworldHud();
+      renderPartyModalBody();
+      showToast(sel.nickname ? `✏️ Agora ele se chama ${sel.nickname}!` : '✏️ Apelido removido.', 'success');
+    };
+    const renameSave = $('btn-rename-save');
+    if (renameSave) renameSave.addEventListener('click', saveNick);
+    const renameCancel = $('btn-rename-cancel');
+    if (renameCancel) {
+      renameCancel.addEventListener('click', () => {
+        ui.renaming = false;
+        renderPartyModalBody();
+      });
+    }
+    const renameInput = $('rename-input');
+    if (renameInput) {
+      renameInput.addEventListener('keydown', (ev) => {
+        if (ev.key === 'Enter') {
+          ev.preventDefault();
+          saveNick();
+        }
+      });
+    }
 
     const leaderBtn = $('btn-make-leader');
     if (leaderBtn) {
@@ -1648,7 +1799,7 @@
   }
 
   function renderBagModalBody() {
-    const items = getItemList();
+    const items = getItemList().filter((it) => it.kind !== 'key' || ((ui.state.bag && ui.state.bag[it.id]) || 0) > 0);
     const cardsHtml = items
       .map((it) => {
         const qty = (ui.state.bag && ui.state.bag[it.id]) || 0;
@@ -1665,7 +1816,9 @@
             <p class="item-card-desc">${escapeHtml(it.desc)}</p>
             <div class="item-card-foot">
               ${
-                it.kind === 'catch'
+                it.kind === 'key'
+                  ? '<span class="pill pill-leaf" style="font-size:0.7rem;">✅ Sempre ativo</span>'
+                  : it.kind === 'catch'
                   ? '<span class="pill pill-sun" style="font-size:0.7rem;">Usar em batalha</span>'
                   : `<button type="button" class="btn btn-primary btn-xs" data-bag-use="${escapeHtml(it.id)}" ${canFieldUse ? '' : 'disabled'}>Usar no Time</button>`
               }
@@ -1694,9 +1847,9 @@
                     : c.hp > 0 && (c.hp < c.maxHp || (ui.pendingBagItem === 'super_regador' && !!c.status));
                 return `
                   <button type="button" class="battle-party-btn" data-bag-target="${idx}" ${ok ? '' : 'disabled'}>
-                    <img src="${spriteUrl(c.speciesId, 48, false)}" alt="${escapeHtml(getCreatureName(c))}" />
+                    <img src="${spriteUrl(c.speciesId, 48, false, c.golden)}" alt="${escapeHtml(getCreatureName(c))}" />
                     <div class="battle-party-info">
-                      <strong>${escapeHtml(getCreatureName(c))}</strong>
+                      <strong>${nameHtml(c)}</strong>
                       <small>HP ${c.hp}/${c.maxHp} ${c.hp <= 0 ? '💫' : ''}</small>
                       <div class="bar-track bar-sm"><div class="bar-fill ${getHpClass(hpPct)}" style="width:${hpPct}%"></div></div>
                     </div>
@@ -1757,7 +1910,7 @@
 
   function renderShopModalBody() {
     const coins = ui.state.coins || 0;
-    const items = getItemList();
+    const items = getItemList().filter((it) => it.kind !== 'key' && it.price > 0);
 
     const cardsHtml = items
       .map((it) => {
@@ -1843,7 +1996,7 @@
         const canStore = party.length > 1;
         return `
           <div class="box-mon-row">
-            <img src="${spriteUrl(c.speciesId, 56, false)}" alt="${escapeHtml(getCreatureName(c))}" />
+            <img src="${spriteUrl(c.speciesId, 56, false, c.golden)}" alt="${escapeHtml(getCreatureName(c))}" />
             <div class="box-mon-info">
               <strong>${idx === 0 ? '⭐ ' : ''}${escapeHtml(getCreatureName(c))}</strong>
               <small>Nv.${c.level} • HP ${c.hp}/${c.maxHp}</small>
@@ -1864,9 +2017,9 @@
               const canTake = party.length < 6;
               return `
                 <div class="box-mon-row">
-                  <img src="${spriteUrl(c.speciesId, 56, false)}" alt="${escapeHtml(getCreatureName(c))}" />
+                  <img src="${spriteUrl(c.speciesId, 56, false, c.golden)}" alt="${escapeHtml(getCreatureName(c))}" />
                   <div class="box-mon-info">
-                    <strong>${escapeHtml(getCreatureName(c))}</strong>
+                    <strong>${nameHtml(c)}</strong>
                     <small>Nv.${c.level} • HP ${c.hp}/${c.maxHp}</small>
                   </div>
                   <button type="button" class="btn btn-primary btn-xs" data-take-idx="${idx}" ${canTake ? '' : 'disabled'} title="${canTake ? 'Colocar no time' : 'Seu time já está cheio (6/6)'}">
@@ -1918,7 +2071,7 @@
   }
 
   // =========================================================================
-  // MODAL: BOTANIDEX (22 ESPÉCIES)
+  // MODAL: BOTANIDEX
   // =========================================================================
 
   function getEvolutionLine(speciesId) {
@@ -2141,7 +2294,7 @@
     openModal({
       kind: 'types',
       title: '⚖️ Tabela de Tipos Botânicos',
-      subtitle: 'Cada tipo vence 2 tipos (SUPER 2×) e causa metade do dano em 2 tipos (POUCO 0.5×).',
+      subtitle: 'Ciclo: 🌶️ Picante → 🍄 Fungo → 🥦 Folha → 🥕 Raiz → 🍉 Fresco → 🍋 Cítrico → 🌶️. Cada tipo vence os 2 seguintes (SUPER 2×) e causa pouco dano nos 2 anteriores (POUCO 0.5×).',
       sizeClass: 'modal-wide'
     });
 
@@ -2219,7 +2372,8 @@
           <ul>
             <li>Use <strong>WASD</strong>, <strong>Setas</strong> ou o <strong>D-Pad</strong> na tela para caminhar.</li>
             <li>Pressione <strong>Espaço / Enter</strong> ou clique em NPCs e placas para conversar.</li>
-            <li>Ande na <strong>grama alta</strong> das Rotas 1 e 2 para encontrar HortaMons selvagens!</li>
+            <li>Ande na <strong>grama alta</strong> (ou nos canteiros sombrios da caverna) para encontrar HortaMons selvagens!</li>
+            <li>No celular, toque no mapa para andar até o lugar tocado.</li>
           </ul>
         </div>
         <div class="help-box">
@@ -2228,6 +2382,8 @@
             <li>Observe os selos automáticos <strong>SUPER 2×</strong> e <strong>POUCO 0.5×</strong> nos golpes!</li>
             <li>Enfraqueça HortaMons selvagens e use um <strong>Vaso de Captura</strong> na Mochila para capturá-los.</li>
             <li>HortaMons ganham XP, aprendem golpes novos e <strong>evoluem automaticamente</strong>!</li>
+            <li>Quem entra no meio da luta também ganha XP. Com o <strong>Adubo Compartilhado</strong> (presente do Prof. Pomar), o time todo ganha.</li>
+            <li>✨ Raramente (1 em 64) aparece um HortaMon <strong>Dourado</strong>. Capture se puder!</li>
           </ul>
         </div>
         <div class="help-box">
@@ -2236,7 +2392,23 @@
             <li><strong>Estufa de Cura (Enf. Rosa):</strong> cura 100% do time de graça!</li>
             <li><strong>Loja do Seu Bento:</strong> compre Vasos, Regadores e Adubo Vital.</li>
             <li><strong>Caixa da Estufa:</strong> troque HortaMons entre Time e Depósito.</li>
-            <li><strong>Arena Dourada:</strong> vença a Mestra Flora pela Insígnia!</li>
+            <li><strong>Arena Dourada:</strong> vença os 4 jardineiros das rotas e depois a Líder Flora!</li>
+          </ul>
+        </div>
+        <div class="help-box">
+          <h4>🌴 Depois da 1ª Insígnia</h4>
+          <ul>
+            <li>O <strong>Guarda Tom</strong> libera a passagem a Leste da Rota 1.</li>
+            <li><strong>Pomar Tropical:</strong> Posto do Pomar com cura e loja.</li>
+            <li><strong>Horta Subterrânea:</strong> vença os jardineiros e desafie o <strong>Líder Mandi</strong>.</li>
+          </ul>
+        </div>
+        <div class="help-box">
+          <h4>💾 Save e Álbum</h4>
+          <ul>
+            <li>Use <strong>Menu → Exportar Save</strong> para levar seu progresso para outro PC ou celular.</li>
+            <li>No <strong>Time</strong>, toque em ✏️ para dar apelidos.</li>
+            <li>O <strong>Álbum de Cartas</strong> libera uma carta para cada HortaMon capturado.</li>
           </ul>
         </div>
       </div>
@@ -2258,6 +2430,9 @@
         <button type="button" id="menu-save-btn" class="btn btn-primary">💾 Salvar Progresso Agora</button>
         <button type="button" id="menu-sound-btn" class="btn btn-cream">${muted ? '🔇 Som: Desligado (Ligar)' : '🔊 Som: Ligado (Desligar)'}</button>
         <button type="button" id="menu-help-btn" class="btn btn-sky">❓ Como Jogar</button>
+        <a id="menu-cards-btn" class="btn btn-cream" href="cartas.html">🃏 Álbum de Cartas</a>
+        <button type="button" id="menu-export-btn" class="btn btn-cream">📤 Exportar Save (arquivo)</button>
+        <button type="button" id="menu-import-btn" class="btn btn-cream">📥 Importar Save (arquivo)</button>
         <button type="button" id="menu-title-btn" class="btn btn-sun">🏡 Voltar à Tela Inicial</button>
         <button type="button" id="menu-reset-btn" class="btn btn-danger">🗑️ Apagar Save e Recomeçar</button>
       </div>
@@ -2281,6 +2456,19 @@
     $('menu-help-btn').addEventListener('click', () => {
       closeModal(true);
       openHelpModal();
+    });
+
+    $('menu-cards-btn').addEventListener('click', () => {
+      if (ui.state && typeof HM.saveGame === 'function') HM.saveGame(ui.state);
+    });
+
+    $('menu-export-btn').addEventListener('click', () => {
+      exportSaveFile();
+    });
+
+    $('menu-import-btn').addEventListener('click', () => {
+      closeModal(true);
+      askImportSave();
     });
 
     $('menu-title-btn').addEventListener('click', () => {
@@ -2309,6 +2497,72 @@
         }
       });
     });
+  }
+
+  // =========================================================================
+  // EXPORTAR / IMPORTAR SAVE
+  // =========================================================================
+
+  function exportSaveFile() {
+    if (!ui.state || typeof HM.exportSaveData !== 'function') {
+      showToast('Comece uma aventura antes de exportar.', 'error');
+      return;
+    }
+    if (typeof HM.saveGame === 'function') HM.saveGame(ui.state);
+    const text = HM.exportSaveData(ui.state);
+    const blob = new Blob([text], { type: 'application/json' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `hortamon-save-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(link);
+    link.click();
+    setTimeout(() => {
+      URL.revokeObjectURL(link.href);
+      link.remove();
+    }, 800);
+    audio('playSelect');
+    showToast('📤 Save exportado! Leve o arquivo .json para o outro PC ou celular.', 'success');
+  }
+
+  function askImportSave() {
+    const hasProgress = !!ui.state || (typeof HM.hasSave === 'function' && HM.hasSave());
+    if (!hasProgress) {
+      pickImportFile();
+      return;
+    }
+    openConfirmModal({
+      title: '📥 Importar Save?',
+      message: 'O progresso salvo neste navegador será substituído pelo do arquivo. Quer continuar?',
+      confirmLabel: 'Sim, escolher arquivo',
+      confirmClass: 'btn-primary',
+      onConfirm: () => pickImportFile()
+    });
+  }
+
+  function pickImportFile() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json,application/json';
+    input.addEventListener('change', () => {
+      const file = input.files && input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const loaded = typeof HM.importSaveData === 'function' ? HM.importSaveData(String(reader.result || '')) : null;
+        if (!loaded) {
+          audio('playError');
+          showToast('Esse arquivo não é um save válido do HortaMon.', 'error');
+          return;
+        }
+        ui.state = ensureStateShape(loaded);
+        audio('unlock');
+        enterOverworld();
+        showToast('📥 Save importado! Bem-vindo de volta!', 'gold');
+      };
+      reader.onerror = () => showToast('Não consegui ler o arquivo.', 'error');
+      reader.readAsText(file);
+    });
+    input.click();
   }
 
   // =========================================================================
@@ -2356,6 +2610,8 @@
     dom.btnNewGame.addEventListener('click', handleNewGameClick);
     dom.btnTitleTypes.addEventListener('click', openTypesModal);
     dom.btnTitleHelp.addEventListener('click', openHelpModal);
+    const importBtn = $('btn-title-import');
+    if (importBtn) importBtn.addEventListener('click', () => askImportSave());
     dom.btnTitleSound.addEventListener('click', toggleSound);
 
     // Tela de Inicial

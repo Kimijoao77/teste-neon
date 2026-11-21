@@ -2603,3 +2603,264 @@ body::before {
     transform: rotate(90deg);
   }
 }
+
+/* ==========================================================================
+   V2 — APELIDOS, DOURADOS E LINKS EM FORMA DE BOTÃO
+   ========================================================================== */
+
+a.btn {
+  text-decoration: none;
+}
+
+.golden-mark {
+  margin-right: 3px;
+  filter: drop-shadow(0 0 2px rgba(250, 204, 21, 0.9));
+}
+
+.species-under-nick {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.74rem;
+  font-weight: 800;
+  color: var(--ink-soft);
+}
+
+.rename-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 6px 0;
+}
+
+.rename-row input {
+  flex: 1;
+  min-width: 0;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 0.9rem;
+  padding: 6px 9px;
+  border: 2.5px solid var(--ink);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--ink);
+  user-select: text;
+}
+
+button,
+.btn,
+.dpad-btn,
+#overworld-canvas {
+  touch-action: manipulation;
+}
+
+/* ==========================================================================
+   V2 — CELULAR E TELAS DE TOQUE
+   ========================================================================== */
+
+/* Em telas de toque as dicas de teclado não servem para nada */
+@media (hover: none) and (pointer: coarse) {
+  .controls-hint-bar {
+    display: none;
+  }
+  .btn-interact small {
+    display: none;
+  }
+  .dpad {
+    grid-template-columns: repeat(3, 46px);
+    grid-template-rows: repeat(3, 44px);
+    gap: 4px;
+  }
+  .dpad-btn {
+    width: 46px;
+    height: 44px;
+    font-size: 1rem;
+  }
+}
+
+/* Celular em pé: controles logo abaixo do mapa */
+@media (max-width: 600px) {
+  .app-root {
+    padding: 6px;
+  }
+  .controls-side-card {
+    order: -1;
+  }
+  .zone-texts small {
+    display: none;
+  }
+}
+
+/* Celular deitado (ou qualquer tela baixa): mapa à esquerda, controles à direita, tudo sem rolar */
+@media (orientation: landscape) and (max-height: 560px) {
+  .app-root {
+    padding: 4px 6px;
+    justify-content: flex-start;
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+
+  /* ---------- Exploração ---------- */
+  .screen-overworld {
+    gap: 4px;
+    max-width: none;
+  }
+  .top-bar {
+    padding: 3px 8px;
+    gap: 6px;
+  }
+  .top-bar-left {
+    gap: 6px;
+    flex-wrap: nowrap;
+  }
+  .zone-pill {
+    padding: 2px 8px;
+  }
+  .zone-texts small {
+    display: none;
+  }
+  .stat-pill {
+    padding: 2px 6px;
+    font-size: 0.74rem;
+  }
+  .top-bar-actions {
+    gap: 4px;
+    flex-wrap: nowrap;
+  }
+  .top-bar-actions .btn span {
+    display: none;
+  }
+  .top-bar-actions .btn {
+    padding: 4px 7px;
+  }
+  .overworld-layout {
+    grid-template-columns: minmax(0, calc((100vh - 64px) * 1.6)) minmax(190px, 1fr);
+    grid-template-columns: minmax(0, calc((100dvh - 64px) * 1.6)) minmax(190px, 1fr);
+    gap: 6px;
+    align-items: start;
+  }
+  .stage-column {
+    gap: 0;
+  }
+  .controls-hint-bar {
+    display: none;
+  }
+  .side-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: calc(100vh - 64px);
+    max-height: calc(100dvh - 64px);
+    overflow-y: auto;
+  }
+  .controls-side-card {
+    order: -1;
+    padding: 6px 8px;
+  }
+  .side-card {
+    padding: 6px 9px;
+  }
+  .quest-text {
+    font-size: 0.78rem;
+  }
+
+  /* ---------- Batalha ---------- */
+  .screen-battle {
+    max-width: none;
+  }
+  .battle-shell {
+    max-width: none;
+    display: grid;
+    grid-template-columns: minmax(0, calc((100vh - 56px) * 2.235)) minmax(272px, 1fr);
+    grid-template-columns: minmax(0, calc((100dvh - 56px) * 2.235)) minmax(272px, 1fr);
+    grid-template-rows: auto auto 1fr;
+    gap: 5px;
+  }
+  .battle-topbar {
+    grid-column: 1 / -1;
+    padding: 3px 8px;
+  }
+  .battle-stage {
+    grid-column: 1;
+    grid-row: 2 / span 2;
+    align-self: start;
+  }
+  .battle-narration {
+    grid-column: 2;
+    grid-row: 2;
+    padding: 5px 8px;
+  }
+  .battle-message {
+    font-size: 0.82rem;
+  }
+  .battle-command-deck {
+    grid-column: 2;
+    grid-row: 3;
+    grid-template-columns: 1fr;
+    min-height: 0;
+    gap: 5px;
+    align-self: start;
+  }
+  .battle-tabs {
+    grid-template-columns: repeat(4, 1fr);
+    padding: 4px;
+    gap: 4px;
+  }
+  .btab-btn {
+    font-size: 0.74rem;
+    padding: 6px 4px;
+  }
+  .battle-action-pane {
+    padding: 6px;
+  }
+  .battle-narration,
+  .battle-command-deck,
+  .battle-tabs,
+  .battle-action-pane {
+    min-width: 0;
+  }
+  .btab-btn {
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .moves-grid {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+  .move-card {
+    padding: 4px 8px;
+    gap: 2px;
+  }
+  .move-card-top,
+  .move-card-bottom {
+    flex-wrap: nowrap;
+  }
+  .move-name {
+    font-size: 0.8rem;
+  }
+  .move-card-bottom {
+    font-size: 0.68rem;
+  }
+  .battle-items-grid {
+    grid-template-columns: 1fr;
+    max-height: 190px;
+  }
+  .battle-party-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .battle-hud {
+    width: 190px;
+    padding: 4px 7px;
+    font-size: 0.78rem;
+  }
+
+  /* ---------- Janelas ---------- */
+  .modal-backdrop {
+    padding: 6px;
+  }
+  .modal-dialog {
+    max-height: 96vh;
+    max-height: 96dvh;
+  }
+}

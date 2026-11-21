@@ -28,6 +28,7 @@
 
   let state = null;
   let battleType = 'wild'; // 'wild' | 'trainer' | 'leader'
+  let battleScene = 'jardim'; // 'jardim' | 'tropical' | 'caverna'
   let isWild = true;
   let trainerNpc = null;
   let trainerName = null;
@@ -35,6 +36,7 @@
   let enemyParty = [];
   let enemyPartyIndex = 0;
   let playerPartyIndex = 0;
+  let participants = new Set(); // HortaMons do jogador que enfrentaram o inimigo atual
 
   let playerStages = { atk: 0, def: 0 };
   let enemyStages = { atk: 0, def: 0 };
@@ -1426,6 +1428,60 @@
     }
   }
 
+  // XP para o resto do time: quem participou da luta (trocou no meio) ou todos, com o Adubo Compartilhado
+  async function awardTeamXp(xpAmount, sid) {
+    if (typeof HM.gainXp !== 'function' || !Array.isArray(state.party) || xpAmount <= 0) return;
+    const active = getPlayerCreature();
+    const hasShare = !!(state.bag && state.bag.adubo_compartilhado > 0);
+    const share = Math.max(1, Math.round(xpAmount * 0.5));
+    const receivers = state.party.filter(function (c) {
+      return c && c !== active && c.hp > 0 && (hasShare || participants.has(c));
+    });
+    if (receivers.length === 0) return;
+
+    setMessage(
+      (hasShare ? '🌻 Adubo Compartilhado: ' : '') +
+        (receivers.length === 1 ? getCreatureName(receivers[0]) + ' ganhou ' : 'O resto do time ganhou ') +
+        share + ' de XP!'
+    );
+    await waitMs(620, sid);
+    if (!isAliveSession(sid)) return;
+
+    for (let i = 0; i < receivers.length; i++) {
+      const c = receivers[i];
+      const prevName = getCreatureName(c);
+      const res = HM.gainXp(c, share);
+      if (!res || !res.leveledUp) continue;
+      playSfx('playLevelUp');
+      setMessage(prevName + ' subiu para o nível ' + c.level + '!');
+      await waitMs(620, sid);
+      if (!isAliveSession(sid)) return;
+      if (Array.isArray(res.learnedMoves)) {
+        for (let k = 0; k < res.learnedMoves.length; k++) {
+          const mv = HM.MOVES && HM.MOVES[res.learnedMoves[k]];
+          setMessage(getCreatureName(c) + ' aprendeu ' + (mv ? mv.name : res.learnedMoves[k]) + '!');
+          await waitMs(620, sid);
+          if (!isAliveSession(sid)) return;
+        }
+      }
+      if (res.evolvedFrom && res.evolvedTo) {
+        if (typeof HM.registerSeen === 'function') HM.registerSeen(state, res.evolvedTo);
+        if (typeof HM.registerCaught === 'function') HM.registerCaught(state, res.evolvedTo);
+        playSfx('playEvolve');
+        setMessage('Uau! ' + getSpecies(res.evolvedFrom).name + ' evoluiu para ' + getSpecies(res.evolvedTo).name + '!');
+        if (callbacks && typeof callbacks.onEvolution === 'function') {
+          try {
+            await Promise.resolve(callbacks.onEvolution({ creature: c, fromId: res.evolvedFrom, toId: res.evolvedTo }));
+          } catch (err) {
+            console.error('[HortaMon Battle] Erro em onEvolution (time):', err);
+          }
+        }
+        if (!isAliveSession(sid)) return;
+      }
+    }
+    emitState();
+  }
+
   function calcDefeatXp(defeatedEnemy) {
     const sp = getSpecies(defeatedEnemy.speciesId);
     const baseXp = sp.baseXp || 65;
@@ -1456,6 +1512,11 @@
         await awardXpAndCheckEvolution(xpGain, sid);
         if (!isAliveSession(sid)) return true;
       }
+      await awardTeamXp(xpGain, sid);
+      if (!isAliveSession(sid)) return true;
+      participants = new Set();
+      const stillActive = getPlayerCreature();
+      if (stillActive && stillActive.hp > 0) participants.add(stillActive);
 
       // Verificar se o inimigo tem mais HortaMons
       const nextEnemyIdx = findFirstAliveIndex(enemyParty, -1);
@@ -1781,6 +1842,7 @@
         rewardCoins: 0,
         badge: null,
         caughtSpeciesId: enemy.speciesId,
+        caughtGolden: !!enemy.golden,
         destination: destination
       });
     } else {
@@ -1850,6 +1912,7 @@
     battleType = cfg.type || 'wild';
     isWild = battleType === 'wild';
     trainerNpc = cfg.trainerNpc || null;
+    battleScene = cfg.scene || 'jardim';
     trainerName = trainerNpc && trainerNpc.name ? trainerNpc.name : (battleType === 'leader' ? 'Líder Flora' : 'Treinador');
     callbacks = cfg.callbacks || {};
 
@@ -1873,6 +1936,8 @@
 
     enemyPartyIndex = findFirstAliveIndex(enemyParty, -1);
     if (enemyPartyIndex < 0) enemyPartyIndex = 0;
+    participants = new Set();
+    if (state.party && state.party[playerPartyIndex]) participants.add(state.party[playerPartyIndex]);
 
     playerStages = { atk: 0, def: 0 };
     enemyStages = { atk: 0, def: 0 };
@@ -1910,10 +1975,13 @@
 
     // Mensagem de abertura e entrada animada
     const eName = getCreatureName(firstEnemy);
-    if (isWild) {
+    if (isWild && firstEnemy && firstEnemy.golden) {
+      message = '✨ Uau! Um ' + eName + ' DOURADO apareceu! Ele é raríssimo!';
+      playSfx('playLevelUp');
+    } else if (isWild) {
       message = 'Um ' + eName + ' selvagem saltou do canteiro!';
     } else if (battleType === 'leader') {
-      message = trainerName + ' desafia você na Estufa Dourada! Enviou ' + eName + '!';
+      message = trainerName + ' desafia você na ' + ((trainerNpc && trainerNpc.arenaName) || 'Arena') + '! Enviou ' + eName + '!';
     } else {
       message = trainerName + ' desafia você! Enviou ' + eName + '!';
     }
@@ -2178,6 +2246,7 @@
       playerPartyIndex = partyIndex;
       playerStages = { atk: 0, def: 0 };
       mustSwitch = false;
+      participants.add(nextCreature);
 
       playSfx('playSelect');
       setMessage('Vai, ' + getCreatureName(nextCreature) + '!');
@@ -2371,10 +2440,13 @@
     }
 
     // 1. Cenário (Estufa Dourada para Líder Flora, Jardim Ensolarado para os demais)
-    if (battleType === 'leader') {
+    if (battleScene === 'caverna') {
+      drawCaveBackground(ctx, W, H);
+    } else if (battleType === 'leader') {
       drawGoldenGreenhouseBackground(ctx, W, H);
     } else {
       drawGardenBackground(ctx, W, H);
+      if (battleScene === 'tropical') drawTropicalTouches(ctx, W, H);
     }
 
     // 2. Plataformas ovais iluminadas
@@ -2568,6 +2640,190 @@
       c.arc(dx + sway, dy - 8, 1.3, 0, Math.PI * 2);
       c.fill();
     }
+  }
+
+  // ---------------------------------------------------------------------------
+  // CENÁRIO: POMAR TROPICAL (céu de fim de tarde + coqueiros no fundo)
+  // ---------------------------------------------------------------------------
+  function drawTropicalTouches(c, W, H) {
+    const warm = c.createLinearGradient(0, 0, 0, H * 0.6);
+    warm.addColorStop(0, 'rgba(251, 146, 60, 0.30)');
+    warm.addColorStop(0.6, 'rgba(244, 114, 182, 0.16)');
+    warm.addColorStop(1, 'rgba(244, 114, 182, 0)');
+    c.fillStyle = warm;
+    c.fillRect(-20, -20, W + 40, H * 0.62);
+    drawBgPalm(c, W * 0.2, H * 0.5, 0.9, -0.08);
+    drawBgPalm(c, W * 0.78, H * 0.47, 1.05, 0.1);
+    drawBgPalm(c, W * 0.95, H * 0.5, 0.8, -0.05);
+  }
+
+  function drawBgPalm(c, x, baseY, sc, lean) {
+    const sway = Math.sin(sceneTime * 1.3 + x) * 0.06;
+    c.save();
+    c.translate(x, baseY);
+    c.scale(sc, sc);
+    c.strokeStyle = '#2b1d14';
+    c.lineWidth = 2.4;
+    // Tronco curvo
+    c.beginPath();
+    c.moveTo(-5, 0);
+    c.quadraticCurveTo(-2 + lean * 60, -34, lean * 80, -62);
+    c.lineTo(lean * 80 + 7, -60);
+    c.quadraticCurveTo(6 + lean * 60, -32, 5, 0);
+    c.closePath();
+    c.fillStyle = '#b45309';
+    c.fill();
+    c.stroke();
+    // Folhas
+    c.translate(lean * 80 + 3, -62);
+    const fronds = [-2.7, -2.1, -1.4, -0.9, -0.3];
+    for (let i = 0; i < fronds.length; i++) {
+      c.save();
+      c.rotate(fronds[i] + sway);
+      c.beginPath();
+      c.moveTo(0, 0);
+      c.quadraticCurveTo(16, -9, 34, 4);
+      c.quadraticCurveTo(16, 2, 0, 0);
+      c.closePath();
+      c.fillStyle = i % 2 ? '#16a34a' : '#22c55e';
+      c.fill();
+      c.stroke();
+      c.restore();
+    }
+    // Cocos
+    c.fillStyle = '#78350f';
+    c.beginPath();
+    c.arc(-3, 4, 4, 0, Math.PI * 2);
+    c.arc(5, 5, 4, 0, Math.PI * 2);
+    c.fill();
+    c.stroke();
+    c.restore();
+  }
+
+  // ---------------------------------------------------------------------------
+  // CENÁRIO: HORTA SUBTERRÂNEA (caverna com cogumelos brilhantes)
+  // ---------------------------------------------------------------------------
+  function drawCaveBackground(c, W, H) {
+    const wall = c.createLinearGradient(0, 0, 0, H * 0.6);
+    wall.addColorStop(0, '#1e1530');
+    wall.addColorStop(0.7, '#3b2a4f');
+    wall.addColorStop(1, '#4a3626');
+    c.fillStyle = wall;
+    c.fillRect(-20, -20, W + 40, H * 0.64);
+
+    // Paredes de pedra ao fundo
+    c.fillStyle = '#2e2240';
+    c.strokeStyle = '#2b1d14';
+    c.lineWidth = 2.5;
+    c.beginPath();
+    c.moveTo(-20, H * 0.6);
+    const peaks = [[0.06, 0.34], [0.16, 0.44], [0.27, 0.3], [0.4, 0.42], [0.52, 0.28], [0.66, 0.4], [0.78, 0.26], [0.9, 0.38], [1.02, 0.3]];
+    for (let i = 0; i < peaks.length; i++) c.lineTo(W * peaks[i][0], H * peaks[i][1]);
+    c.lineTo(W + 20, H * 0.6);
+    c.closePath();
+    c.fill();
+    c.stroke();
+
+    // Estalactites
+    const tips = [[0.05, 0.16, 14], [0.13, 0.1, 10], [0.24, 0.2, 16], [0.37, 0.12, 11], [0.5, 0.18, 13], [0.63, 0.09, 9], [0.74, 0.21, 15], [0.86, 0.13, 12], [0.96, 0.19, 14]];
+    for (let i = 0; i < tips.length; i++) {
+      const tx = W * tips[i][0];
+      const len = H * tips[i][1];
+      const w = tips[i][2];
+      c.beginPath();
+      c.moveTo(tx - w, -4);
+      c.quadraticCurveTo(tx - w * 0.3, len * 0.6, tx, len);
+      c.quadraticCurveTo(tx + w * 0.3, len * 0.6, tx + w, -4);
+      c.closePath();
+      c.fillStyle = i % 2 ? '#4c3a62' : '#584570';
+      c.fill();
+      c.stroke();
+    }
+
+    // Raízes penduradas do teto
+    c.strokeStyle = 'rgba(180, 120, 70, 0.75)';
+    c.lineWidth = 3;
+    [[0.19, 0.22], [0.45, 0.17], [0.69, 0.24], [0.91, 0.16]].forEach(function (r, i) {
+      const rx = W * r[0];
+      const sway = Math.sin(sceneTime * 1.1 + i) * 4;
+      c.beginPath();
+      c.moveTo(rx, -4);
+      c.bezierCurveTo(rx + 8, H * r[1] * 0.4, rx - 8 + sway, H * r[1] * 0.7, rx + sway, H * r[1]);
+      c.stroke();
+    });
+
+    // Chão de terra escura
+    const floor = c.createLinearGradient(0, H * 0.56, 0, H);
+    floor.addColorStop(0, '#6b4a2e');
+    floor.addColorStop(1, '#3f2a19');
+    c.fillStyle = floor;
+    c.beginPath();
+    c.moveTo(-20, H * 0.6);
+    c.quadraticCurveTo(W * 0.3, H * 0.54, W * 0.6, H * 0.58);
+    c.quadraticCurveTo(W * 0.85, H * 0.61, W + 20, H * 0.57);
+    c.lineTo(W + 20, H + 20);
+    c.lineTo(-20, H + 20);
+    c.closePath();
+    c.fill();
+    c.strokeStyle = '#2b1d14';
+    c.lineWidth = 2.5;
+    c.stroke();
+
+    // Pedrinhas no chão
+    c.fillStyle = '#5b4332';
+    [[0.1, 0.8, 9], [0.33, 0.93, 7], [0.58, 0.74, 6], [0.9, 0.86, 10], [0.72, 0.95, 6]].forEach(function (p) {
+      c.beginPath();
+      c.ellipse(W * p[0], H * p[1], p[2], p[2] * 0.6, 0, 0, Math.PI * 2);
+      c.fill();
+      c.stroke();
+    });
+
+    // Cogumelos e cristais brilhantes
+    drawGlowMushroom(c, W * 0.04, H * 0.66, 1.0, '#22d3ee');
+    drawGlowMushroom(c, W * 0.09, H * 0.7, 0.7, '#c084fc');
+    drawGlowMushroom(c, W * 0.95, H * 0.64, 1.1, '#c084fc');
+    drawGlowMushroom(c, W * 0.9, H * 0.68, 0.75, '#22d3ee');
+    drawGlowMushroom(c, W * 0.47, H * 0.58, 0.6, '#a3e635');
+  }
+
+  function drawGlowMushroom(c, x, y, sc, color) {
+    const pulse = 0.55 + 0.45 * Math.sin(sceneTime * 2.2 + x * 0.05);
+    c.save();
+    c.translate(x, y);
+    c.scale(sc, sc);
+    const glow = c.createRadialGradient(0, -14, 2, 0, -14, 34);
+    glow.addColorStop(0, color);
+    glow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    c.globalAlpha = 0.35 * pulse;
+    c.fillStyle = glow;
+    c.beginPath();
+    c.arc(0, -14, 34, 0, Math.PI * 2);
+    c.fill();
+    c.globalAlpha = 1;
+    c.strokeStyle = '#2b1d14';
+    c.lineWidth = 2.2;
+    c.fillStyle = '#f5f5f4';
+    c.beginPath();
+    c.moveTo(-4, 0);
+    c.lineTo(-3, -14);
+    c.lineTo(3, -14);
+    c.lineTo(4, 0);
+    c.closePath();
+    c.fill();
+    c.stroke();
+    c.fillStyle = color;
+    c.beginPath();
+    c.moveTo(-14, -13);
+    c.quadraticCurveTo(0, -32, 14, -13);
+    c.closePath();
+    c.fill();
+    c.stroke();
+    c.fillStyle = 'rgba(255, 255, 255, 0.7)';
+    c.beginPath();
+    c.arc(-5, -19, 2.2, 0, Math.PI * 2);
+    c.arc(4, -22, 1.6, 0, Math.PI * 2);
+    c.fill();
+    c.restore();
   }
 
   function drawCartoonCloud(c, x, y, scale) {
@@ -2852,16 +3108,23 @@
     c.fill();
     c.stroke();
 
-    // Topo de grama iluminada
+    // Topo de grama iluminada (na caverna vira pedra com musgo brilhante)
+    const isCave = battleScene === 'caverna';
     const grassGrad = c.createRadialGradient(cx - rx * 0.15, cy - ry * 0.25, rx * 0.1, cx, cy, rx);
-    grassGrad.addColorStop(0, '#bbf7d0');
-    grassGrad.addColorStop(0.45, '#4ade80');
-    grassGrad.addColorStop(1, '#16a34a');
+    if (isCave) {
+      grassGrad.addColorStop(0, '#c4b5fd');
+      grassGrad.addColorStop(0.45, '#7c6a96');
+      grassGrad.addColorStop(1, '#4c3d63');
+    } else {
+      grassGrad.addColorStop(0, '#bbf7d0');
+      grassGrad.addColorStop(0.45, '#4ade80');
+      grassGrad.addColorStop(1, '#16a34a');
+    }
     c.fillStyle = grassGrad;
     c.beginPath();
     c.ellipse(cx, cy - 2, rx * 0.96, ry * 0.9, 0, 0, Math.PI * 2);
     c.fill();
-    c.strokeStyle = isLeaderArena ? '#b45309' : '#14532d';
+    c.strokeStyle = isLeaderArena ? '#b45309' : isCave ? '#2e1065' : '#14532d';
     c.lineWidth = 2.5;
     c.stroke();
 
@@ -2877,7 +3140,7 @@
       const a = (i / 6) * Math.PI * 2 + 0.35;
       const fx = cx + Math.cos(a) * rx * 0.88;
       const fy = cy - 2 + Math.sin(a) * ry * 0.82;
-      c.fillStyle = isLeaderArena ? (i % 2 === 0 ? '#fde047' : '#f472b6') : '#86efac';
+      c.fillStyle = isLeaderArena ? (i % 2 === 0 ? '#fde047' : '#f472b6') : isCave ? '#67e8f9' : '#86efac';
       c.beginPath();
       c.arc(fx, fy, isLeaderArena ? 3.2 : 2.3, 0, Math.PI * 2);
       c.fill();
@@ -2913,6 +3176,7 @@
       scaleY: anim.scaleY,
       status: creature.status || null,
       silhouette: false,
+      golden: !!creature.golden,
       shadow: true
     };
 

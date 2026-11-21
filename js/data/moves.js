@@ -351,6 +351,78 @@
       maxPp: 12,
       fx: 'spore',
       desc: 'Esfera mística concentrada que explode em esporos.'
+    },
+
+    // NOVOS GOLPES (Pomar Tropical e Horta Subterrânea)
+    banana_bumerangue: {
+      id: 'banana_bumerangue',
+      name: 'Bumerangue de Banana',
+      type: 'citrico',
+      category: 'attack',
+      power: 72,
+      accuracy: 95,
+      maxPp: 12,
+      fx: 'citrus',
+      desc: 'Arremessa uma casca de banana que volta girando e acerta duas vezes no mesmo lugar.'
+    },
+    agua_de_coco: {
+      id: 'agua_de_coco',
+      name: 'Água de Coco',
+      type: 'fresco',
+      category: 'status',
+      power: 0,
+      accuracy: 100,
+      maxPp: 10,
+      fx: 'heal',
+      effect: { type: 'heal', chance: 1, amount: 0.5 },
+      desc: 'Bebe a própria água de coco geladinha e recupera metade do HP.'
+    },
+    rabanete_ardente: {
+      id: 'rabanete_ardente',
+      name: 'Rabanete Ardente',
+      type: 'picante',
+      category: 'attack',
+      power: 70,
+      accuracy: 95,
+      maxPp: 14,
+      fx: 'fire',
+      effect: { type: 'burn', chance: 0.2 },
+      desc: 'Brota do chão em brasa e acerta por baixo. Pode queimar.'
+    },
+    caroco_bomba: {
+      id: 'caroco_bomba',
+      name: 'Caroço Bomba',
+      type: 'folha',
+      category: 'attack',
+      power: 74,
+      accuracy: 95,
+      maxPp: 12,
+      fx: 'leaf',
+      desc: 'Lança o caroço gigante de abacate com toda a força.'
+    },
+    trufa_sombria: {
+      id: 'trufa_sombria',
+      name: 'Trufa Sombria',
+      type: 'fungo',
+      category: 'attack',
+      power: 82,
+      accuracy: 90,
+      maxPp: 9,
+      fx: 'spore',
+      effect: { type: 'sleep', chance: 0.15 },
+      desc: 'Uma nuvem perfumada de trufa que pode fazer o alvo dormir.'
+    },
+    raiz_profunda: {
+      id: 'raiz_profunda',
+      name: 'Raiz Profunda',
+      type: 'raiz',
+      category: 'attack',
+      power: 92,
+      accuracy: 88,
+      maxPp: 7,
+      fx: 'earth',
+      desc: 'Raízes ancestrais rompem o chão e prendem o oponente.'
     }
+
   };
 })(window);
