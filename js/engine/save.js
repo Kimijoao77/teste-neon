@@ -114,10 +114,50 @@
     };
   };
 
+  function evolveIfReady(creature, result) {
+    // Evolução automática ao atingir evolveLevel
+    let sp = HM.SPECIES && HM.SPECIES[creature.speciesId];
+    while (
+      sp &&
+      sp.evolvesTo &&
+      sp.evolveLevel &&
+      creature.level >= sp.evolveLevel &&
+      HM.SPECIES[sp.evolvesTo]
+    ) {
+      if (!result.evolvedFrom) {
+        result.evolvedFrom = creature.speciesId;
+      }
+      result.evolutions.push({ fromId: creature.speciesId, toId: sp.evolvesTo });
+      creature.speciesId = sp.evolvesTo;
+      result.evolvedTo = creature.speciesId;
+      sp = HM.SPECIES[creature.speciesId];
+      learnMovesForLevel(creature, creature.speciesId, creature.level, result.learnedMoves);
+    }
+  }
+
+  function refreshGrowthStats(creature) {
+    const prevMaxHp = Math.max(1, creature.maxHp || 1);
+    const wasAlive = creature.hp > 0;
+    // Atualiza stats e escala o HP atual proporcionalmente
+    const newStats = HM.calcStats(creature.speciesId, creature.level);
+    creature.maxHp = newStats.maxHp;
+    creature.atk = newStats.atk;
+    creature.def = newStats.def;
+    creature.spd = newStats.spd;
+
+    if (wasAlive) {
+      const scaled = Math.round((creature.hp / prevMaxHp) * newStats.maxHp);
+      creature.hp = Math.min(newStats.maxHp, Math.max(1, scaled));
+    } else {
+      creature.hp = 0;
+    }
+  }
+
   HM.gainXp = function (creature, amount) {
     const result = {
       leveledUp: false,
       newLevels: [],
+      evolutions: [],
       learnedMoves: [],
       evolvedFrom: null,
       evolvedTo: null
@@ -133,6 +173,10 @@
       creature.xpNext = HM.xpForLevel(creature.level || 1);
     }
 
+    // Parceiros de saves antigos podem já ter atingido o nível da nova forma.
+    evolveIfReady(creature, result);
+    if (result.evolvedTo) refreshGrowthStats(creature);
+
     while (creature.level < MAX_LEVEL && creature.xp >= creature.xpNext) {
       creature.xp -= creature.xpNext;
       creature.level += 1;
@@ -140,43 +184,11 @@
       result.leveledUp = true;
       result.newLevels.push(creature.level);
 
-      const prevMaxHp = Math.max(1, creature.maxHp || 1);
-      const wasAlive = creature.hp > 0;
-
       // Aprende golpes da espécie atual no novo nível
       learnMovesForLevel(creature, creature.speciesId, creature.level, result.learnedMoves);
 
-      // Evolução automática ao atingir evolveLevel
-      let sp = HM.SPECIES && HM.SPECIES[creature.speciesId];
-      while (
-        sp &&
-        sp.evolvesTo &&
-        sp.evolveLevel &&
-        creature.level >= sp.evolveLevel &&
-        HM.SPECIES[sp.evolvesTo]
-      ) {
-        if (!result.evolvedFrom) {
-          result.evolvedFrom = creature.speciesId;
-        }
-        creature.speciesId = sp.evolvesTo;
-        result.evolvedTo = creature.speciesId;
-        sp = HM.SPECIES[creature.speciesId];
-        learnMovesForLevel(creature, creature.speciesId, creature.level, result.learnedMoves);
-      }
-
-      // Atualiza stats e escala o HP atual proporcionalmente
-      const newStats = HM.calcStats(creature.speciesId, creature.level);
-      creature.maxHp = newStats.maxHp;
-      creature.atk = newStats.atk;
-      creature.def = newStats.def;
-      creature.spd = newStats.spd;
-
-      if (wasAlive) {
-        const scaled = Math.round((creature.hp / prevMaxHp) * newStats.maxHp);
-        creature.hp = Math.min(newStats.maxHp, Math.max(1, scaled));
-      } else {
-        creature.hp = 0;
-      }
+      evolveIfReady(creature, result);
+      refreshGrowthStats(creature);
     }
 
     if (creature.level >= MAX_LEVEL) {

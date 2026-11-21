@@ -42,7 +42,7 @@ No celular, abra o link no Chrome e use **⋮ → Adicionar à tela inicial** pa
 
 ## ✨ Recursos Implementados
 
-- **30 HortaMons com ilustrações próprias** nas batalhas, na BotaniDex e no [álbum completo](https://kimijoao77.github.io/teste-neon/cartas.html?galeria=todas), com versões **✨ Douradas** raríssimas (1 em 64 encontros).
+- **57 HortaMons com ilustrações próprias em 19 famílias de três formas** nas batalhas, na BotaniDex e no [álbum completo](https://kimijoao77.github.io/teste-neon/cartas.html?galeria=todas), com versões **✨ Douradas** raríssimas (1 em 64 encontros).
 - **6 tipos em ciclo, cada um com identidade própria**: `🌶️ Picante → 🍄 Fungo → 🥦 Folha → 🥕 Raiz → 🍉 Fresco → 🍋 Cítrico → 🌶️`. Cada tipo vence os 2 seguintes (2×) e causa pouco dano nos 2 anteriores (0.5×). O triângulo dos iniciais continua: Picante > Folha > Fresco > Picante.
 - **Mundo de 60×26 tiles em 6 áreas**:
   - **Vila da Horta**: Lab do Prof. Pomar, Estufa de Cura, Loja do Seu Bento e Terminal da Estufa.
@@ -54,7 +54,7 @@ No celular, abra o link no Chrome e use **⋮ → Adicionar à tela inicial** pa
 - **XP para o time**: quem entra no meio da luta ganha metade do XP; com o **Adubo Compartilhado** (presente do Prof. Pomar quando você tem 2 HortaMons) o time inteiro ganha.
 - **Apelidos** (botão ✏️ no Time), **BotaniDex**, **Caixa da Estufa** e **Tabela de Tipos**.
 - **Save**: automático no navegador (`localStorage`, chave `hortamon_save_v1`) e **Exportar/Importar Save** em arquivo `.json` (Menu) para levar o progresso entre PCs e celular.
-- **Álbum de Cartas** (`cartas.html`): cartas giratórias — a frente mostra só o personagem e, ao tocar, a carta vira e mostra a ficha (stats, golpes, forte/fraco contra). Cada carta é liberada quando você captura o HortaMon (“Ver todas” abre o modo galeria; “Virar todas” gira todas de uma vez). Para imprimir: `cartas.html?sheet=1` até `?sheet=8` (frente e verso lado a lado — recorte, dobre e cole).
+- **Álbum de Cartas** (`cartas.html`): cartas giratórias — a frente mostra só o personagem e, ao tocar, a carta vira e mostra a ficha (stats, golpes, forte/fraco contra). Cada carta é liberada quando você captura o HortaMon (“Ver todas” abre o modo galeria; “Virar todas” gira todas de uma vez). Para imprimir: `cartas.html?sheet=1` até `?sheet=15` (frente e verso lado a lado — recorte, dobre e cole).
 - **Celular**: layout próprio para tela em pé e deitada, controles maiores e instalação como app (manifest + ícones).
 - **Tela inicial viva**: os HortaMons passeiam num jardim animado atrás do logo; menu de jogo com Continuar (mostra onde você parou), Novo jogo, Álbum e Opções (navegável pelas setas do teclado).
 - **Visual**: fontes Fredoka (títulos e botões) e Nunito (textos) embutidas; ícones desenhados no lugar dos emojis nos botões; menu de pausa em lista com resumo do progresso.
@@ -76,12 +76,12 @@ teste-neon/
 │   ├── data/
 │   │   ├── types.js        # 6 tipos botânicos e matriz de efetividade
 │   │   ├── moves.js        # 35 golpes originais com efeitos e partículas
-│   │   ├── species.js      # 30 espécies, stats base, learnsets e evoluções
+│   │   ├── species.js      # 57 espécies, stats base, learnsets e evoluções
 │   │   ├── creature-art.js # Ilustrações WebP com transparência para uso online e offline
 │   │   └── world.js        # Itens, mapa 60×26, prédios, 6 zonas e NPCs
 │   ├── engine/
 │   │   ├── audio.js        # Efeitos sonoros procedurais (Web Audio API)
-│   │   ├── sprites.js      # Arte cartoon das 30 criaturas (e versões douradas), personagens e vasos
+│   │   ├── sprites.js      # Arte cartoon das 57 criaturas (e versões douradas), personagens e vasos
 │   │   ├── save.js         # Criação de criaturas, XP/evolução, curas e localStorage
 │   │   ├── battle.js       # Motor de batalha por turnos, partículas e captura
 │   │   └── overworld.js    # Mapa 60fps, movimento, minimapa, NPCs e encontros

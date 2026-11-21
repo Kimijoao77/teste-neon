@@ -1395,15 +1395,15 @@
       }
     }
 
-    if (res.evolvedFrom && res.evolvedTo) {
-      if (typeof HM.registerSeen === 'function') HM.registerSeen(state, res.evolvedTo);
-      if (typeof HM.registerCaught === 'function') HM.registerCaught(state, res.evolvedTo);
+    for (const evolution of res.evolutions) {
+      if (typeof HM.registerSeen === 'function') HM.registerSeen(state, evolution.toId);
+      if (typeof HM.registerCaught === 'function') HM.registerCaught(state, evolution.toId);
 
       playSfx('playEvolve');
       triggerScreenFlash('#fef9c3', 0.55);
       spawnMoveParticles('buff', 'player', 'player');
-      const fromName = getSpecies(res.evolvedFrom).name;
-      const toName = getSpecies(res.evolvedTo).name;
+      const fromName = getSpecies(evolution.fromId).name;
+      const toName = getSpecies(evolution.toId).name;
       spawnFloatingText('player', 'EVOLUIU!', { color: '#fde047', size: 25 });
       setMessage('Uau! ' + fromName + ' evoluiu para ' + toName + '!');
       await animateAura('player', '#fde047', sid);
@@ -1415,8 +1415,8 @@
           await Promise.resolve(
             callbacks.onEvolution({
               creature: player,
-              fromId: res.evolvedFrom,
-              toId: res.evolvedTo
+              fromId: evolution.fromId,
+              toId: evolution.toId
             })
           );
         } catch (err) {
@@ -1451,11 +1451,13 @@
       const c = receivers[i];
       const prevName = getCreatureName(c);
       const res = HM.gainXp(c, share);
-      if (!res || !res.leveledUp) continue;
-      playSfx('playLevelUp');
-      setMessage(prevName + ' subiu para o nível ' + c.level + '!');
-      await waitMs(620, sid);
-      if (!isAliveSession(sid)) return;
+      if (!res) continue;
+      if (res.leveledUp) {
+        playSfx('playLevelUp');
+        setMessage(prevName + ' subiu para o nível ' + c.level + '!');
+        await waitMs(620, sid);
+        if (!isAliveSession(sid)) return;
+      }
       if (Array.isArray(res.learnedMoves)) {
         for (let k = 0; k < res.learnedMoves.length; k++) {
           const mv = HM.MOVES && HM.MOVES[res.learnedMoves[k]];
@@ -1464,14 +1466,14 @@
           if (!isAliveSession(sid)) return;
         }
       }
-      if (res.evolvedFrom && res.evolvedTo) {
-        if (typeof HM.registerSeen === 'function') HM.registerSeen(state, res.evolvedTo);
-        if (typeof HM.registerCaught === 'function') HM.registerCaught(state, res.evolvedTo);
+      for (const evolution of res.evolutions) {
+        if (typeof HM.registerSeen === 'function') HM.registerSeen(state, evolution.toId);
+        if (typeof HM.registerCaught === 'function') HM.registerCaught(state, evolution.toId);
         playSfx('playEvolve');
-        setMessage('Uau! ' + getSpecies(res.evolvedFrom).name + ' evoluiu para ' + getSpecies(res.evolvedTo).name + '!');
+        setMessage('Uau! ' + getSpecies(evolution.fromId).name + ' evoluiu para ' + getSpecies(evolution.toId).name + '!');
         if (callbacks && typeof callbacks.onEvolution === 'function') {
           try {
-            await Promise.resolve(callbacks.onEvolution({ creature: c, fromId: res.evolvedFrom, toId: res.evolvedTo }));
+            await Promise.resolve(callbacks.onEvolution({ creature: c, fromId: evolution.fromId, toId: evolution.toId }));
           } catch (err) {
             console.error('[HortaMon Battle] Erro em onEvolution (time):', err);
           }

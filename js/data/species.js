@@ -818,5 +818,213 @@
     HM.SPECIES[sp.id] = sp;
   });
 
+
+  // As novas formas seguem o tipo, a paleta e os golpes da família.
+  function addEvolution(parentId, level, form) {
+    const parent = HM.SPECIES[parentId];
+    const species = {
+      ...form,
+      stage: parent.stage + 1,
+      type: parent.type,
+      palette: parent.palette,
+      learnset: parent.learnset,
+      evolvesTo: null,
+      evolveLevel: null
+    };
+    parent.evolvesTo = species.id;
+    parent.evolveLevel = level;
+    HM.SPECIES[species.id] = species;
+    SPECIES_ARRAY.push(species);
+  }
+
+  addEvolution('limotrovao', 18, {
+    id: 'limotufao', dexNum: 31, name: 'Limotufão', title: 'Olho da Tormenta',
+    desc: 'Suas cristas de casca concentram a descarga. Quando finca as patas, o ar ao redor gira como um redemoinho.',
+    baseStats: { hp: 78, atk: 98, def: 68, spd: 118 },
+    baseXp: 156, catchRate: 0.28
+  });
+
+  addEvolution('abacaxil', 12, {
+    id: 'abacouraca', dexNum: 32, name: 'Abacouraça', title: 'Couraça Tropical',
+    desc: 'Encaixa os losangos da casca uns nos outros e recebe a investida com o ombro.',
+    baseStats: { hp: 88, atk: 90, def: 91, spd: 63 },
+    baseXp: 144, catchRate: 0.32
+  });
+
+  addEvolution('abacouraca', 23, {
+    id: 'abacastelo', dexNum: 33, name: 'Abacastelo', title: 'Fortaleza do Pomar',
+    desc: 'Abre a coroa em leque para abrigar a ninhada. Mesmo em marcha, sua couraça mantém cada broto a salvo.',
+    baseStats: { hp: 104, atk: 100, def: 108, spd: 68 },
+    baseXp: 178, catchRate: 0.25
+  });
+
+  addEvolution('cenouraco', 18, {
+    id: 'cenurisma', dexNum: 34, name: 'Cenurisma', title: 'Raiz Sísmica',
+    desc: 'Trava as garras em espiral na rocha. Um giro dos ombros abre passagem para o resto do bando.',
+    baseStats: { hp: 84, atk: 104, def: 81, spd: 94 },
+    baseXp: 152, catchRate: 0.29
+  });
+
+  addEvolution('batatao', 13, {
+    id: 'batarrimo', dexNum: 35, name: 'Batarrimo', title: 'Muralha de Terra',
+    desc: 'Enterra os pés e apoia os antebraços no chão para segurar barrancos depois da chuva.',
+    baseStats: { hp: 110, atk: 79, def: 103, spd: 43 },
+    baseXp: 139, catchRate: 0.37
+  });
+
+  addEvolution('batarrimo', 24, {
+    id: 'batamonte', dexNum: 36, name: 'Batamonte', title: 'Monte Vivo',
+    desc: 'Os brotos nas suas costas apontam o caminho da água. Levanta-se devagar, levando o barranco junto.',
+    baseStats: { hp: 128, atk: 90, def: 120, spd: 48 },
+    baseXp: 173, catchRate: 0.28
+  });
+
+  addEvolution('cogumago', 19, {
+    id: 'micelarca', dexNum: 37, name: 'Micelarca', title: 'Arconte dos Esporos',
+    desc: 'Os anéis de seu chapéu brilham em sequência. Com o cajado, conduz os esporos que dançam sob as raízes.',
+    baseStats: { hp: 88, atk: 99, def: 83, spd: 83 },
+    baseXp: 159, catchRate: 0.27
+  });
+
+  addEvolution('berinjelux', 13, {
+    id: 'berinvulto', dexNum: 38, name: 'Berinvulto', title: 'Manto Violeta',
+    desc: 'Dobra o cálice sobre os olhos e segue o reflexo da lua em sua própria casca.',
+    baseStats: { hp: 89, atk: 94, def: 81, spd: 76 },
+    baseXp: 146, catchRate: 0.31
+  });
+
+  addEvolution('berinvulto', 24, {
+    id: 'berineclipse', dexNum: 39, name: 'Berineclipse', title: 'Eclipse do Canteiro',
+    desc: 'No escuro, a esfera entre suas folhas apaga o brilho dos esporos e revela pegadas na terra.',
+    baseStats: { hp: 102, atk: 110, def: 90, spd: 88 },
+    baseXp: 180, catchRate: 0.24
+  });
+
+  addEvolution('morangelo', 12, {
+    id: 'morangespim', dexNum: 40, name: 'Morangespim', title: 'Florete de Orvalho',
+    desc: 'Lê o movimento do adversário pelas gotas de orvalho que tremem na ponta de seu florete.',
+    baseStats: { hp: 74, atk: 80, def: 67, spd: 91 },
+    baseXp: 112, catchRate: 0.5
+  });
+
+  addEvolution('morangespim', 23, {
+    id: 'morangesgrima', dexNum: 41, name: 'Morangesgrima', title: 'Mestre do Orvalho',
+    desc: 'Desvia um golpe com a primeira folha e toca o chão com a segunda, levantando uma cortina de orvalho.',
+    baseStats: { hp: 84, atk: 94, def: 76, spd: 108 },
+    baseXp: 146, catchRate: 0.39
+  });
+
+  addEvolution('alhino', 12, {
+    id: 'alhoguarda', dexNum: 42, name: 'Alhoguarda', title: 'Punho de Bulbo',
+    desc: 'Cruza os punhos diante do bulbo. A cada impacto, os dentes de alho liberam uma rajada de aroma.',
+    baseStats: { hp: 73, atk: 90, def: 76, spd: 79 },
+    baseXp: 116, catchRate: 0.48
+  });
+
+  addEvolution('alhoguarda', 23, {
+    id: 'alhomestre', dexNum: 43, name: 'Alhomestre', title: 'Mestre dos Dentes',
+    desc: 'Suas raízes sentem os passos do rival. Só abre a guarda quando já sabe onde o próximo pé vai cair.',
+    baseStats: { hp: 86, atk: 106, def: 88, spd: 90 },
+    baseXp: 150, catchRate: 0.37
+  });
+
+  addEvolution('cactolino', 13, {
+    id: 'cactofarpa', dexNum: 44, name: 'Cactofarpa', title: 'Guarda de Espinhos',
+    desc: 'Vira os espinhos contra o vento e guarda água nas costelas para atravessar o canteiro seco.',
+    baseStats: { hp: 82, atk: 88, def: 94, spd: 59 },
+    baseXp: 124, catchRate: 0.42
+  });
+
+  addEvolution('cactofarpa', 24, {
+    id: 'cactobastiao', dexNum: 45, name: 'Cactobastião', title: 'Bastião do Deserto',
+    desc: 'Estende os braços sobre os cactos mais novos. Na estação seca, as flores de sua coroa ainda se abrem.',
+    baseStats: { hp: 96, atk: 100, def: 110, spd: 66 },
+    baseXp: 158, catchRate: 0.32
+  });
+
+  addEvolution('beterraboss', 22, {
+    id: 'beterrarca', dexNum: 46, name: 'Beterrarca', title: 'Regente das Raízes',
+    desc: 'Lê os tremores do solo pelas pontas do bigode e convoca as raízes com uma batida do pé.',
+    baseStats: { hp: 109, atk: 103, def: 98, spd: 76 },
+    baseXp: 194, catchRate: 0.12
+  });
+
+  addEvolution('beterrarca', 33, {
+    id: 'beterrimperio', dexNum: 47, name: 'Beterrimpério', title: 'Imperador da Colheita',
+    desc: 'Quando a copa rubra se ergue acima da horta, até as raízes mais profundas respondem ao chamado.',
+    baseStats: { hp: 122, atk: 114, def: 108, spd: 82 },
+    baseXp: 228, catchRate: 0.09
+  });
+
+  addEvolution('bananinja', 15, {
+    id: 'banasombra', dexNum: 48, name: 'Banasombra', title: 'Passo de Sombra',
+    desc: 'A casca dobrada abafa os passos. Os cachos só balançam depois que ele já saltou para outro galho.',
+    baseStats: { hp: 72, atk: 99, def: 63, spd: 113 },
+    baseXp: 154, catchRate: 0.35
+  });
+
+  addEvolution('banasombra', 26, {
+    id: 'banashogum', dexNum: 49, name: 'Banashogum', title: 'Mestre do Bananal',
+    desc: 'Dobra as pontas da casca como uma armadura e espera o instante exato de atravessar a guarda rival.',
+    baseStats: { hp: 82, atk: 114, def: 70, spd: 130 },
+    baseXp: 188, catchRate: 0.27
+  });
+
+  addEvolution('abacatao', 27, {
+    id: 'abacatalaia', dexNum: 50, name: 'Abacatalaia', title: 'Sentinela do Caroço',
+    desc: 'O caroço ganha um anel a cada seca. Quando fecha os braços sobre ele, protege até quem está atrás.',
+    baseStats: { hp: 110, atk: 100, def: 110, spd: 64 },
+    baseXp: 199, catchRate: 0.19
+  });
+
+  addEvolution('cocoral', 15, {
+    id: 'cocoforte', dexNum: 51, name: 'Cocoforte', title: 'Baluarte de Fibra',
+    desc: 'Trança fibras soltas nos braços para vedar as rachaduras da casca e conservar a água fresca.',
+    baseStats: { hp: 101, atk: 80, def: 112, spd: 46 },
+    baseXp: 159, catchRate: 0.31
+  });
+
+  addEvolution('cocoforte', 26, {
+    id: 'cocomare', dexNum: 52, name: 'Cocomaré', title: 'Guardião das Marés',
+    desc: 'Sente a maré pela vibração da areia. Devolve à praia em jatos a água que guardou na couraça.',
+    baseStats: { hp: 118, atk: 90, def: 128, spd: 52 },
+    baseXp: 193, catchRate: 0.24
+  });
+
+  addEvolution('rabanito', 12, {
+    id: 'rababrasa', dexNum: 53, name: 'Rababrasa', title: 'Brasa Subterrânea',
+    desc: 'Esconde o bulbo na terra fria. Apenas as nervuras acesas das folhas denunciam onde vai saltar.',
+    baseStats: { hp: 68, atk: 95, def: 61, spd: 98 },
+    baseXp: 134, catchRate: 0.42
+  });
+
+  addEvolution('rababrasa', 23, {
+    id: 'rabavulcao', dexNum: 54, name: 'Rabavulcão', title: 'Erupção de Raiz',
+    desc: 'A raiz branca conduz calor até a superfície. Ao saltar, espalha torrões quentes como brasas.',
+    baseStats: { hp: 80, atk: 110, def: 70, spd: 112 },
+    baseXp: 168, catchRate: 0.32
+  });
+
+  addEvolution('trufante', 27, {
+    id: 'trufarca', dexNum: 55, name: 'Trufarca', title: 'Oráculo das Cavernas',
+    desc: 'O micélio de sua coroa percebe vibrações distantes. Encontra túneis soterrados sem tirar o focinho do chão.',
+    baseStats: { hp: 99, atk: 108, def: 95, spd: 85 },
+    baseXp: 202, catchRate: 0.19
+  });
+
+  addEvolution('mandiocao', 24, {
+    id: 'mandiocruta', dexNum: 56, name: 'Mandiocruta', title: 'Pilar da Gruta',
+    desc: 'Firma os braços nos dois lados de uma fenda. Suas fibras engrossam até a parede da caverna se estabilizar.',
+    baseStats: { hp: 117, atk: 108, def: 104, spd: 65 },
+    baseXp: 209, catchRate: 0.09
+  });
+
+  addEvolution('mandiocruta', 35, {
+    id: 'mandiotita', dexNum: 57, name: 'Mandiotitã', title: 'Titã das Profundezas',
+    desc: 'Carrega nas costas as marcas dos antigos desabamentos. Suas raízes formam arcos que sustentam a arena subterrânea.',
+    baseStats: { hp: 130, atk: 120, def: 116, spd: 70 },
+    baseXp: 243, catchRate: 0.07
+  });
+
   HM.SPECIES_LIST = SPECIES_ARRAY.slice();
 })(window);
