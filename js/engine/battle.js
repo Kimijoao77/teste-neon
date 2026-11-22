@@ -325,8 +325,10 @@
   function getLayout() {
     const W = (canvas && canvas.width) || 760;
     const H = (canvas && canvas.height) || 340;
-    const playerSize = Math.round(Math.min(W * 0.19, H * 0.41));
-    const enemySize = Math.round(Math.min(W * 0.165, H * 0.35));
+    const playerStage = HM.SPECIES[getPlayerCreature()?.speciesId]?.stage;
+    const enemyStage = HM.SPECIES[getEnemyCreature()?.speciesId]?.stage;
+    const playerSize = Math.round(Math.min(W * 0.19, H * 0.41) * (HM.LIFE_STAGES[playerStage]?.battleScale || 1));
+    const enemySize = Math.round(Math.min(W * 0.165, H * 0.35) * (HM.LIFE_STAGES[enemyStage]?.battleScale || 1));
 
     const playerPlatformX = W * 0.255;
     const playerPlatformY = H * 0.805;

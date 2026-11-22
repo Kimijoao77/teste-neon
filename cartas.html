@@ -274,6 +274,26 @@
       gap: 24px 20px;
     }
 
+    .cards-grid.family-gallery {
+      grid-template-columns: minmax(0, 770px);
+      gap: 30px;
+    }
+    .family-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: clamp(5px, 2vw, 20px);
+    }
+    .family-row figure { margin: 0; min-width: 0; }
+    .family-row .tcard { width: 100%; }
+    .family-row figcaption {
+      margin-top: 8px;
+      text-align: center;
+      font-size: clamp(0.7rem, 2vw, 0.95rem);
+      color: var(--ink-soft);
+    }
+    .family-row figure:first-child .front-window img { transform: scale(0.84); }
+    .family-row figure:nth-child(2) .front-window img { transform: scale(0.94); }
+
     .tcard {
       position: relative;
       width: var(--card-w);
@@ -863,8 +883,9 @@
         const all = HM.SPECIES_LIST || [];
         const prev = all.find((other) => other.evolvesTo === sp.id);
         const next = sp.evolvesTo && HM.SPECIES && HM.SPECIES[sp.evolvesTo];
-        if (next) return `Estágio ${sp.stage} · evolui para ${next.name} no Nv. ${sp.evolveLevel}`;
-        if (prev) return `Estágio ${sp.stage} · evolução de ${prev.name}`;
+        const age = HM.LIFE_STAGES[sp.stage].label;
+        if (next) return `${age} · evolui para ${next.name} no Nv. ${sp.evolveLevel}`;
+        if (prev) return `${age} · evolução de ${prev.name}`;
         return 'Estágio único';
       }
 
@@ -1114,16 +1135,26 @@
           const showAll = !!(showAllBox && showAllBox.checked);
           const unlocked = list.filter((sp) => col.caught[sp.id]).length;
           filterCount.textContent = showAll ? `${list.length} cartas (modo galeria)` : `Liberadas: ${unlocked} de ${list.length}`;
-          grid.innerHTML = list
-            .map((sp) => {
-              const open = showAll || col.caught[sp.id];
-              return flipCard(sp, HM, {
-                locked: !open,
-                seen: !!col.seen[sp.id],
-                golden: open && !!col.golden[sp.id]
-              });
-            })
-            .join('');
+          function cardFor(sp) {
+            const open = showAll || col.caught[sp.id];
+            return flipCard(sp, HM, {
+              locked: !open,
+              seen: !!col.seen[sp.id],
+              golden: open && !!col.golden[sp.id]
+            });
+          }
+          grid.classList.toggle('family-gallery', showAll);
+          if (showAll) {
+            grid.innerHTML = list.filter(sp => sp.stage === 1).map(first => {
+              const cards = [];
+              for (let sp = first; sp; sp = HM.SPECIES[sp.evolvesTo]) {
+                cards.push(`<figure>${cardFor(sp)}<figcaption><strong>${escapeHtml(sp.name)}</strong> · ${HM.LIFE_STAGES[sp.stage].label}</figcaption></figure>`);
+              }
+              return `<section class="family-row" aria-label="Família de ${escapeHtml(first.name)}">${cards.join('')}</section>`;
+            }).join('');
+          } else {
+            grid.innerHTML = list.map(cardFor).join('');
+          }
           if (allFlipped) grid.querySelectorAll('.tcard').forEach((c) => toggle(c));
         }
 

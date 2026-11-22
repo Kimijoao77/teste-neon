@@ -1,6 +1,13 @@
 (function (global) {
   const HM = (global.HortaMon = global.HortaMon || {});
 
+  HM.LIFE_STAGES = {
+    1: { label: 'Filhote', battleScale: 0.83 },
+    2: { label: 'Jovem', battleScale: 1 },
+    3: { label: 'Adulto', battleScale: 1.18 }
+  };
+
+  // Os IDs das formas são permanentes para manter os saves e a coleção compatíveis.
   const SPECIES_ARRAY = [
     // =========================================================
     // INICIAIS — LINHA PICANTE (1..3)
@@ -103,7 +110,7 @@
       evolveLevel: 7,
       catchRate: 0.45,
       baseXp: 55,
-      desc: 'Adora rolar por gramados úmidos ao amanhecer. Seu suco gelado refresca qualquer jardim em dias quentes.',
+      desc: 'Rola pelos canteiros e tenta frear com os quatro pezinhos. Por enquanto, seu único cipó mal dá uma volta.',
       baseStats: { hp: 56, atk: 52, def: 54, spd: 50 },
       learnset: [
         { level: 1, moveId: 'investida' },
@@ -190,7 +197,7 @@
       evolveLevel: 7,
       catchRate: 0.45,
       baseXp: 55,
-      desc: 'Muito amigável e protetor, balança sua copa macia ao sol para acumular energia e cuidar dos amigos.',
+      desc: 'Uma única copa de floretes protege o talo novo. Quando ouve passos, abaixa as quatro patas e espera para ver quem vem.',
       baseStats: { hp: 54, atk: 54, def: 58, spd: 46 },
       learnset: [
         { level: 1, moveId: 'investida' },
@@ -218,7 +225,7 @@
       evolveLevel: 14,
       catchRate: 0.35,
       baseXp: 98,
-      desc: 'Com ombros largos de floretes densos, aguenta golpes pesados sem recuar e revida com ramos ágeis.',
+      desc: 'Os floretes começaram a enrolar dos dois lados da cabeça. Testa a força da nova copa dando encontrões nos troncos caídos.',
       baseStats: { hp: 72, atk: 72, def: 76, spd: 56 },
       learnset: [
         { level: 1, moveId: 'investida' },
@@ -269,15 +276,15 @@
     {
       id: 'limoninho',
       dexNum: 10,
-      name: 'Limoninho',
-      title: 'Limão Faísca',
+      name: 'Limisco',
+      title: 'Limão Recém-Brotado',
       type: 'citrico',
       stage: 1,
       evolvesTo: 'limotrovao',
       evolveLevel: 9,
       catchRate: 0.72,
       baseXp: 52,
-      desc: 'Salta de galho em galho soltando gotinhas ácidas eletrizantes. Seu aroma cítrico desperta qualquer cansaço.',
+      desc: 'Por enquanto, suas asinhas de casca só ajudam no equilíbrio. Uma faísca escapa da folha sempre que ele aterrissa.',
       baseStats: { hp: 44, atk: 55, def: 42, spd: 68 },
       learnset: [
         { level: 1, moveId: 'investida' },
@@ -296,15 +303,15 @@
     {
       id: 'limotrovao',
       dexNum: 11,
-      name: 'Limotrovão',
-      title: 'Limão Relâmpago',
+      name: 'Limoninho',
+      title: 'Corredor de Faíscas',
       type: 'citrico',
       stage: 2,
       evolvesTo: null,
       evolveLevel: null,
       catchRate: 0.36,
       baseXp: 122,
-      desc: 'Cruza o canteiro em velocidade relâmpago cercado por arcos cítricos vibrantes. Raramente age por último.',
+      desc: 'Já consegue se apoiar nas patas compridas para saltar de galho em galho. A folha na testa se abre quando ele ganha velocidade.',
       baseStats: { hp: 66, atk: 84, def: 60, spd: 98 },
       learnset: [
         { level: 1, moveId: 'choque_limao' },
@@ -324,14 +331,14 @@
       id: 'abacaxil',
       dexNum: 12,
       name: 'Abacaxil',
-      title: 'Abacaxi Blindado',
+      title: 'Abacaxi Verde',
       type: 'citrico',
       stage: 1,
       evolvesTo: null,
       evolveLevel: null,
       catchRate: 0.42,
       baseXp: 110,
-      desc: 'Sua casca em losangos funciona como uma armadura tropical. Gira em alta velocidade usando a coroa pontuda.',
+      desc: 'Enrola o corpo quando se assusta. As poucas escamas de casca ainda deixam o ventre à mostra.',
       baseStats: { hp: 72, atk: 80, def: 74, spd: 58 },
       learnset: [
         { level: 1, moveId: 'investida' },
@@ -350,15 +357,15 @@
     {
       id: 'cenourito',
       dexNum: 13,
-      name: 'Cenourito',
-      title: 'Raiz Saltitante',
+      name: 'Cenourim',
+      title: 'Raiz Recém-Nascida',
       type: 'raiz',
       stage: 1,
       evolvesTo: 'cenouraco',
       evolveLevel: 8,
       catchRate: 0.75,
       baseXp: 50,
-      desc: 'Adora cavar túneis rasos para surpreender viajantes. Seu topete verde balança alegremente quando corre.',
+      desc: 'Fareja a terra com a ponta do focinho. Suas duas primeiras folhas ainda se dobram quando ele tenta correr.',
       baseStats: { hp: 48, atk: 56, def: 48, spd: 60 },
       learnset: [
         { level: 1, moveId: 'investida' },
@@ -377,15 +384,15 @@
     {
       id: 'cenouraco',
       dexNum: 14,
-      name: 'Cenouraço',
-      title: 'Broca da Terra',
+      name: 'Cenourito',
+      title: 'Batedor do Canteiro',
       type: 'raiz',
       stage: 2,
       evolvesTo: null,
       evolveLevel: null,
       catchRate: 0.38,
       baseXp: 118,
-      desc: 'Atlético e determinado, perfura até solo rochoso com seu giro em espiral e poderosas garras de raiz.',
+      desc: 'Com as folhas penteadas pelo vento, atravessa a horta em saltos compridos. As garras dianteiras o ajudam a mudar de direção.',
       baseStats: { hp: 72, atk: 86, def: 70, spd: 82 },
       learnset: [
         { level: 1, moveId: 'soco_terra' },
@@ -404,15 +411,15 @@
     {
       id: 'batatao',
       dexNum: 15,
-      name: 'Batatão',
-      title: 'Guardião da Terra',
+      name: 'Batatim',
+      title: 'Tubérculo Brotinho',
       type: 'raiz',
       stage: 1,
       evolvesTo: null,
       evolveLevel: null,
       catchRate: 0.48,
       baseXp: 105,
-      desc: 'Calmo como uma pedra fértil, cochila meio enterrado na horta. Quase nada consegue abalar sua casca firme.',
+      desc: 'Descobriu que consegue bater o pé e fazer a terra tremer um pouquinho. Os dois brotos nas costas balançam junto.',
       baseStats: { hp: 92, atk: 68, def: 86, spd: 38 },
       learnset: [
         { level: 1, moveId: 'investida' },
@@ -431,15 +438,15 @@
     {
       id: 'cogumim',
       dexNum: 16,
-      name: 'Cogumim',
-      title: 'Esporo Curioso',
+      name: 'Cogubim',
+      title: 'Botão do Bosque',
       type: 'fungo',
       stage: 1,
       evolvesTo: 'cogumago',
       evolveLevel: 9,
       catchRate: 0.70,
       baseXp: 54,
-      desc: 'Vive à sombra das árvores frutíferas. Quando se assusta, solta uma nuvem fofinha de esporos soníferos.',
+      desc: 'Espia a mata pela fresta do véu branco. Ainda cabe inteiro debaixo de uma folha quando começa a chover.',
       baseStats: { hp: 50, atk: 50, def: 52, spd: 48 },
       learnset: [
         { level: 1, moveId: 'investida' },
@@ -458,15 +465,15 @@
     {
       id: 'cogumago',
       dexNum: 17,
-      name: 'Cogumago',
-      title: 'Mago dos Esporos',
+      name: 'Cogumim',
+      title: 'Batedor de Esporos',
       type: 'fungo',
       stage: 2,
       evolvesTo: null,
       evolveLevel: null,
       catchRate: 0.35,
       baseXp: 125,
-      desc: 'Com seu chapéu pontudo cintilante e cajado de micélio, tece ondas místicas que drenam a energia rival.',
+      desc: 'O chapéu já se abriu e soltou os primeiros esporos. Agora explora o bosque com os próprios pés.',
       baseStats: { hp: 74, atk: 82, def: 74, spd: 72 },
       learnset: [
         { level: 1, moveId: 'nuvem_esporos' },
@@ -486,14 +493,14 @@
       id: 'berinjelux',
       dexNum: 18,
       name: 'Berinjelux',
-      title: 'Berinjela Mística',
+      title: 'Broto do Crepúsculo',
       type: 'fungo',
       stage: 1,
       evolvesTo: null,
       evolveLevel: null,
       catchRate: 0.40,
       baseXp: 112,
-      desc: 'Sua casca roxa reluz como um céu estrelado ao entardecer. Concentra brilho arcano em esferas cintilantes.',
+      desc: 'Segue o reflexo das estrelas nas poças. Uma única pintinha na bochecha acende quando encontra o caminho de volta.',
       baseStats: { hp: 76, atk: 78, def: 72, spd: 64 },
       learnset: [
         { level: 1, moveId: 'investida' },
@@ -512,15 +519,15 @@
     {
       id: 'morangelo',
       dexNum: 19,
-      name: 'Morangelo',
-      title: 'Morango Doce',
+      name: 'Morangota',
+      title: 'Fruto de Orvalho',
       type: 'fresco',
       stage: 1,
       evolvesTo: null,
       evolveLevel: null,
       catchRate: 0.65,
       baseXp: 78,
-      desc: 'Ágil e perfumado, libera uma névoa adocicada que distrai oponentes enquanto recupera forças com orvalho.',
+      desc: 'A ponta clara denuncia que o fruto ainda está amadurecendo. A cada corrida, uma gota rola das folhinhas novas.',
       baseStats: { hp: 64, atk: 66, def: 58, spd: 74 },
       learnset: [
         { level: 1, moveId: 'investida' },
@@ -540,15 +547,15 @@
     {
       id: 'alhino',
       dexNum: 20,
-      name: 'Alhino',
-      title: 'Bulbo Valente',
+      name: 'Dentinho',
+      title: 'Dente de Alho',
       type: 'picante',
       stage: 1,
       evolvesTo: null,
       evolveLevel: null,
       catchRate: 0.62,
       baseXp: 82,
-      desc: 'Pequeno guerreiro de faixa verde na testa. Seu bafo aromático é famoso por quebrar a guarda dos rivais.',
+      desc: 'Tenta imitar a guarda dos mais velhos, mas a folha da testa sempre escorrega sobre um olho.',
       baseStats: { hp: 60, atk: 74, def: 64, spd: 68 },
       learnset: [
         { level: 1, moveId: 'investida' },
@@ -569,14 +576,14 @@
       id: 'cactolino',
       dexNum: 21,
       name: 'Cactolino',
-      title: 'Cacto Espinhoso',
+      title: 'Botão do Deserto',
       type: 'folha',
       stage: 1,
       evolvesTo: null,
       evolveLevel: null,
       catchRate: 0.55,
       baseXp: 90,
-      desc: 'Apesar dos espinhos pontudos, adora abraços gentis e exibe com orgulho uma linda flor rosa no topo da cabeça.',
+      desc: 'Os dois brotos laterais ainda não alcançam o botão rosa da testa. A primeira flor só vai abrir depois das chuvas.',
       baseStats: { hp: 68, atk: 76, def: 78, spd: 52 },
       learnset: [
         { level: 1, moveId: 'investida' },
@@ -596,15 +603,15 @@
     {
       id: 'beterraboss',
       dexNum: 22,
-      name: 'Beterraboss',
-      title: 'Rei da Colheita',
+      name: 'Beterrim',
+      title: 'Beterraba de Duas Folhas',
       type: 'raiz',
       stage: 1,
       evolvesTo: null,
       evolveLevel: null,
       catchRate: 0.15,
       baseXp: 160,
-      desc: 'Imponente soberano das raízes coroado por folhas reais. Um único pisão seu faz todo o canteiro estremecer.',
+      desc: 'Tenta segurar a terra com a raiz fina. Suas duas primeiras folhas ainda ficam cobertas de poeira a cada puxão.',
       baseStats: { hp: 96, atk: 92, def: 88, spd: 70 },
       learnset: [
         { level: 1, moveId: 'soco_terra' },
@@ -628,14 +635,14 @@
       id: 'bananinja',
       dexNum: 23,
       name: 'Bananinja',
-      title: 'Banana Ninja',
+      title: 'Aprendiz do Bananal',
       type: 'citrico',
       stage: 1,
       evolvesTo: null,
       evolveLevel: null,
       catchRate: 0.45,
       baseXp: 120,
-      desc: 'Treina golpes de ninja nos coqueiros do pomar e some num piscar de olhos, deixando só a casca para trás.',
+      desc: 'Ajusta a faixa vermelha e tenta se equilibrar nos galhos. As dobras da casca amortecem a queda quando um pé escapa.',
       baseStats: { hp: 62, atk: 84, def: 56, spd: 96 },
       learnset: [
         { level: 1, moveId: 'investida' },
@@ -658,7 +665,7 @@
       evolveLevel: 16,
       catchRate: 0.5,
       baseXp: 95,
-      desc: 'Guarda um caroço enorme na barriga e sai rolando pela grama quando fica feliz.',
+      desc: 'Segura o caroço com as duas patinhas. A casca macia vai escurecendo aos poucos, de baixo para cima.',
       baseStats: { hp: 66, atk: 64, def: 70, spd: 50 },
       learnset: [
         { level: 1, moveId: 'investida' },
@@ -681,7 +688,7 @@
       evolveLevel: null,
       catchRate: 0.25,
       baseXp: 165,
-      desc: 'Protege o pomar inteiro com o caroço-escudo na barriga. Nenhum ladrão de frutas passa por ele.',
+      desc: 'O caroço cresceu depressa. Para não perder o equilíbrio, ele o ampara com um braço e abre o outro ao correr.',
       baseStats: { hp: 92, atk: 88, def: 94, spd: 58 },
       learnset: [
         { level: 1, moveId: 'chicote_rama' },
@@ -697,14 +704,14 @@
       id: 'cocoral',
       dexNum: 26,
       name: 'Cocoral',
-      title: 'Coco Couraça',
+      title: 'Coquinho da Maré',
       type: 'fresco',
       stage: 1,
       evolvesTo: null,
       evolveLevel: null,
       catchRate: 0.4,
       baseXp: 125,
-      desc: 'Sua casca é dura como pedra e, por dentro, guarda uma água de coco que recupera os amigos cansados.',
+      desc: 'Uma gota de água se acumula na borda clara da casca. Treina os primeiros passos entre as fibras do coqueiral.',
       baseStats: { hp: 84, atk: 70, def: 96, spd: 40 },
       learnset: [
         { level: 1, moveId: 'investida' },
@@ -720,14 +727,14 @@
       id: 'rabanito',
       dexNum: 27,
       name: 'Rabanito',
-      title: 'Rabanete Ardido',
+      title: 'Rabanete Saltador',
       type: 'picante',
       stage: 1,
       evolvesTo: null,
       evolveLevel: null,
       catchRate: 0.55,
       baseXp: 100,
-      desc: 'Mora embaixo da terra e salta quente feito brasa quando alguém pisa no seu canteiro.',
+      desc: 'Apoia o peso na raiz branca e dá pulinhos curtos. Duas folhas pequenas ainda cobrem a brasa da testa.',
       baseStats: { hp: 56, atk: 80, def: 52, spd: 84 },
       learnset: [
         { level: 1, moveId: 'investida' },
@@ -754,7 +761,7 @@
       evolveLevel: 16,
       catchRate: 0.5,
       baseXp: 98,
-      desc: 'Fareja tesouros enterrados na escuridão da Horta Subterrânea com seu narizinho rosado.',
+      desc: 'O focinho encontra a trilha muito antes que as patinhas consigam acompanhá-lo. Ainda não brotaram cogumelos nas costas.',
       baseStats: { hp: 60, atk: 62, def: 64, spd: 58 },
       learnset: [
         { level: 1, moveId: 'investida' },
@@ -770,14 +777,14 @@
       id: 'trufante',
       dexNum: 29,
       name: 'Trufante',
-      title: 'Trufa Majestosa',
+      title: 'Rastreador da Gruta',
       type: 'fungo',
       stage: 2,
       evolvesTo: null,
       evolveLevel: null,
       catchRate: 0.25,
       baseXp: 168,
-      desc: 'A trufa mais rara da caverna. Usa uma coroa de cogumelos e seu perfume deixa qualquer um tonto.',
+      desc: 'Dois cogumelos nasceram nos ombros. Levanta o focinho rosado e experimenta as garras novas no chão da caverna.',
       baseStats: { hp: 84, atk: 94, def: 82, spd: 76 },
       learnset: [
         { level: 1, moveId: 'nuvem_esporos' },
@@ -791,15 +798,15 @@
     {
       id: 'mandiocao',
       dexNum: 30,
-      name: 'Mandiocão',
-      title: 'Mandioca Colossal',
+      name: 'Mandioquim',
+      title: 'Raiz de Uma Folha',
       type: 'raiz',
       stage: 1,
       evolvesTo: null,
       evolveLevel: null,
       catchRate: 0.12,
       baseXp: 175,
-      desc: 'Suas raízes atravessam a caverna inteira. Dizem que segura a Arena da Raiz Profunda nas costas.',
+      desc: 'A primeira folha acaba de abrir. Avança aos tropeços, apoiando as duas pontas da raiz na terra fofa.',
       baseStats: { hp: 104, atk: 96, def: 92, spd: 60 },
       learnset: [
         { level: 1, moveId: 'soco_terra' },
@@ -859,15 +866,15 @@
   });
 
   addEvolution('cenouraco', 18, {
-    id: 'cenurisma', dexNum: 34, name: 'Cenurisma', title: 'Raiz Sísmica',
-    desc: 'Trava as garras em espiral na rocha. Um giro dos ombros abre passagem para o resto do bando.',
+    id: 'cenurisma', dexNum: 34, name: 'Cenurisma', title: 'Passada Sísmica',
+    desc: 'As pernas já sustentam o peso de uma raiz adulta. Abre o penacho para frear e usa a cauda longa para acertar o próximo salto.',
     baseStats: { hp: 84, atk: 104, def: 81, spd: 94 },
     baseXp: 152, catchRate: 0.29
   });
 
   addEvolution('batatao', 13, {
-    id: 'batarrimo', dexNum: 35, name: 'Batarrimo', title: 'Muralha de Terra',
-    desc: 'Enterra os pés e apoia os antebraços no chão para segurar barrancos depois da chuva.',
+    id: 'batarrimo', dexNum: 35, name: 'Batatão', title: 'Escavador do Barranco',
+    desc: 'Uma pata cresceu antes da outra. Aprendeu a usar esse apoio torto para escavar a beira do canteiro.',
     baseStats: { hp: 110, atk: 79, def: 103, spd: 43 },
     baseXp: 139, catchRate: 0.37
   });
@@ -901,8 +908,8 @@
   });
 
   addEvolution('morangelo', 12, {
-    id: 'morangespim', dexNum: 40, name: 'Morangespim', title: 'Florete de Orvalho',
-    desc: 'Lê o movimento do adversário pelas gotas de orvalho que tremem na ponta de seu florete.',
+    id: 'morangespim', dexNum: 40, name: 'Morangelo', title: 'Florete de Orvalho',
+    desc: 'Firmou as pernas e começou a treinar com o florete de folha. Ainda acompanha as gotas com os olhos antes de cada estocada.',
     baseStats: { hp: 74, atk: 80, def: 67, spd: 91 },
     baseXp: 112, catchRate: 0.5
   });
@@ -915,8 +922,8 @@
   });
 
   addEvolution('alhino', 12, {
-    id: 'alhoguarda', dexNum: 42, name: 'Alhoguarda', title: 'Punho de Bulbo',
-    desc: 'Cruza os punhos diante do bulbo. A cada impacto, os dentes de alho liberam uma rajada de aroma.',
+    id: 'alhoguarda', dexNum: 42, name: 'Alhino', title: 'Bulbo Valente',
+    desc: 'Os dentes do bulbo começaram a se juntar. Aperta a faixa verde e testa a nova força dos punhos de raiz.',
     baseStats: { hp: 73, atk: 90, def: 76, spd: 79 },
     baseXp: 116, catchRate: 0.48
   });
@@ -943,8 +950,8 @@
   });
 
   addEvolution('beterraboss', 22, {
-    id: 'beterrarca', dexNum: 46, name: 'Beterrarca', title: 'Regente das Raízes',
-    desc: 'Lê os tremores do solo pelas pontas do bigode e convoca as raízes com uma batida do pé.',
+    id: 'beterrarca', dexNum: 46, name: 'Beterrarca', title: 'Herdeiro das Raízes',
+    desc: 'Carrega a maior das três folhas como escudo. Quando a ergue acima da cabeça, o bando sabe por onde seguir.',
     baseStats: { hp: 109, atk: 103, def: 98, spd: 76 },
     baseXp: 194, catchRate: 0.12
   });
@@ -1013,8 +1020,8 @@
   });
 
   addEvolution('mandiocao', 24, {
-    id: 'mandiocruta', dexNum: 56, name: 'Mandiocruta', title: 'Pilar da Gruta',
-    desc: 'Firma os braços nos dois lados de uma fenda. Suas fibras engrossam até a parede da caverna se estabilizar.',
+    id: 'mandiocruta', dexNum: 56, name: 'Mandiocão', title: 'Pilar da Gruta',
+    desc: 'Estica um dos braços jovens até tocar o teto do túnel. As fibras claras indicam onde a casca ainda vai engrossar.',
     baseStats: { hp: 117, atk: 108, def: 104, spd: 65 },
     baseXp: 209, catchRate: 0.09
   });

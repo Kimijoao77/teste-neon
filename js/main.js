@@ -2452,6 +2452,7 @@
               <div class="evo-node${node.id === cur.id ? ' current' : ''}" data-dex-jump="${escapeHtml(node.id)}">
                 <img src="${spriteUrl(node.id, 56, !nodeSeen)}" alt="${nodeSeen ? escapeHtml(node.name) : '???'}" />
                 <span>${nodeSeen ? escapeHtml(node.name) : '???'}</span>
+                <small>${HM.LIFE_STAGES[node.stage].label}</small>
               </div>
               ${arrow}
             `;

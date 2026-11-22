@@ -549,7 +549,7 @@
       dialogue:
         'Ei! Meus brotinhos da Rota 1 adoram uma batalha ao sol. Vamos testar a força do seu HortaMon!',
       defeatedDialogue:
-        'Uau, você manda bem! Dica: na grama alta aqui perto aparecem Cenourito, Limoninho e Morangelo!',
+        'Uau, você manda bem! Dica: na grama alta aqui perto aparecem Cenourim, Limisco e Morangota!',
       rewardCoins: 140,
       party: [
         { speciesId: 'cenourito', level: 3 },
@@ -738,7 +738,7 @@
       y: 9,
       dir: 'right',
       dialogue: 'Cavei tão fundo que encontrei HortaMons que nunca viram o sol. Vamos ver se você aguenta!',
-      defeatedDialogue: 'Ufa! Dizem que bem lá no fundo vive a Mandiocão, a raiz mais antiga da horta. É raríssima!',
+      defeatedDialogue: 'Ufa! Dizem que bem lá no fundo vivem as raízes mais antigas da horta. Procure os Mandioquins perto da arena!',
       rewardCoins: 500,
       party: [
         { speciesId: 'batatao', level: 14 },
