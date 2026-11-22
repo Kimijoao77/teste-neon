@@ -14,21 +14,20 @@
   <meta name="theme-color" content="#22c55e" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/style.css?v=2.3" />
 
   <!-- Ordem exata de carregamento (compatível com file:// sem ES modules) -->
   <script defer src="js/data/types.js"></script>
   <script defer src="js/data/moves.js"></script>
-  <script defer src="js/data/species.js"></script>
-  <script defer src="js/data/world.js"></script>
+  <script defer src="js/data/species.js?v=2.3"></script>
+  <script defer src="js/data/world.js?v=2.3"></script>
   <script defer src="js/engine/audio.js"></script>
-  <script defer src="js/data/creature-art.js"></script>
   <script defer src="js/data/animal-art.js"></script>
-  <script defer src="js/engine/sprites.js"></script>
-  <script defer src="js/engine/save.js"></script>
-  <script defer src="js/engine/battle.js"></script>
+  <script defer src="js/engine/sprites.js?v=2.3"></script>
+  <script defer src="js/engine/save.js?v=2.3"></script>
+  <script defer src="js/engine/battle.js?v=2.3"></script>
   <script defer src="js/engine/overworld.js"></script>
-  <script defer src="js/main.js"></script>
+  <script defer src="js/main.js?v=2.3"></script>
 </head>
 <body>
   <div id="app" class="app-root">
@@ -44,6 +43,7 @@
             <span class="logo-horta">Horta</span><span class="logo-mon">Mon</span>
           </h1>
           <p class="game-subtitle">Aventura Botânica</p>
+          <div id="title-creatures" class="title-creatures"></div>
         </header>
 
         <nav class="title-menu" aria-label="Menu principal">
@@ -54,7 +54,7 @@
           <button id="btn-new-game" type="button" class="menu-item">
             <span class="mi-label">Novo jogo</span>
           </button>
-          <a id="btn-title-cards" class="menu-item" href="cartas.html">
+          <a id="btn-title-cards" class="menu-item" href="cartas.html?galeria=todas">
             <span class="mi-label">Álbum de cartas</span>
           </a>
           <button id="btn-title-options" type="button" class="menu-item">
@@ -64,7 +64,7 @@
       </div>
 
       <footer class="title-footer">
-        <span>v2.2</span>
+        <span>v2.3</span>
         <span id="title-count-pill"></span>
       </footer>
     </section>
@@ -128,7 +128,7 @@
               <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="color:#ea580c"><path d="M8 3l4 6 4-6"/><circle cx="12" cy="15" r="5"/></svg> <strong id="hud-badges">0</strong>
             </span>
             <span class="stat-pill stat-dex" title="Espécies capturadas na BotaniDex">
-              <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="color:#0369a1"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5z"/><path d="M20 5.5c0-.8-.7-1.5-1.5-1.5H13v16h5.5c.8 0 1.5-.7 1.5-1.5z"/></svg> <strong id="hud-dex">1/66</strong>
+              <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="color:#0369a1"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5z"/><path d="M20 5.5c0-.8-.7-1.5-1.5-1.5H13v16h5.5c.8 0 1.5-.7 1.5-1.5z"/></svg> <strong id="hud-dex">1/9</strong>
             </span>
           </div>
         </div>
@@ -251,19 +251,19 @@
         </header>
 
         <div class="battle-stage cartoon-card">
-          <canvas id="battle-canvas" width="760" height="340"></canvas>
+          <canvas id="battle-canvas" width="760" height="480" aria-label="Arena de batalha"></canvas>
 
-          <!-- HUD Inimigo (Superior Esquerdo) -->
+          <!-- HUD do adversário -->
           <div id="hud-enemy" class="battle-hud hud-enemy">
             <div class="hud-row-top">
               <div class="hud-name-group">
-                <strong id="enemy-name">Cenourim</strong>
+                <strong id="enemy-name">Capi</strong>
                 <span id="enemy-caught-mark" class="caught-mark hidden" title="Espécie já capturada!">🏺</span>
               </div>
               <span id="enemy-level" class="lv-pill">Nv. 4</span>
             </div>
             <div class="hud-row-meta">
-              <span id="enemy-type-badge" class="type-chip">🥕 Raiz</span>
+              <span id="enemy-type-badge" class="type-chip">🍉 Fresco</span>
               <span id="enemy-status-badge" class="status-chip hidden"></span>
               <span id="enemy-stages" class="stages-group"></span>
               <div id="enemy-party-dots" class="party-dots hidden" title="Time do oponente"></div>
@@ -277,10 +277,10 @@
             </div>
           </div>
 
-          <!-- HUD Jogador (Inferior Direito) -->
+          <!-- HUD do jogador -->
           <div id="hud-player" class="battle-hud hud-player">
             <div class="hud-row-top">
-              <strong id="player-name">Pimentico</strong>
+              <strong id="player-name">Pequemico</strong>
               <span id="player-level" class="lv-pill">Nv. 5</span>
             </div>
             <div class="hud-row-meta">

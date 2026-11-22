@@ -391,15 +391,9 @@
       subtitle: 'HortaMons Selvagens Nv. 2–5',
       scene: 'jardim',
       wildPool: [
-        { speciesId: 'cenourito', minLv: 2, maxLv: 4, weight: 25 },
-        { speciesId: 'limoninho', minLv: 2, maxLv: 4, weight: 23 },
-        { speciesId: 'cogumim', minLv: 2, maxLv: 4, weight: 20 },
-        { speciesId: 'morangelo', minLv: 3, maxLv: 5, weight: 14 },
-        { speciesId: 'alhino', minLv: 3, maxLv: 5, weight: 10 },
-        { speciesId: 'cactolino', minLv: 3, maxLv: 5, weight: 8 },
-        { speciesId: 'voara', minLv: 2, maxLv: 4, weight: 5 },
-        { speciesId: 'pequemico', minLv: 2, maxLv: 4, weight: 5 },
-        { speciesId: 'capi', minLv: 2, maxLv: 4, weight: 5 }
+        { speciesId: 'voara', minLv: 2, maxLv: 4, weight: 34 },
+        { speciesId: 'pequemico', minLv: 2, maxLv: 5, weight: 33 },
+        { speciesId: 'capi', minLv: 2, maxLv: 5, weight: 33 }
       ]
     },
     rota2: {
@@ -408,14 +402,12 @@
       subtitle: 'HortaMons Selvagens Nv. 5–9',
       scene: 'jardim',
       wildPool: [
-        { speciesId: 'abacaxil', minLv: 5, maxLv: 8, weight: 16 },
-        { speciesId: 'batatao', minLv: 5, maxLv: 8, weight: 16 },
-        { speciesId: 'berinjelux', minLv: 5, maxLv: 8, weight: 16 },
-        { speciesId: 'cactolino', minLv: 5, maxLv: 8, weight: 14 },
-        { speciesId: 'alhino', minLv: 5, maxLv: 8, weight: 12 },
-        { speciesId: 'cenouraco', minLv: 7, maxLv: 9, weight: 10 },
-        { speciesId: 'limotrovao', minLv: 7, maxLv: 9, weight: 8 },
-        { speciesId: 'cogumago', minLv: 7, maxLv: 9, weight: 8 }
+        { speciesId: 'voara', minLv: 5, maxLv: 6, weight: 22 },
+        { speciesId: 'pequemico', minLv: 5, maxLv: 6, weight: 20 },
+        { speciesId: 'capi', minLv: 5, maxLv: 6, weight: 22 },
+        { speciesId: 'azurara', minLv: 7, maxLv: 9, weight: 12 },
+        { speciesId: 'micorado', minLv: 7, maxLv: 9, weight: 12 },
+        { speciesId: 'varacapi', minLv: 7, maxLv: 9, weight: 12 }
       ]
     },
     arena: {
@@ -424,13 +416,9 @@
       subtitle: 'Santuário da Líder Flora',
       scene: 'jardim',
       wildPool: [
-        { speciesId: 'beterraboss', minLv: 9, maxLv: 10, weight: 3 }, // raro de propósito: é o chefe da Flora
-        { speciesId: 'abacaxil', minLv: 8, maxLv: 10, weight: 16 },
-        { speciesId: 'berinjelux', minLv: 8, maxLv: 10, weight: 16 },
-        { speciesId: 'batatao', minLv: 8, maxLv: 10, weight: 15 },
-        { speciesId: 'pimentico', minLv: 5, maxLv: 7, weight: 11 },
-        { speciesId: 'melancito', minLv: 5, maxLv: 7, weight: 11 },
-        { speciesId: 'brocolino', minLv: 5, maxLv: 7, weight: 11 }
+        { speciesId: 'azurara', minLv: 8, maxLv: 10, weight: 34 },
+        { speciesId: 'micorado', minLv: 8, maxLv: 10, weight: 33 },
+        { speciesId: 'varacapi', minLv: 8, maxLv: 10, weight: 33 }
       ]
     },
     pomar: {
@@ -439,14 +427,12 @@
       subtitle: 'HortaMons Selvagens Nv. 10–15',
       scene: 'tropical',
       wildPool: [
-        { speciesId: 'bananinja', minLv: 10, maxLv: 13, weight: 22 },
-        { speciesId: 'abacatinho', minLv: 10, maxLv: 13, weight: 20 },
-        { speciesId: 'cocoral', minLv: 11, maxLv: 14, weight: 16 },
-        { speciesId: 'rabanito', minLv: 10, maxLv: 12, weight: 12 },
-        { speciesId: 'morangelo', minLv: 11, maxLv: 13, weight: 10 },
-        { speciesId: 'limotrovao', minLv: 12, maxLv: 14, weight: 8 },
-        { speciesId: 'abacaxil', minLv: 12, maxLv: 14, weight: 8 },
-        { speciesId: 'abacatao', minLv: 15, maxLv: 15, weight: 4 }
+        { speciesId: 'azurara', minLv: 10, maxLv: 13, weight: 23 },
+        { speciesId: 'micorado', minLv: 10, maxLv: 13, weight: 23 },
+        { speciesId: 'varacapi', minLv: 10, maxLv: 13, weight: 23 },
+        { speciesId: 'ararazul', minLv: 14, maxLv: 15, weight: 11 },
+        { speciesId: 'douraleao', minLv: 14, maxLv: 15, weight: 10 },
+        { speciesId: 'capilorde', minLv: 14, maxLv: 15, weight: 10 }
       ]
     },
     subterranea: {
@@ -455,15 +441,12 @@
       subtitle: 'Nv. 13–17 • Arena da Raiz Profunda',
       scene: 'caverna',
       wildPool: [
-        { speciesId: 'trufim', minLv: 13, maxLv: 16, weight: 22 },
-        { speciesId: 'rabanito', minLv: 13, maxLv: 16, weight: 16 },
-        { speciesId: 'batatao', minLv: 14, maxLv: 16, weight: 14 },
-        { speciesId: 'cogumago', minLv: 14, maxLv: 16, weight: 12 },
-        { speciesId: 'cenouraco', minLv: 14, maxLv: 17, weight: 10 },
-        { speciesId: 'berinjelux', minLv: 14, maxLv: 16, weight: 10 },
-        { speciesId: 'trufante', minLv: 16, maxLv: 17, weight: 5 },
-        { speciesId: 'mandiocao', minLv: 16, maxLv: 17, weight: 3 },
-        { speciesId: 'beterraboss', minLv: 15, maxLv: 17, weight: 3 }
+        { speciesId: 'azurara', minLv: 13, maxLv: 13, weight: 9 },
+        { speciesId: 'micorado', minLv: 13, maxLv: 13, weight: 9 },
+        { speciesId: 'varacapi', minLv: 13, maxLv: 13, weight: 12 },
+        { speciesId: 'ararazul', minLv: 14, maxLv: 17, weight: 20 },
+        { speciesId: 'douraleao', minLv: 14, maxLv: 17, weight: 20 },
+        { speciesId: 'capilorde', minLv: 14, maxLv: 17, weight: 30 }
       ]
     }
   };
@@ -552,11 +535,11 @@
       dialogue:
         'Ei! Meus brotinhos da Rota 1 adoram uma batalha ao sol. Vamos testar a força do seu HortaMon!',
       defeatedDialogue:
-        'Uau, você manda bem! Dica: na grama alta aqui perto aparecem Cenourim, Limisco e Morangota!',
+        'Uau, você manda bem! Dica: na grama alta aqui perto aparecem Voara, Pequemico e Capi!',
       rewardCoins: 140,
       party: [
-        { speciesId: 'cenourito', level: 3 },
-        { speciesId: 'limoninho', level: 4 }
+        { speciesId: 'voara', level: 3 },
+        { speciesId: 'pequemico', level: 4 }
       ]
     },
     {
@@ -572,8 +555,8 @@
         'Excelente batalha! Atravessando a ponte ao norte você chega à Rota 2 — leve Regadores Frescos na mochila!',
       rewardCoins: 180,
       party: [
-        { speciesId: 'morangelo', level: 4 },
-        { speciesId: 'cogumim', level: 5 }
+        { speciesId: 'capi', level: 4 },
+        { speciesId: 'voara', level: 5 }
       ]
     },
     {
@@ -589,8 +572,8 @@
         'Mandou muito! Evoluir seus HortaMons aumenta bastante o HP, o ataque e desbloqueia golpes poderosos!',
       rewardCoins: 240,
       party: [
-        { speciesId: 'alhino', level: 6 },
-        { speciesId: 'cactolino', level: 7 }
+        { speciesId: 'pequemico', level: 6 },
+        { speciesId: 'azurara', level: 7 }
       ]
     },
     {
@@ -606,9 +589,9 @@
         'Impressionante! A ponte a oeste leva direto à Arena da Estufa Dourada. A Líder Flora vai adorar enfrentar você!',
       rewardCoins: 300,
       party: [
-        { speciesId: 'berinjelux', level: 7 },
-        { speciesId: 'cogumago', level: 8 },
-        { speciesId: 'abacaxil', level: 8 }
+        { speciesId: 'micorado', level: 7 },
+        { speciesId: 'azurara', level: 8 },
+        { speciesId: 'varacapi', level: 8 }
       ]
     },
     {
@@ -632,9 +615,9 @@
         text: 'Ainda não posso aceitar seu desafio! Vença primeiro os 4 jardineiros das Rotas 1 e 2 e volte aqui.'
       },
       party: [
-        { speciesId: 'brocolao', level: 9 },
-        { speciesId: 'limotrovao', level: 10 },
-        { speciesId: 'beterraboss', level: 11 }
+        { speciesId: 'micorado', level: 9 },
+        { speciesId: 'varacapi', level: 10 },
+        { speciesId: 'azurara', level: 11 }
       ]
     },
     {
@@ -703,8 +686,8 @@
       defeatedDialogue: 'Que onda! Dica: o Cocoral aguenta muito dano. Ataques de Folha e Raiz funcionam melhor nele.',
       rewardCoins: 380,
       party: [
-        { speciesId: 'bananinja', level: 11 },
-        { speciesId: 'cocoral', level: 12 }
+        { speciesId: 'azurara', level: 11 },
+        { speciesId: 'varacapi', level: 12 }
       ]
     },
     {
@@ -714,13 +697,13 @@
       x: 49,
       y: 16,
       dir: 'left',
-      dialogue: 'Colhi os HortaMons mais maduros do pomar! Quer provar um duelo bem docinho?',
+      dialogue: 'Treinei meu time no Pomar Tropical! Quer ver como eles lutam?',
       defeatedDialogue: 'Você é forte! A ponte logo ali desce para a Horta Subterrânea. Lá embaixo é escuro e os HortaMons são ainda mais fortes.',
       rewardCoins: 440,
       party: [
-        { speciesId: 'abacatinho', level: 12 },
-        { speciesId: 'morangelo', level: 13 },
-        { speciesId: 'rabanito', level: 13 }
+        { speciesId: 'varacapi', level: 12 },
+        { speciesId: 'azurara', level: 13 },
+        { speciesId: 'micorado', level: 13 }
       ]
     },
     {
@@ -744,8 +727,8 @@
       defeatedDialogue: 'Ufa! Dizem que bem lá no fundo vivem as raízes mais antigas da horta. Procure os Mandioquins perto da arena!',
       rewardCoins: 500,
       party: [
-        { speciesId: 'batatao', level: 14 },
-        { speciesId: 'trufim', level: 15 }
+        { speciesId: 'capilorde', level: 14 },
+        { speciesId: 'ararazul', level: 15 }
       ]
     },
     {
@@ -755,13 +738,13 @@
       x: 49,
       y: 5,
       dir: 'left',
-      dialogue: 'Estudo os fungos da caverna há anos. Meus HortaMons de esporos vão te deixar sonolento!',
+      dialogue: 'Meu time conhece cada curva da caverna. Será que você consegue acompanhar?',
       defeatedDialogue: 'Incrível! O Líder Mandi está logo ali na Arena. Leve Super Regadores: o time dele é muito resistente.',
       rewardCoins: 560,
       party: [
-        { speciesId: 'cogumago', level: 15 },
-        { speciesId: 'rabanito', level: 16 },
-        { speciesId: 'trufante', level: 16 }
+        { speciesId: 'ararazul', level: 15 },
+        { speciesId: 'douraleao', level: 16 },
+        { speciesId: 'capilorde', level: 16 }
       ]
     },
     {
@@ -789,10 +772,10 @@
         text: 'Só enfrento quem venceu os 4 jardineiros do Pomar Tropical e da Horta Subterrânea!'
       },
       party: [
-        { speciesId: 'trufante', level: 17 },
-        { speciesId: 'berinjelux', level: 18 },
-        { speciesId: 'cenouraco', level: 18 },
-        { speciesId: 'mandiocao', level: 20 }
+        { speciesId: 'capilorde', level: 17 },
+        { speciesId: 'ararazul', level: 18 },
+        { speciesId: 'douraleao', level: 18 },
+        { speciesId: 'capilorde', level: 20 }
       ]
     }
   ];

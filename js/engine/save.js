@@ -1,6 +1,22 @@
 (function (global) {
   const HM = (global.HortaMon = global.HortaMon || {});
 
+  // Converte os IDs da coleção botânica nos equivalentes do mesmo estágio.
+  const LEGACY_SPECIES = new Map();
+  for (const [currentId, previousIds] of Object.entries({
+    voara: ['brocolino', 'cogumim', 'berinjelux', 'cactolino', 'abacatinho', 'trufim'],
+    azurara: ['brocolao', 'cogumago', 'abacatao', 'trufante', 'berinvulto', 'cactofarpa'],
+    ararazul: ['brocolosso', 'micelarca', 'berineclipse', 'cactobastiao', 'abacatalaia', 'trufarca'],
+    pequemico: ['pimentico', 'limoninho', 'abacaxil', 'alhino', 'bananinja', 'rabanito'],
+    micorado: ['jalapao', 'limotrovao', 'abacouraca', 'alhoguarda', 'banasombra', 'rababrasa'],
+    douraleao: ['habaneiro', 'limotufao', 'abacastelo', 'alhomestre', 'banashogum', 'rabavulcao'],
+    capi: ['melancito', 'cenourito', 'batatao', 'morangelo', 'beterraboss', 'cocoral', 'mandiocao'],
+    varacapi: ['melancor', 'cenouraco', 'batarrimo', 'morangespim', 'beterrarca', 'cocoforte', 'mandiocruta'],
+    capilorde: ['melanrei', 'cenurisma', 'batamonte', 'morangesgrima', 'beterrimperio', 'cocomare', 'mandiotita'],
+  })) {
+    for (const previousId of previousIds) LEGACY_SPECIES.set(previousId, currentId);
+  }
+
   const SAVE_KEY = 'hortamon_save_v1';
   const MAX_LEVEL = 50;
   let uidCounter = 0;
@@ -74,7 +90,7 @@
   }
 
   HM.createCreature = function (speciesId, level) {
-    const fallbackId = HM.SPECIES_LIST && HM.SPECIES_LIST[0] ? HM.SPECIES_LIST[0].id : 'pimentico';
+    const fallbackId = HM.STARTER_IDS[0];
     const resolvedId = HM.SPECIES && HM.SPECIES[speciesId] ? speciesId : fallbackId;
     const sp = HM.SPECIES && HM.SPECIES[resolvedId];
     const lv = Math.max(1, Math.min(MAX_LEVEL, Math.floor(level || 1)));
@@ -289,13 +305,7 @@
   // ESTADO INICIAL & PERSISTÊNCIA (localStorage)
   // =========================================================
   HM.createNewState = function (starterId) {
-    const validStarters = HM.STARTER_IDS;
-    const chosenId =
-      validStarters.indexOf(starterId) !== -1
-        ? starterId
-        : HM.SPECIES && HM.SPECIES[starterId]
-          ? starterId
-          : 'pimentico';
+    const chosenId = HM.STARTER_IDS.includes(starterId) ? starterId : HM.STARTER_IDS[0];
 
     const spawn =
       HM.WORLD && HM.WORLD.spawn
@@ -348,12 +358,37 @@
     return null;
   }
 
+  function resolveSavedSpeciesId(id) {
+    return Object.hasOwn(HM.SPECIES, id) ? id : LEGACY_SPECIES.get(id);
+  }
+
+  function sanitizeDexFlags(flags) {
+    const validFlags = {};
+    for (const [previousId, marked] of Object.entries(flags || {})) {
+      const id = resolveSavedSpeciesId(previousId);
+      if (marked && id) validFlags[id] = true;
+    }
+    return validFlags;
+  }
+
   function sanitizeCreature(c) {
     if (!c || !c.speciesId) return null;
-    const sp = HM.SPECIES && HM.SPECIES[c.speciesId];
-    if (!sp) return null;
+    const speciesId = resolveSavedSpeciesId(c.speciesId);
+    if (!speciesId) return null;
     const lv = Math.max(1, Math.min(MAX_LEVEL, Math.floor(c.level || 1)));
-    const calc = HM.calcStats(c.speciesId, lv);
+    const calc = HM.calcStats(speciesId, lv);
+    if (speciesId !== c.speciesId) {
+      const healthRatio = typeof c.hp === 'number' && c.maxHp > 0
+        ? Math.max(0, Math.min(1, c.hp / c.maxHp))
+        : 1;
+      c.speciesId = speciesId;
+      c.maxHp = calc.maxHp;
+      c.hp = healthRatio === 0 ? 0 : Math.max(1, Math.round(calc.maxHp * healthRatio));
+      c.atk = calc.atk;
+      c.def = calc.def;
+      c.spd = calc.spd;
+      c.moves = HM.createCreature(speciesId, lv).moves;
+    }
     c.uid = c.uid || makeUid();
     c.level = lv;
     c.xp = Math.max(0, Math.floor(c.xp || 0));
@@ -431,7 +466,7 @@
 
     const state = {
       version: 1,
-      starterId: raw.starterId || party[0].speciesId,
+      starterId: resolveSavedSpeciesId(raw.starterId) || party[0].speciesId,
       player: player,
       zone: raw.zone || (HM.WORLD && HM.WORLD.getZoneAt ? HM.WORLD.getZoneAt(player.x, player.y).id : 'vila'),
       coins: typeof raw.coins === 'number' ? Math.max(0, Math.floor(raw.coins)) : 350,
@@ -444,9 +479,8 @@
       box: box,
       bag: bag,
       dex: {
-        seen: raw.dex && raw.dex.seen && typeof raw.dex.seen === 'object' ? Object.assign({}, raw.dex.seen) : {},
-        caught:
-          raw.dex && raw.dex.caught && typeof raw.dex.caught === 'object' ? Object.assign({}, raw.dex.caught) : {}
+        seen: sanitizeDexFlags(raw.dex?.seen),
+        caught: sanitizeDexFlags(raw.dex?.caught)
       },
       stats: Object.assign(
         { battlesWon: 0, caughtCount: party.length + box.length, steps: 0 },

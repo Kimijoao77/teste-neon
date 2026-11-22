@@ -23,7 +23,7 @@
     evoResolver: null,
     evoLockedUntil: 0,
     selectedPartyIdx: 0,
-    selectedDexId: 'pimentico',
+    selectedDexId: HM.STARTER_IDS[0],
     dexFilter: 'all',
     pendingBagItem: null
   };
@@ -138,7 +138,7 @@
 
   function countDex(st) {
     const target = st || ui.state;
-    const total = (HM.SPECIES_LIST && HM.SPECIES_LIST.length) || 22;
+    const total = HM.SPECIES_LIST.length;
     if (!target || !target.dex) return { seen: 0, caught: 0, total };
     const seen = Object.keys(target.dex.seen || {}).filter((k) => target.dex.seen[k]).length;
     const caught = Object.keys(target.dex.caught || {}).filter((k) => target.dex.caught[k]).length;
@@ -308,6 +308,12 @@
   function renderTitleScreen() {
     const countPill = $('title-count-pill');
     if (countPill) countPill.textContent = `${(HM.SPECIES_LIST || []).length} HortaMons para descobrir`;
+    const titleCreatures = $('title-creatures');
+    if (titleCreatures && !titleCreatures.hasChildNodes()) {
+      titleCreatures.innerHTML = HM.STARTER_IDS.map((id) => (
+        `<img src="${spriteUrl(id, 320)}" alt="${escapeHtml(HM.SPECIES[id].name)}" />`
+      )).join('');
+    }
     startTitleScene();
 
     const saveExists = typeof HM.hasSave === 'function' && HM.hasSave();
@@ -332,7 +338,7 @@
   }
 
   // ---------------------------------------------------------------------------
-  // Cenário animado da tela inicial: jardim com HortaMons passeando
+  // Cenário animado da tela inicial
   // ---------------------------------------------------------------------------
   const titleScene = {
     running: false,
@@ -341,16 +347,6 @@
       { x: 0.12, y: 0.14, s: 1.1, v: 0.006 },
       { x: 0.55, y: 0.08, s: 0.8, v: 0.004 },
       { x: 0.86, y: 0.2, s: 1.3, v: 0.007 }
-    ],
-    // x em fração da largura, d = profundidade (0 fundo, 1 frente), walk = velocidade
-    mons: [
-      { id: 'brocolino', x: 0.16, d: 0.55, walk: 0 },
-      { id: 'pimentico', x: 0.3, d: 0.9, walk: 0.012 },
-      { id: 'melancito', x: 0.78, d: 0.75, walk: 0 },
-      { id: 'cenourito', x: 0.62, d: 0.35, walk: -0.009 },
-      { id: 'cogumim', x: 0.9, d: 0.95, walk: 0 },
-      { id: 'limoninho', x: 0.45, d: 0.2, walk: 0.007 },
-      { id: 'bananinja', x: 0.05, d: 0.25, walk: 0 }
     ]
   };
 
@@ -464,29 +460,6 @@
     c.rect(0, fenceY - 18, W, 7);
     c.fill();
     c.stroke();
-
-    // HortaMons (do fundo para a frente)
-    if (HM.Sprites && typeof HM.Sprites.drawCreature === 'function') {
-      const base = W > H ? Math.min(W, H * 1.6) : W * 1.55;
-      titleScene.mons
-        .slice()
-        .sort((a, b) => a.d - b.d)
-        .forEach((m, k) => {
-          if (m.walk) {
-            m.x += m.walk * dt;
-            if (m.x > 1.1) m.x = -0.1;
-            if (m.x < -0.1) m.x = 1.1;
-          }
-          const y = horizon + 26 + m.d * (H - horizon - 70);
-          const size = base * (0.085 + m.d * 0.07);
-          const hop = m.walk ? Math.abs(Math.sin(t * 6 + k)) * size * 0.08 : 0;
-          HM.Sprites.drawCreature(c, m.id, m.x * W, y - size * 0.35 - hop, size, {
-            time: now + k * 700,
-            facing: m.walk < 0 ? 'left' : 'right',
-            shadow: true
-          });
-        });
-    }
 
     // Tufos de grama na frente
     c.strokeStyle = '#2f7d24';
@@ -668,7 +641,7 @@
       return `
         <article class="starter-card" data-starter-id="${escapeHtml(id)}" style="--card-tint:${t.bg};">
           <div class="starter-art-box">
-            <img src="${spriteUrl(id, 144, false)}" alt="${escapeHtml(sp.name)}" />
+            <img src="${spriteUrl(id, 380, false)}" alt="${escapeHtml(sp.name)}" />
           </div>
           <div class="starter-head">
             <h3>${escapeHtml(sp.name)}</h3>
@@ -2426,7 +2399,7 @@
         detailHtml = `
           <div class="dex-detail-panel">
             <div class="dex-detail-top">
-              <img src="${spriteUrl(cur.id, 112, true)}" alt="Espécie desconhecida" />
+              <img src="${spriteUrl(cur.id, 300, true)}" alt="Espécie desconhecida" />
               <div>
                 <span class="pill pill-sun">#${num} • Não descoberto</span>
                 <h3 style="margin:6px 0 4px;">???</h3>
@@ -2479,7 +2452,7 @@
         detailHtml = `
           <div class="dex-detail-panel">
             <div class="dex-detail-top">
-              <img src="${spriteUrl(cur.id, 118, false)}" alt="${escapeHtml(cur.name)}" />
+              <img src="${spriteUrl(cur.id, 300, false)}" alt="${escapeHtml(cur.name)}" />
               <div style="flex:1;min-width:0;">
                 <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
                   <span class="lv-pill">#${num}</span>
@@ -2709,7 +2682,7 @@
         <button type="button" id="menu-save-btn" class="menu-row">Salvar agora</button>
         <button type="button" id="menu-sound-btn" class="menu-row">Som <span id="opt-sound-state" class="toggle-pill${muted ? ' off' : ''}">${muted ? 'Desligado' : 'Ligado'}</span></button>
         <button type="button" id="menu-help-btn" class="menu-row">Como jogar</button>
-        <a id="menu-cards-btn" class="menu-row" href="cartas.html">Álbum de cartas</a>
+        <a id="menu-cards-btn" class="menu-row" href="cartas.html?galeria=todas">Álbum de cartas</a>
         <button type="button" id="menu-export-btn" class="menu-row">Exportar save <small>arquivo .json</small></button>
         <button type="button" id="menu-import-btn" class="menu-row">Importar save <small>arquivo .json</small></button>
         <button type="button" id="menu-title-btn" class="menu-row">Tela inicial</button>

@@ -379,12 +379,28 @@ body::before {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: clamp(14px, 4vh, 34px);
-  margin-bottom: 18vh;
+  gap: clamp(10px, 2.2vh, 22px);
+  margin-bottom: 6vh;
 }
 
 .title-hero {
   text-align: center;
+}
+
+.title-creatures {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(4px, 1.5vw, 14px);
+  width: min(420px, 88vw);
+  margin: 10px auto 0;
+}
+
+.title-creatures img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: contain;
+  filter: drop-shadow(0 3px 2px rgb(43 29 20 / 24%));
 }
 
 .game-logo {
@@ -699,7 +715,7 @@ body::before {
 
 .starter-art-box {
   position: relative;
-  height: 126px;
+  height: clamp(172px, 28vw, 224px);
   border-radius: 14px;
   border: 2.5px solid var(--ink);
   background: radial-gradient(circle at 50% 42%, #ffffff 0%, var(--card-tint, #fef9c3) 100%);
@@ -710,8 +726,8 @@ body::before {
 }
 
 .starter-art-box img {
-  width: 112px;
-  height: 112px;
+  width: 94%;
+  height: 94%;
   object-fit: contain;
   transition: transform 0.2s ease;
 }
@@ -1360,41 +1376,42 @@ body::before {
 }
 
 .battle-stage {
-  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 0 4px;
   padding: 0;
   overflow: hidden;
-  background: #93c5fd;
-  line-height: 0;
+  background: #e5f5ec;
 }
 
 #battle-canvas {
+  grid-column: 1 / -1;
+  grid-row: 2;
   display: block;
   width: 100%;
   height: auto;
-  aspect-ratio: 760 / 340;
+  aspect-ratio: 760 / 480;
 }
 
 .battle-hud {
-  position: absolute;
-  width: 268px;
-  max-width: 44%;
-  background: rgba(255, 253, 245, 0.95);
-  border: 3px solid var(--ink);
-  border-radius: 15px;
-  box-shadow: 0 4px 0 var(--ink);
-  padding: 8px 11px;
+  grid-row: 1;
+  min-width: 0;
+  margin: 5px 5px 7px;
+  background: var(--cream);
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  box-shadow: 0 2px 0 var(--ink);
+  padding: 6px 9px;
   line-height: 1.2;
-  z-index: 5;
 }
 
 .hud-enemy {
-  top: 12px;
-  left: 12px;
+  grid-column: 2;
 }
 
 .hud-player {
-  bottom: 12px;
-  right: 12px;
+  grid-column: 1;
 }
 
 .hud-row-top {
@@ -2313,9 +2330,11 @@ body::before {
 }
 
 .dex-detail-top img {
-  width: 92px;
-  height: 92px;
+  width: clamp(100px, 32vw, 158px);
+  height: auto;
+  aspect-ratio: 1;
   object-fit: contain;
+  flex-shrink: 0;
   background: var(--cream);
   border: 2.5px solid var(--ink);
   border-radius: 16px;
@@ -2684,10 +2703,6 @@ body::before {
   .box-split {
     grid-template-columns: 1fr;
   }
-  .battle-hud {
-    width: 215px;
-    padding: 6px 8px;
-  }
 }
 
 @media (max-width: 600px) {
@@ -2877,8 +2892,8 @@ button,
   .battle-shell {
     max-width: none;
     display: grid;
-    grid-template-columns: minmax(0, calc((100vh - 56px) * 2.235)) minmax(272px, 1fr);
-    grid-template-columns: minmax(0, calc((100dvh - 56px) * 2.235)) minmax(272px, 1fr);
+    grid-template-columns: minmax(0, calc((100vh - 126px) * 1.5833)) minmax(272px, 1fr);
+    grid-template-columns: minmax(0, calc((100dvh - 126px) * 1.5833)) minmax(272px, 1fr);
     grid-template-rows: auto auto 1fr;
     gap: 5px;
   }
@@ -2957,7 +2972,6 @@ button,
     grid-template-columns: 1fr 1fr;
   }
   .battle-hud {
-    width: 190px;
     padding: 4px 7px;
     font-size: 0.78rem;
   }
@@ -2979,6 +2993,9 @@ button,
     align-items: center;
     gap: 7vw;
     margin-bottom: 0;
+  }
+  .title-creatures {
+    width: min(320px, 43vw);
   }
   .game-logo {
     font-size: clamp(2.6rem, 8vw, 4.4rem);

@@ -20,6 +20,9 @@
   // =========================================================================
   // ESTADO INTERNO DA SESSÃO DE BATALHA
   // =========================================================================
+  const ARENA_WIDTH = 760;
+  const ARENA_HEIGHT = 480;
+
   let sessionId = 0;
   let active = false;
   let busy = false;
@@ -323,17 +326,17 @@
   // COORDENADAS DA ARENA (PROPORCIONAIS AO CANVAS)
   // =========================================================================
   function getLayout() {
-    const W = (canvas && canvas.width) || 760;
-    const H = (canvas && canvas.height) || 340;
+    const W = ARENA_WIDTH;
+    const H = ARENA_HEIGHT;
     const playerStage = HM.SPECIES[getPlayerCreature()?.speciesId]?.stage;
     const enemyStage = HM.SPECIES[getEnemyCreature()?.speciesId]?.stage;
-    const playerSize = Math.round(Math.min(W * 0.19, H * 0.41) * (HM.LIFE_STAGES[playerStage]?.battleScale || 1));
-    const enemySize = Math.round(Math.min(W * 0.165, H * 0.35) * (HM.LIFE_STAGES[enemyStage]?.battleScale || 1));
+    const playerSize = Math.round(Math.min(W * 0.40, H * 0.64) * (HM.LIFE_STAGES[playerStage]?.battleScale || 1));
+    const enemySize = Math.round(Math.min(W * 0.37, H * 0.61) * (HM.LIFE_STAGES[enemyStage]?.battleScale || 1));
 
     const playerPlatformX = W * 0.255;
-    const playerPlatformY = H * 0.805;
+    const playerPlatformY = H * 0.865;
     const enemyPlatformX = W * 0.745;
-    const enemyPlatformY = H * 0.445;
+    const enemyPlatformY = H * 0.68;
 
     return {
       W: W,
@@ -2430,8 +2433,17 @@
     if (!ctx || !canvas) return;
     const layout = getLayout();
     const { W, H } = layout;
+    const pixelRatio = Math.min(2, global.devicePixelRatio || 1);
+    const width = Math.round((canvas.clientWidth || W) * pixelRatio);
+    const height = Math.round((canvas.clientHeight || H) * pixelRatio);
+    if (canvas.width !== width || canvas.height !== height) {
+      canvas.width = width;
+      canvas.height = height;
+    }
 
     ctx.save();
+    ctx.setTransform(width / W, 0, 0, height / H, 0, 0);
+    ctx.imageSmoothingQuality = 'high';
     ctx.lineJoin = 'round';
     ctx.lineCap = 'round';
 

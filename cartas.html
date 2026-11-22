@@ -11,10 +11,10 @@
   />
   <script defer src="js/data/types.js"></script>
   <script defer src="js/data/moves.js"></script>
-  <script defer src="js/data/species.js"></script>
-  <script defer src="js/data/creature-art.js"></script>
+  <script defer src="js/data/species.js?v=2.3"></script>
   <script defer src="js/data/animal-art.js"></script>
-  <script defer src="js/engine/sprites.js"></script>
+  <script defer src="js/engine/sprites.js?v=2.3"></script>
+  <script defer src="js/engine/save.js?v=2.3"></script>
   <style>
     :root {
       --ink: #2b1d14;
@@ -292,8 +292,6 @@
       font-size: clamp(0.7rem, 2vw, 0.95rem);
       color: var(--ink-soft);
     }
-    .family-row figure:first-child .front-window img { transform: scale(0.84); }
-    .family-row figure:nth-child(2) .front-window img { transform: scale(0.94); }
 
     .tcard {
       position: relative;
@@ -374,7 +372,7 @@
       inset: 0;
       background-image: radial-gradient(var(--t-dark) 1px, transparent 1.3px);
       background-size: 9px 9px;
-      opacity: 0.13;
+      opacity: 0.06;
     }
 
     /* Brilho que acompanha o mouse */
@@ -398,7 +396,6 @@
       position: relative;
       width: 100%;
       height: auto;
-      transform: translateY(2%);
     }
 
     .flip-hint {
@@ -725,6 +722,11 @@
         --card-w: calc((100vw - 34px) / 2);
         gap: 16px 12px;
       }
+      .family-row {
+        grid-template-columns: minmax(0, 270px);
+        justify-content: center;
+        gap: 20px;
+      }
       .filter-bar {
         gap: 8px;
       }
@@ -894,9 +896,7 @@
       function readCollection() {
         const out = { hasSave: false, seen: {}, caught: {}, golden: {} };
         try {
-          const raw = window.localStorage.getItem('hortamon_save_v1');
-          if (!raw) return out;
-          const st = JSON.parse(raw);
+          const st = window.HortaMon.loadGame();
           if (!st || !st.dex) return out;
           out.hasSave = true;
           out.seen = st.dex.seen || {};
@@ -921,7 +921,7 @@
         return `
           <div class="face face-front">
             <div class="front-window">
-              <img src="${spriteUrl(HM, sp.id, 260, false, golden)}" alt="${escapeHtml(sp.name)}" draggable="false" />
+              <img src="${spriteUrl(HM, sp.id, 520, false, golden)}" alt="${escapeHtml(sp.name)}" draggable="false" />
               ${golden ? '<span class="foil"></span>' : ''}
               <span class="flip-hint" aria-hidden="true">↻</span>
             </div>
@@ -993,7 +993,7 @@
         return `
           <div class="face face-front">
             <div class="front-window">
-              ${seen ? `<img src="${spriteUrl(HM, sp.id, 260, true)}" alt="Silhueta" draggable="false" />` : '<span class="locked-q">?</span>'}
+              ${seen ? `<img src="${spriteUrl(HM, sp.id, 520, true)}" alt="Silhueta" draggable="false" />` : '<span class="locked-q">?</span>'}
               <span class="flip-hint" aria-hidden="true">↻</span>
             </div>
           </div>`;
