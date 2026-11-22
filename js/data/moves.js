@@ -422,6 +422,112 @@
       maxPp: 7,
       fx: 'earth',
       desc: 'Raízes ancestrais rompem o chão e prendem o oponente.'
+    },
+
+    // ARARAS, MICOS E CAPIVARAS
+    asa_de_broto: {
+      id: 'asa_de_broto',
+      name: 'Asa de Broto',
+      type: 'folha',
+      category: 'attack',
+      power: 42,
+      accuracy: 100,
+      maxPp: 25,
+      fx: 'leaf',
+      desc: 'Ataca com um pulo e uma batida curta da asa em broto.'
+    },
+    rasante_folhagem: {
+      id: 'rasante_folhagem',
+      name: 'Rasante de Folhagem',
+      type: 'folha',
+      category: 'attack',
+      power: 62,
+      accuracy: 95,
+      maxPp: 16,
+      fx: 'leaf',
+      desc: 'Mergulha com as asas abertas e lança folhas na passagem.'
+    },
+    vendaval_estrelado: {
+      id: 'vendaval_estrelado',
+      name: 'Vendaval Estrelado',
+      type: 'folha',
+      category: 'attack',
+      power: 81,
+      accuracy: 92,
+      maxPp: 8,
+      fx: 'leaf',
+      effect: { type: 'defDown', chance: 0.25 },
+      desc: 'As asas criam um redemoinho que pode baixar a Defesa do alvo.'
+    },
+    faisca_da_cauda: {
+      id: 'faisca_da_cauda',
+      name: 'Faísca da Cauda',
+      type: 'picante',
+      category: 'attack',
+      power: 42,
+      accuracy: 100,
+      maxPp: 25,
+      fx: 'fire',
+      effect: { type: 'burn', chance: 0.15 },
+      desc: 'Solta uma faísca pela ponta da cauda. Pode queimar o alvo.'
+    },
+    giro_de_brasa: {
+      id: 'giro_de_brasa',
+      name: 'Giro de Brasa',
+      type: 'picante',
+      category: 'attack',
+      power: 62,
+      accuracy: 95,
+      maxPp: 15,
+      fx: 'fire',
+      effect: { type: 'burn', chance: 0.2 },
+      desc: 'Gira sobre as mãos e acerta com a cauda em brasa. Pode queimar.'
+    },
+    juba_incandescente: {
+      id: 'juba_incandescente',
+      name: 'Juba Incandescente',
+      type: 'picante',
+      category: 'attack',
+      power: 84,
+      accuracy: 90,
+      maxPp: 8,
+      fx: 'fire',
+      effect: { type: 'burn', chance: 0.25 },
+      desc: 'Aquece a juba e avança contra o alvo. Pode causar queimadura.'
+    },
+    bolha_de_rio: {
+      id: 'bolha_de_rio',
+      name: 'Bolha de Rio',
+      type: 'fresco',
+      category: 'attack',
+      power: 42,
+      accuracy: 100,
+      maxPp: 25,
+      fx: 'water',
+      desc: 'Sopra uma bolha de água que estoura em contato com o alvo.'
+    },
+    ombro_da_correnteza: {
+      id: 'ombro_da_correnteza',
+      name: 'Ombro da Correnteza',
+      type: 'fresco',
+      category: 'attack',
+      power: 63,
+      accuracy: 95,
+      maxPp: 16,
+      fx: 'water',
+      desc: 'Avança com o ombro à frente, arrastando um jato de água.'
+    },
+    mare_de_pedra: {
+      id: 'mare_de_pedra',
+      name: 'Maré de Pedra',
+      type: 'fresco',
+      category: 'attack',
+      power: 81,
+      accuracy: 92,
+      maxPp: 8,
+      fx: 'water',
+      effect: { type: 'defDown', chance: 0.25 },
+      desc: 'Uma onda pesada bate no alvo e pode baixar a Defesa.'
     }
 
   };

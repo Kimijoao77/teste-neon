@@ -396,7 +396,10 @@
         { speciesId: 'cogumim', minLv: 2, maxLv: 4, weight: 20 },
         { speciesId: 'morangelo', minLv: 3, maxLv: 5, weight: 14 },
         { speciesId: 'alhino', minLv: 3, maxLv: 5, weight: 10 },
-        { speciesId: 'cactolino', minLv: 3, maxLv: 5, weight: 8 }
+        { speciesId: 'cactolino', minLv: 3, maxLv: 5, weight: 8 },
+        { speciesId: 'voara', minLv: 2, maxLv: 4, weight: 5 },
+        { speciesId: 'pequemico', minLv: 2, maxLv: 4, weight: 5 },
+        { speciesId: 'capi', minLv: 2, maxLv: 4, weight: 5 }
       ]
     },
     rota2: {

@@ -289,7 +289,7 @@
   // ESTADO INICIAL & PERSISTÊNCIA (localStorage)
   // =========================================================
   HM.createNewState = function (starterId) {
-    const validStarters = ['pimentico', 'melancito', 'brocolino'];
+    const validStarters = HM.STARTER_IDS;
     const chosenId =
       validStarters.indexOf(starterId) !== -1
         ? starterId

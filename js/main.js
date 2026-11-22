@@ -3,8 +3,6 @@
 
   const HM = (global.HortaMon = global.HortaMon || {});
 
-  const STARTER_IDS = ['pimentico', 'melancito', 'brocolino'];
-
   const STATUS_META = {
     burn: { label: '🔥 Queimado', cls: 'status-burn' },
     sleep: { label: '💤 Dormindo', cls: 'status-sleep' },
@@ -641,7 +639,7 @@
     showScreen('starter');
     drawCharOnCanvas(dom.profAvatarCanvas, 'prof', 48);
 
-    const cardsHtml = STARTER_IDS.map((id) => {
+    const cardsHtml = HM.STARTER_IDS.map((id) => {
       const sp = HM.SPECIES && HM.SPECIES[id];
       if (!sp) return '';
       const t = (HM.TYPES && HM.TYPES[sp.type]) || { bg: '#fef9c3', color: '#22c55e', dark: '#166534', icon: '🌱', name: sp.type };
