@@ -11,9 +11,9 @@
   />
   <script defer src="js/data/types.js?v=2.5"></script>
   <script defer src="js/data/moves.js?v=2.5"></script>
-  <script defer src="js/data/species.js?v=2.5"></script>
+  <script defer src="js/data/species.js?v=2.6"></script>
   <script defer src="js/data/animal-art.js"></script>
-  <script defer src="js/data/family-art.js?v=2.5"></script>
+  <script defer src="js/data/family-art.js?v=2.6"></script>
   <script defer src="js/engine/sprites.js?v=2.4"></script>
   <script defer src="js/engine/save.js?v=2.4"></script>
   <style>
@@ -489,13 +489,14 @@
       min-height: 0;
       display: flex;
       flex-direction: column;
-      gap: 0.5em;
-      padding: 0.6em 0.8em 0.75em;
+      gap: 0.38em;
+      padding: 0.5em 0.78em 0.62em;
     }
 
     .back-meta {
-      font-size: 0.8em;
+      font-size: 0.78em;
       font-weight: 800;
+      line-height: 1.18;
       color: var(--t-dark);
     }
 
@@ -531,7 +532,7 @@
     }
 
     .back-label {
-      padding-top: 0.45em;
+      padding-top: 0.34em;
       border-top: 1.5px dashed rgba(43, 29, 20, 0.28);
       font-size: 0.68em;
       font-weight: 900;
@@ -607,12 +608,18 @@
       gap: 0.3em;
     }
 
+    .mu-none {
+      color: var(--ink-soft);
+      font-weight: 700;
+      opacity: 0.75;
+    }
+
     .back-desc {
       margin: auto 0 0;
-      font-size: 0.74em;
+      font-size: 0.72em;
       font-weight: 600;
       font-style: italic;
-      line-height: 1.3;
+      line-height: 1.24;
       color: var(--ink-soft);
     }
 
@@ -814,9 +821,9 @@
         <span class="sheet-logo">
           🌱 <span class="brand-horta">Horta</span><span class="brand-mon">Mon</span>
         </span>
-        <span class="sheet-subtitle">Coleção Completa de Cartas Botânicas</span>
+        <span id="sheet-subtitle" class="sheet-subtitle">Coleção Completa de Cartas</span>
       </div>
-      <span id="sheet-pill" class="sheet-pill">Página 1/3 • #01–#08</span>
+      <span id="sheet-pill" class="sheet-pill">Folha 1/6 • #001–#004 • recorte, dobre e cole</span>
     </header>
 
     <main id="cards-grid" class="cards-grid" aria-live="polite"></main>
@@ -922,12 +929,14 @@
         const strong = list.filter((d) => (chart[sp.type] || {})[d] >= 2);
         const weak = list.filter((a) => (chart[a] || {})[sp.type] >= 2);
         const names = (ids) =>
-          ids
-            .map((id) => {
-              const t = HM.TYPES[id];
-              return `<span class="mu-type"><span class="mv-dot" style="background:${t.color}"></span>${escapeHtml(t.name)}</span>`;
-            })
-            .join(' ');
+          ids.length
+            ? ids
+                .map((id) => {
+                  const t = HM.TYPES[id];
+                  return `<span class="mu-type"><span class="mv-dot" style="background:${t.color}"></span>${escapeHtml(t.name)}</span>`;
+                })
+                .join(' ')
+            : '<span class="mu-none">Nenhum</span>';
         return `
           <div class="back-label">Tipos</div>
           <div class="matchups">
@@ -1075,6 +1084,9 @@
           const start = (sheet - 1) * PAIRS_PER_SHEET;
           const end = Math.min(total, start + PAIRS_PER_SHEET);
           const pad = (n) => String(n).padStart(3, '0');
+          const familyCount = HM.SPECIES_LIST.filter((sp) => sp.stage === 1).length;
+          const sheetSub = document.getElementById('sheet-subtitle');
+          if (sheetSub) sheetSub.textContent = `Coleção Completa · ${total} Espécies (${familyCount} Famílias)`;
           sheetPill.textContent = `Folha ${sheet}/${pages} • #${pad(start + 1)}–#${pad(end)} • recorte, dobre e cole`;
           grid.innerHTML = HM.SPECIES_LIST.slice(start, end).map((sp) => printPair(sp, HM)).join('');
           return;
@@ -1092,8 +1104,11 @@
           brandSub.textContent = `${total} cartas para colecionar — jogue para liberar as suas`;
         }
 
+        const availableTypes = (HM.TYPE_LIST || []).filter((tid) =>
+          HM.SPECIES_LIST.some((sp) => sp.type === tid)
+        );
         const galleryType = new URLSearchParams(location.search).get('galeria');
-        let activeType = (HM.TYPE_LIST || []).includes(galleryType) ? galleryType : 'all';
+        let activeType = availableTypes.includes(galleryType) ? galleryType : 'all';
         const preview = galleryType === 'todas' || activeType !== 'all';
         let allFlipped = false;
 
@@ -1101,7 +1116,7 @@
           const btns = [
             `<button type="button" class="filter-btn${activeType === 'all' ? ' active' : ''}" data-type="all" style="--f-bg:#fde047;--f-color:#2b1d14;">Todas (${total})</button>`
           ];
-          (HM.TYPE_LIST || []).forEach((tid) => {
+          availableTypes.forEach((tid) => {
             const t = HM.TYPES[tid];
             const count = HM.SPECIES_LIST.filter((sp) => sp.type === tid).length;
             btns.push(

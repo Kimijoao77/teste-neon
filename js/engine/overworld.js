@@ -277,6 +277,34 @@
   let rafId = null;
   let lastFrameTime = 0;
   let elapsedTime = 0;
+  let lastDt = 0.016;
+  let use3D = false;
+  let unsubHD2D = null;
+
+  function shouldUse3D() {
+    return Boolean(
+      HM.Overworld3D &&
+      HM.HD2D &&
+      typeof HM.HD2D.isEnabled === 'function' &&
+      HM.HD2D.isEnabled()
+    );
+  }
+
+  function syncRenderMode() {
+    const want = shouldUse3D();
+    if (want && !use3D && canvas && world) {
+      use3D = Boolean(HM.Overworld3D.init({ overlayCanvas: canvas, world: world }));
+      if (use3D) {
+        HM.Overworld3D.snapCamera();
+      }
+    } else if (!want && use3D) {
+      if (HM.Overworld3D && typeof HM.Overworld3D.destroy === 'function') {
+        HM.Overworld3D.destroy();
+      }
+      use3D = false;
+      camera.snapped = false;
+    }
+  }
 
   // Player state
   const player = {
@@ -507,6 +535,9 @@
 
   function spawnLeafParticles(col, row, count, palette) {
     if (!world) return;
+    if (use3D && HM.Overworld3D && typeof HM.Overworld3D.spawnBurst === 'function') {
+      HM.Overworld3D.spawnBurst('leaf', col, row, palette);
+    }
     const S = world.tileSize || 48;
     const cx = (col + 0.5) * S;
     const cy = (row + 0.55) * S;
@@ -533,6 +564,9 @@
 
   function spawnDustPuff(col, row) {
     if (!world) return;
+    if (use3D && HM.Overworld3D && typeof HM.Overworld3D.spawnBurst === 'function') {
+      HM.Overworld3D.spawnBurst('dust', col, row);
+    }
     const S = world.tileSize || 48;
     const cx = (col + 0.5) * S;
     const cy = (row + 0.78) * S;
@@ -554,6 +588,9 @@
 
   function spawnTeleportSparkles(col, row) {
     if (!world) return;
+    if (use3D && HM.Overworld3D && typeof HM.Overworld3D.spawnBurst === 'function') {
+      HM.Overworld3D.spawnBurst('sparkle', col, row);
+    }
     const S = world.tileSize || 48;
     const cx = (col + 0.5) * S;
     const cy = (row + 0.5) * S;
@@ -631,6 +668,17 @@
     if (!pointerDown || !canvas || !world) return null;
     // Wait briefly so quick taps trigger click-to-walk rather than immediate hold drift
     if (performance.now() - pointerDownTime < 140 && !pointerMoved) return null;
+    if (use3D && HM.Overworld3D && HM.Overworld3D.isActive()) {
+      const hit = HM.Overworld3D.pickAtClient(pointerClientX, pointerClientY);
+      if (!hit) return null;
+      const dx3 = hit.x - (player.renderX + 0.5);
+      const dz3 = hit.z - (player.renderY + 0.5);
+      if (Math.hypot(dx3, dz3) < 0.45) return null;
+      if (Math.abs(dx3) > Math.abs(dz3)) {
+        return dx3 > 0 ? 'right' : 'left';
+      }
+      return dz3 > 0 ? 'down' : 'up';
+    }
     const rect = canvas.getBoundingClientRect();
     if (rect.width <= 0 || rect.height <= 0) return null;
     const cx = ((pointerClientX - rect.left) / rect.width) * viewport.width;
@@ -2251,10 +2299,106 @@
         return { icon: '📦', bg: '#e0f2fe', border: OUTLINE, actionLabel: 'Caixa' };
       case 'prof':
         return { icon: '💬', bg: '#fffdf5', border: OUTLINE, actionLabel: 'Falar' };
+      case 'guard':
+        return { icon: '🛡️', bg: '#fef3c7', border: OUTLINE, actionLabel: 'Falar' };
       case 'sign':
         return { icon: '💬', bg: '#fef3c7', border: OUTLINE, actionLabel: 'Ler', onlyWhenNear: true };
       default:
         return { icon: '💬', bg: '#fffdf5', border: OUTLINE, actionLabel: 'Falar' };
+    }
+  }
+
+  function drawSingleNpcBadge(ctx, cx, topY, npc, idx, activeNpcId, time) {
+    // Active trainer exclamation alert (!)
+    if (trainerAlert && trainerAlert.npc.id === npc.id) {
+      const pop = Math.min(1, trainerAlert.elapsed / 120);
+      const scale = 0.6 + pop * 0.45;
+      ctx.save();
+      ctx.translate(cx, topY - 12);
+      ctx.scale(scale, scale);
+      ctx.fillStyle = '#c47965';
+      ctx.strokeStyle = OUTLINE;
+      ctx.lineWidth = 2.5;
+      roundRectPath(ctx, -14, -16, 28, 28, 9);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '800 18px "Nunito", system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('!', 0, -1);
+      ctx.restore();
+      return;
+    }
+
+    const info = getNpcBadgeInfo(npc);
+    const isFocused = activeNpcId === npc.id;
+    const dist = Math.abs(npc.x - player.x) + Math.abs(npc.y - player.y);
+
+    if (!isFocused && dist > (info.onlyWhenNear ? 2 : 6)) return;
+
+    const bob = Math.sin(time * 0.0042 + idx * 1.3) * 3;
+
+    if (isFocused) {
+      // Prominent [Espaço] interaction pill!
+      const label = '[Espaço] ' + info.actionLabel;
+      ctx.font = '700 11.5px "Nunito", system-ui, sans-serif';
+      const tw = ctx.measureText(label).width;
+      const pw = tw + 18;
+      const ph = 24;
+      const bx = cx - pw * 0.5;
+      const by = topY - 24 + bob;
+
+      ctx.fillStyle = 'rgba(43, 29, 20, 0.35)';
+      roundRectPath(ctx, bx, by + 3, pw, ph, 12);
+      ctx.fill();
+
+      ctx.fillStyle = '#fef08a';
+      ctx.strokeStyle = OUTLINE;
+      ctx.lineWidth = 2.2;
+      roundRectPath(ctx, bx, by, pw, ph, 12);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = '#fef08a';
+      ctx.beginPath();
+      ctx.moveTo(cx - 5, by + ph - 1);
+      ctx.lineTo(cx + 5, by + ph - 1);
+      ctx.lineTo(cx, by + ph + 5);
+      ctx.closePath();
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(cx - 5, by + ph);
+      ctx.lineTo(cx, by + ph + 5);
+      ctx.lineTo(cx + 5, by + ph);
+      ctx.stroke();
+
+      ctx.fillStyle = OUTLINE;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(label, cx, by + ph * 0.52);
+    } else {
+      const r = 12;
+      const by = topY - 12 + bob;
+
+      ctx.fillStyle = 'rgba(43, 29, 20, 0.22)';
+      ctx.beginPath();
+      ctx.arc(cx, by + 2.5, r, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = info.bg;
+      ctx.strokeStyle = info.border;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(cx, by, r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.font = '700 12px "Nunito", system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = OUTLINE;
+      ctx.fillText(info.icon, cx, by + 0.8);
     }
   }
 
@@ -2276,102 +2420,27 @@
         continue;
       }
 
-      // Active trainer exclamation alert (!)
-      if (trainerAlert && trainerAlert.npc.id === npc.id) {
-        const pop = Math.min(1, trainerAlert.elapsed / 120);
-        const scale = 0.6 + pop * 0.45;
-        ctx.save();
-        ctx.translate(cx, topY - 12);
-        ctx.scale(scale, scale);
-        ctx.fillStyle = '#c47965';
-        ctx.strokeStyle = OUTLINE;
-        ctx.lineWidth = 2.5;
-        roundRectPath(ctx, -14, -16, 28, 28, 9);
-        ctx.fill();
-        ctx.stroke();
-        ctx.fillStyle = '#ffffff';
-        ctx.font = '800 18px "Nunito", system-ui, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('!', 0, -1);
-        ctx.restore();
+      drawSingleNpcBadge(ctx, cx, topY, npc, i, activeNpcId, time);
+    }
+    ctx.restore();
+  }
+
+  function drawNpcFloatingBadgesProjected(ctx, time) {
+    if (!world || !Array.isArray(world.npcs) || !HM.Overworld3D) return;
+    const activeTarget = (!paused && !encounterPending && !trainerAlert) ? findInteractableTarget() : null;
+    const activeNpcId = activeTarget && activeTarget.npc ? activeTarget.npc.id : null;
+
+    ctx.save();
+    for (let i = 0; i < world.npcs.length; i++) {
+      const npc = world.npcs[i];
+      if (isNpcHidden(npc)) continue;
+      const headY = npc.role === 'sign' ? 1.05 : 1.32;
+      const proj = HM.Overworld3D.projectToScreen(npc.x + 0.5, headY, npc.y + 0.5);
+      if (!proj || !proj.visible) continue;
+      if (proj.x < -70 || proj.x > viewport.width + 70 || proj.y < -40 || proj.y > viewport.height + 50) {
         continue;
       }
-
-      const info = getNpcBadgeInfo(npc);
-      const isFocused = activeNpcId === npc.id;
-      const dist = Math.abs(npc.x - player.x) + Math.abs(npc.y - player.y);
-
-      if (!isFocused && dist > (info.onlyWhenNear ? 2 : 6)) continue;
-
-      const bob = Math.sin(time * 0.0042 + i * 1.3) * 3;
-
-      if (isFocused) {
-        // Prominent [Espaço] interaction pill!
-        const label = '[Espaço] ' + info.actionLabel;
-        ctx.font = '700 11.5px "Nunito", system-ui, sans-serif';
-        const tw = ctx.measureText(label).width;
-        const pw = tw + 18;
-        const ph = 24;
-        const bx = cx - pw * 0.5;
-        const by = topY - 24 + bob;
-
-        // Shadow
-        ctx.fillStyle = 'rgba(43, 29, 20, 0.35)';
-        roundRectPath(ctx, bx, by + 3, pw, ph, 12);
-        ctx.fill();
-
-        // Bright golden-cream pill
-        ctx.fillStyle = '#fef08a';
-        ctx.strokeStyle = OUTLINE;
-        ctx.lineWidth = 2.2;
-        roundRectPath(ctx, bx, by, pw, ph, 12);
-        ctx.fill();
-        ctx.stroke();
-
-        // Pointer triangle
-        ctx.fillStyle = '#fef08a';
-        ctx.beginPath();
-        ctx.moveTo(cx - 5, by + ph - 1);
-        ctx.lineTo(cx + 5, by + ph - 1);
-        ctx.lineTo(cx, by + ph + 5);
-        ctx.closePath();
-        ctx.fill();
-        ctx.beginPath();
-        ctx.moveTo(cx - 5, by + ph);
-        ctx.lineTo(cx, by + ph + 5);
-        ctx.lineTo(cx + 5, by + ph);
-        ctx.stroke();
-
-        ctx.fillStyle = OUTLINE;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(label, cx, by + ph * 0.52);
-      } else {
-        // Gentle floating icon bubble (💬 / ⚔️ / 👑 / 💚 / 🪙 / 📦)
-        const r = 12;
-        const by = topY - 12 + bob;
-
-        // Subtle shadow
-        ctx.fillStyle = 'rgba(43, 29, 20, 0.22)';
-        ctx.beginPath();
-        ctx.arc(cx, by + 2.5, r, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.fillStyle = info.bg;
-        ctx.strokeStyle = info.border;
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(cx, by, r, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.font = '700 12px "Nunito", system-ui, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillStyle = OUTLINE;
-        ctx.fillText(info.icon, cx, by + 0.8);
-      }
+      drawSingleNpcBadge(ctx, proj.x, proj.y, npc, i, activeNpcId, time);
     }
     ctx.restore();
   }
@@ -2736,17 +2805,45 @@
     ctx.restore();
   }
 
-  function render() {
+  function render(dt) {
     if (!ctx || !canvas || !world) return;
 
+    syncRenderMode();
+
     if (!syncViewport()) return;
-    if (!camera.snapped) updateCamera(0, true);
     ctx.setTransform(viewport.scaleX, 0, 0, viewport.scaleY, 0, 0);
+
+    const time = elapsedTime;
+
+    // MODO HD-2D 3D (Three.js diorama por trás + overlay 2D transparente ultra-nítido por cima)
+    if (use3D && HM.Overworld3D && HM.Overworld3D.isActive()) {
+      const rendered3D = HM.Overworld3D.render({
+        dt: dt || lastDt,
+        elapsedTime: time,
+        world: world,
+        state: state,
+        player: player,
+        currentZone: currentZone,
+        npcFacingOverrides: npcFacingOverrides,
+        isNpcHidden: isNpcHidden,
+        clickPath: clickPath,
+        viewport: viewport
+      });
+      if (rendered3D) {
+        ctx.clearRect(0, 0, viewport.width, viewport.height);
+        drawNpcFloatingBadgesProjected(ctx, time);
+        drawZoneBanner(ctx);
+        drawMinimapHUD(ctx, time);
+        drawEncounterTransition(ctx);
+        return;
+      }
+    }
+
+    if (!camera.snapped) updateCamera(0, true);
 
     const S = world.tileSize || 48;
     const camX = Math.round(camera.x);
     const camY = Math.round(camera.y);
-    const time = elapsedTime;
 
     ctx.save();
     ctx.fillStyle = '#25372d';
@@ -2989,9 +3086,10 @@
     if (!lastFrameTime) lastFrameTime = now;
     const dt = Math.min(0.05, Math.max(0.001, (now - lastFrameTime) / 1000));
     lastFrameTime = now;
+    lastDt = dt;
 
     updateSimulation(dt);
-    render();
+    render(dt);
 
     rafId = global.requestAnimationFrame(loop);
   }
@@ -3107,28 +3205,56 @@
 
     if (!wasQuickTap || paused || encounterPending || trainerAlert || !world || !canvas) return;
 
-    const pos = clientToCanvasCoords(e.clientX, e.clientY);
-    if (!pos) return;
-
     const S = world.tileSize || 48;
-    const worldX = pos.x + Math.round(camera.x);
-    const worldY = pos.y / GROUND_TILT + Math.round(camera.y);
-    const tileCol = Math.floor(worldX / S);
-    const tileRow = Math.floor(worldY / S);
+    let tileCol = -1;
+    let tileRow = -1;
+    let clickedNpc = null;
 
-    if (tileCol < 0 || tileCol >= world.cols || tileRow < 0 || tileRow >= world.rows) return;
+    if (use3D && HM.Overworld3D && HM.Overworld3D.isActive()) {
+      const hit = HM.Overworld3D.pickAtClient(e.clientX, e.clientY);
+      if (!hit) return;
+      tileCol = hit.tileCol;
+      tileRow = hit.tileRow;
+      clickedNpc = hit.npc && !isNpcHidden(hit.npc) ? hit.npc : null;
+      if (!clickedNpc && tileCol >= 0 && tileCol < world.cols && tileRow >= 0 && tileRow < world.rows) {
+        clickedNpc = getNpcAt(tileCol, tileRow);
+      }
+      if (!clickedNpc && Array.isArray(world.npcs)) {
+        for (let i = 0; i < world.npcs.length; i++) {
+          const n = world.npcs[i];
+          if (isNpcHidden(n)) continue;
+          if (Math.hypot(hit.x - (n.x + 0.5), hit.z - (n.y + 0.5)) <= 0.65) {
+            clickedNpc = n;
+            break;
+          }
+        }
+      }
+      if (!clickedNpc && (tileCol < 0 || tileCol >= world.cols || tileRow < 0 || tileRow >= world.rows)) {
+        return;
+      }
+    } else {
+      const pos = clientToCanvasCoords(e.clientX, e.clientY);
+      if (!pos) return;
 
-    // Check if user clicked on an NPC (exact tile or slight upper body overlap)
-    let clickedNpc = getNpcAt(tileCol, tileRow);
-    if (!clickedNpc && Array.isArray(world.npcs)) {
-      for (let i = 0; i < world.npcs.length; i++) {
-        const n = world.npcs[i];
-        if (isNpcHidden(n)) continue;
-        const ncx = (n.x + 0.5) * S;
-        const ncy = (n.y + 0.45) * S;
-        if (Math.hypot(worldX - ncx, worldY - ncy) <= S * 0.62) {
-          clickedNpc = n;
-          break;
+      const worldX = pos.x + Math.round(camera.x);
+      const worldY = pos.y / GROUND_TILT + Math.round(camera.y);
+      tileCol = Math.floor(worldX / S);
+      tileRow = Math.floor(worldY / S);
+
+      if (tileCol < 0 || tileCol >= world.cols || tileRow < 0 || tileRow >= world.rows) return;
+
+      // Check if user clicked on an NPC (exact tile or slight upper body overlap)
+      clickedNpc = getNpcAt(tileCol, tileRow);
+      if (!clickedNpc && Array.isArray(world.npcs)) {
+        for (let i = 0; i < world.npcs.length; i++) {
+          const n = world.npcs[i];
+          if (isNpcHidden(n)) continue;
+          const ncx = (n.x + 0.5) * S;
+          const ncy = (n.y + 0.45) * S;
+          if (Math.hypot(worldX - ncx, worldY - ncy) <= S * 0.62) {
+            clickedNpc = n;
+            break;
+          }
         }
       }
     }
@@ -3278,6 +3404,13 @@
       updateCamera(0, true);
       updateZone(player.x, player.y, true);
 
+      syncRenderMode();
+      if (HM.HD2D && typeof HM.HD2D.onEnabledChange === 'function') {
+        unsubHD2D = HM.HD2D.onEnabledChange(function () {
+          if (initialized) syncRenderMode();
+        });
+      }
+
       attachListeners();
       initialized = true;
       lastFrameTime = 0;
@@ -3301,6 +3434,7 @@
         player.stepElapsed = 0;
         player.walkFrame = 0;
         updateCamera(0, true);
+        if (use3D && HM.Overworld3D) HM.Overworld3D.snapCamera();
         updateZone(player.x, player.y, false);
       }
       if (VALID_DIRS.has(pos.dir)) {
@@ -3372,6 +3506,7 @@
 
       syncPlayerPosToState(state, player.x, player.y, player.dir);
       updateCamera(0, true);
+      if (use3D && HM.Overworld3D) HM.Overworld3D.snapCamera();
       spawnTeleportSparkles(player.x, player.y);
       updateZone(player.x, player.y, true);
     },
@@ -3383,6 +3518,14 @@
         global.cancelAnimationFrame(rafId);
         rafId = null;
       }
+      if (typeof unsubHD2D === 'function') {
+        unsubHD2D();
+        unsubHD2D = null;
+      }
+      if (use3D && HM.Overworld3D && typeof HM.Overworld3D.destroy === 'function') {
+        HM.Overworld3D.destroy();
+      }
+      use3D = false;
       detachListeners();
       clearInputs();
       encounterPending = null;

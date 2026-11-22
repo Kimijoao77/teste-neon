@@ -210,6 +210,66 @@
     baseXp: 154, catchRate: 0.25
   });
 
+  addSpecies({
+    id: 'verdara', dexNum: 19, name: 'Verdara', title: 'Arara da Mata',
+    type: 'folha', stage: 1, evolvesTo: null, evolveLevel: null,
+    desc: 'Se camufla entre as folhas altas e balança a cauda rubra quando avista frutas maduras.',
+    baseStats: { hp: 50, atk: 50, def: 48, spd: 61 },
+    baseXp: 55, catchRate: 0.45,
+    palette: { primary: '#49b63f', secondary: '#b9312a', accent: '#d9f99d', leaf: '#7ac943' },
+    learnset: [
+      { level: 1, moveId: 'investida' },
+      { level: 1, moveId: 'asa_de_broto' },
+      { level: 5, moveId: 'fotossintese' },
+      { level: 7, moveId: 'rasante_folhagem' },
+      { level: 14, moveId: 'vendaval_estrelado' }
+    ]
+  });
+
+  addEvolution('verdara', 7, {
+    id: 'floreara', dexNum: 20, name: 'Floreara', title: 'Arara da Copa',
+    desc: 'Plana em silêncio sobre a floresta usando a cauda em forma de folha rubra para fazer curvas fechadas.',
+    baseStats: { hp: 66, atk: 68, def: 62, spd: 79 },
+    baseXp: 98, catchRate: 0.35
+  });
+
+  addEvolution('floreara', 14, {
+    id: 'matarara', dexNum: 21, name: 'Matarara', title: 'Guardiã da Floresta',
+    desc: 'Suas asas estreladas espalham pólen luminoso enquanto domina os ventos no topo das árvores.',
+    baseStats: { hp: 84, atk: 86, def: 78, spd: 100 },
+    baseXp: 156, catchRate: 0.24
+  });
+
+  addSpecies({
+    id: 'rubiara', dexNum: 22, name: 'Rubiara', title: 'Arara Escarlate',
+    type: 'picante', stage: 1, evolvesTo: null, evolveLevel: null,
+    desc: 'De temperamento vibrante, estufa o peito vermelho e solta um piado ardente antes de saltar.',
+    baseStats: { hp: 46, atk: 58, def: 44, spd: 63 },
+    baseXp: 55, catchRate: 0.45,
+    palette: { primary: '#e12d4b', secondary: '#1f9d8b', accent: '#d9f99d', leaf: '#a3d944' },
+    learnset: [
+      { level: 1, moveId: 'investida' },
+      { level: 1, moveId: 'faisca_da_cauda' },
+      { level: 5, moveId: 'tempero_forte' },
+      { level: 7, moveId: 'giro_de_brasa' },
+      { level: 14, moveId: 'juba_incandescente' }
+    ]
+  });
+
+  addEvolution('rubiara', 7, {
+    id: 'brasara', dexNum: 23, name: 'Brasara', title: 'Arara da Brasa',
+    desc: 'Corta o ar quente em rasantes velozes deixando um rastro cintilante sob suas asas escarlates.',
+    baseStats: { hp: 61, atk: 77, def: 56, spd: 82 },
+    baseXp: 98, catchRate: 0.35
+  });
+
+  addEvolution('brasara', 14, {
+    id: 'escarlara', dexNum: 24, name: 'Escarlara', title: 'Soberana Escarlate',
+    desc: 'Quando abre o penacho dourado e bate as asas rubras, o ar ao redor aquece como meio-dia no pomar.',
+    baseStats: { hp: 78, atk: 98, def: 70, spd: 104 },
+    baseXp: 157, catchRate: 0.24
+  });
+
   HM.STARTER_IDS = ['voara', 'pequemico', 'capi'];
   HM.SPECIES_LIST = SPECIES_ARRAY.slice();
 })(window);

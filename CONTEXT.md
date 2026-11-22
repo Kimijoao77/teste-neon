@@ -6,7 +6,7 @@ Este arquivo registra a arquitetura, o estado atual e os próximos passos do pro
 
 ## 🎯 Visão Geral
 
-- **Projeto**: **HortaMon — Aventura Botânica**, RPG estilo Pokémon 100% original com criaturas inspiradas em frutas, verduras, legumes, raízes e fungos em estilo **cartoon colorido de jardim**.
+- **Projeto**: **HortaMon — Aventura Botânica**, RPG estilo Pokémon 100% original em visual **HD-2D 3D (Three.js WebGL offline) / 2.5D Cartoon de Jardim**, atualmente na **Versão 3.0** com **24 espécies / 8 famílias** inspiradas na fauna brasileira (araras azuis, verdes e vermelhas, micos-leões, capivaras, tamanduás, gatos-maracajás voltaicos e cães caramelos).
 - **Stack**: HTML5 + CSS3 + JavaScript vanilla com IIFE no namespace global `window.HortaMon` (`HM`) e `<script defer>` (sem ES modules, garantindo abertura direta via `file://` sem erros de CORS e sem dependências externas).
 - **Save**: `localStorage` sob a chave `hortamon_save_v1`.
 
@@ -41,11 +41,18 @@ Manter sempre esta ordem de `<script defer>`:
 3. `js/data/species.js`
 4. `js/data/world.js`
 5. `js/engine/audio.js`
-6. `js/engine/sprites.js`
-7. `js/engine/save.js`
-8. `js/engine/battle.js`
-9. `js/engine/overworld.js`
-10. `js/main.js`
+6. `js/data/animal-art.js`
+7. `js/data/family-art.js`
+8. `js/engine/sprites.js`
+9. `js/engine/save.js`
+10. `js/engine/scenery.js`
+11. `js/vendor/three.min.js`
+12. `js/engine/hd2d-core.js`
+13. `js/engine/battle-3d.js`
+14. `js/engine/battle.js`
+15. `js/engine/overworld-3d.js`
+16. `js/engine/overworld.js`
+17. `js/main.js`
 
 ---
 
@@ -77,6 +84,29 @@ Manter sempre esta ordem de `<script defer>`:
 - Menu de pausa (`openMenuModal`) e Opções usam `.menu-list` / `.menu-row`.
 - Ícones SVG: `icon(nome)` em `main.js` (`team`, `bag`, `book`, `types`, `save`, `sound`, `mute`, `menu`); os da barra do mapa estão direto no `index.html`.
 - Fontes em `/fonts` com `@font-face` no topo do `style.css`: `--font-display` (Fredoka) e `--font-main` (Nunito).
+
+## 🦜 Versão 2.6 — Fauna Brasileira: 24 Espécies / 8 Famílias (22/11/2026)
+
+- **Catálogo unificado de 24 espécies em 8 famílias de 3 estágios** (`Filhote → Jovem Nv. 7 → Adulto Nv. 14`) em `js/data/species.js`, com ilustrações embutidas em `js/data/animal-art.js` e `js/data/family-art.js`:
+  1. **Arara Azul** (`folha`, inicial): `voara` → `azurara` → `ararazul` (#001–#003)
+  2. **Mico-Leão** (`picante`, inicial): `pequemico` → `micorado` → `douraleao` (#004–#006)
+  3. **Capivara** (`fresco`, inicial): `capi` → `varacapi` → `capilorde` (#007–#009)
+  4. **Tamanduá** (`raiz`): `tamandui` → `tamirim` → `lutandua` (#010–#012)
+  5. **Felino Voltaico** (`voltaico`): `magato` → `maragaiato` → `amatirica` (#013–#015)
+  6. **Cão Caramelo** (`neutro`): `caramelo` → `caralata` → `viramelo` (#016–#018)
+  7. **Arara Verde** (`folha`, nova!): `verdara` → `floreara` → `matarara` (#019–#021)
+  8. **Arara Vermelha** (`picante`, nova!): `rubiara` → `brasara` → `escarlara` (#022–#024)
+- **Tipos & Golpes**: 8 tipos em `types.js` (ciclo original + `voltaico` e `neutro`) e 53 golpes em `moves.js`.
+- **Álbum de Cartas (`cartas.html`)**: 24 cartas giratórias (8 famílias no modo galeria), filtro por tipo mostrando apenas tipos com espécies ativas (6 tipos somando 24 cartas), verso ajustado para `neutro` (`Nenhum`) e espaçamento refinado sem corte de texto, e modo impressão dinâmico em **6 folhas** (`?sheet=1` até `?sheet=6`, 4 pares frente|verso por folha).
+
+## ✨ Versão 3.0 — Upgrade HD-2D 3D (Three.js WebGL Offline)
+
+- **Three.js local (zero CDN / 100% `file://`)**: `js/vendor/three.min.js` (r147 UMD global `window.THREE`) + `js/engine/hd2d-core.js` (`HM.HD2D` com detecção segura de WebGL, persistência `hortamon_3d_enabled`, 14 texturas pictóricas, standees HD-2D com sombra direcional, Sky Dome e 5 presets de bioma).
+- **Arquitetura de 2 camadas em `index.html` e `css/style.css`**:
+  - `.overworld-3d-layer` posicionada absolutamente atrás de `#overworld-canvas` dentro de `.canvas-frame` (`z-index: 1` vs `z-index: 2` transparente para HUD 2D, minimapa e badges projetados).
+  - `.battle-canvas-wrap` encapsulando `#battle-canvas` na linha 2 de `.battle-stage` para alinhamento pixel-a-pixel de `.battle-3d-layer` sem invadir as placas de HUD da linha 1 (desktop 1280×720, celular em pé e deitado).
+  - Vinhetas cinematográficas sutis, placas de HUD de batalha refinadas e overlay rápido `#battle-transition` (~240ms) ao entrar em combate.
+- **Toggle de Gráficos (`js/main.js`)**: disponível em **Opções** (Tela Inicial) e no **Menu de Pausa**, alternando ao vivo entre **HD-2D 3D (WebGL)** e **2.5D Clássico** via `HM.HD2D.setEnabled(bool)` (com estado desabilitado e aviso amigável caso WebGL não esteja disponível).
 
 ## 💡 Ideias para Futuras Expansões
 

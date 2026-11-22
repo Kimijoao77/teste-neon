@@ -284,6 +284,88 @@
     }
   }
 
+  function getGraphicsInfo() {
+    const hasCore = !!(HM.HD2D && typeof HM.HD2D.isAvailable === 'function');
+    const available = hasCore && HM.HD2D.isAvailable();
+    const enabled = available && typeof HM.HD2D.isEnabled === 'function' && HM.HD2D.isEnabled();
+    return {
+      available,
+      enabled,
+      pillText: enabled ? 'HD-2D 3D (WebGL)' : '2.5D Clássico',
+      subText: available
+        ? enabled
+          ? 'Diorama 3D com iluminação dinâmica'
+          : 'Renderização 2.5D clássica'
+        : 'WebGL indisponível neste navegador'
+    };
+  }
+
+  function syncGraphicsButton() {
+    const info = getGraphicsInfo();
+    const btn = $('opt-graphics-btn');
+    const pill = $('opt-graphics-state');
+    const sub = $('opt-graphics-sub');
+    if (btn) btn.disabled = !info.available;
+    if (pill) {
+      pill.textContent = info.pillText;
+      pill.classList.toggle('hd3d', info.enabled);
+      pill.classList.toggle('off', !info.enabled);
+    }
+    if (sub) sub.textContent = info.subText;
+  }
+
+  function renderGraphicsOptionRow() {
+    const info = getGraphicsInfo();
+    const pillCls = info.enabled ? 'toggle-pill hd3d' : 'toggle-pill off';
+    return `<button type="button" class="menu-row" id="opt-graphics-btn"${info.available ? '' : ' disabled'} title="${escapeHtml(info.subText)}"><span>Gráficos <small id="opt-graphics-sub">${escapeHtml(info.subText)}</small></span><span id="opt-graphics-state" class="${pillCls}">${escapeHtml(info.pillText)}</span></button>`;
+  }
+
+  function toggleGraphicsMode() {
+    const info = getGraphicsInfo();
+    if (!info.available || !HM.HD2D || typeof HM.HD2D.setEnabled !== 'function') {
+      audio('playError');
+      showToast('WebGL 3D não está disponível neste navegador. Usando 2.5D Clássico.', 'error');
+      return;
+    }
+    const next = !info.enabled;
+    const effective = HM.HD2D.setEnabled(next);
+    audio('playSelect');
+    syncGraphicsButton();
+
+    if (ui.overworldReady && HM.Overworld) {
+      if (typeof HM.Overworld.set3DEnabled === 'function') {
+        HM.Overworld.set3DEnabled(effective);
+      } else if (typeof HM.Overworld.refreshRenderer === 'function') {
+        HM.Overworld.refreshRenderer();
+      }
+    }
+
+    showToast(
+      effective ? '✨ Gráficos: HD-2D 3D (WebGL) ativado!' : '🎨 Gráficos: 2.5D Clássico ativado!',
+      effective ? 'success' : undefined
+    );
+  }
+
+  let battleTransitionTimer = null;
+
+  function playBattleTransition(type) {
+    const el = dom.battleTransition;
+    if (!el) return;
+    if (battleTransitionTimer) {
+      clearTimeout(battleTransitionTimer);
+      battleTransitionTimer = null;
+    }
+    el.classList.remove('hidden', 'is-active', 'is-leader');
+    if (type === 'leader') el.classList.add('is-leader');
+    void el.offsetWidth;
+    el.classList.add('is-active');
+    battleTransitionTimer = setTimeout(() => {
+      el.classList.add('hidden');
+      el.classList.remove('is-active', 'is-leader');
+      battleTransitionTimer = null;
+    }, 260);
+  }
+
   // =========================================================================
   // TROCA DE TELAS
   // =========================================================================
@@ -372,12 +454,14 @@
     dom.modalBody.innerHTML = `
       <div class="menu-list">
         <button type="button" class="menu-row" id="opt-sound">Som <span id="opt-sound-state" class="toggle-pill${muted ? ' off' : ''}">${muted ? 'Desligado' : 'Ligado'}</span></button>
+        ${renderGraphicsOptionRow()}
         <button type="button" class="menu-row" id="opt-help">Como jogar</button>
         <button type="button" class="menu-row" id="opt-types">Tabela de tipos</button>
         <button type="button" class="menu-row" id="opt-import">Importar save <small>arquivo .json</small></button>
       </div>
     `;
     $('opt-sound').addEventListener('click', () => toggleSound());
+    $('opt-graphics-btn').addEventListener('click', () => toggleGraphicsMode());
     $('opt-help').addEventListener('click', () => {
       closeModal(true);
       openHelpModal();
@@ -978,6 +1062,7 @@
     ui.battleSnapshot = null;
 
     showScreen('battle');
+    playBattleTransition(type);
 
     if (type === 'leader') {
       dom.battleTypeBadge.className = 'pill pill-sun';
@@ -2500,6 +2585,7 @@
         <button type="button" id="menu-resume-btn" class="menu-row">Continuar jogando</button>
         <button type="button" id="menu-save-btn" class="menu-row">Salvar agora</button>
         <button type="button" id="menu-sound-btn" class="menu-row">Som <span id="opt-sound-state" class="toggle-pill${muted ? ' off' : ''}">${muted ? 'Desligado' : 'Ligado'}</span></button>
+        ${renderGraphicsOptionRow()}
         <button type="button" id="menu-help-btn" class="menu-row">Como jogar</button>
         <a id="menu-cards-btn" class="menu-row" href="cartas.html?galeria=todas">Álbum de cartas</a>
         <button type="button" id="menu-export-btn" class="menu-row">Exportar save <small>arquivo .json</small></button>
@@ -2524,6 +2610,7 @@
     });
 
     $('menu-sound-btn').addEventListener('click', () => toggleSound());
+    $('opt-graphics-btn').addEventListener('click', () => toggleGraphicsMode());
 
     $('menu-help-btn').addEventListener('click', () => {
       closeModal(true);
@@ -2931,6 +3018,7 @@
     dom.evoDesc = $('evo-desc');
     dom.evoConfirmBtn = $('evo-confirm-btn');
 
+    dom.battleTransition = $('battle-transition');
     dom.toastContainer = $('toast-container');
   }
 

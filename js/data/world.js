@@ -391,9 +391,11 @@
       subtitle: 'HortaMons Selvagens Nv. 2–5',
       scene: 'jardim',
       wildPool: [
-        { speciesId: 'voara', minLv: 2, maxLv: 4, weight: 34 },
-        { speciesId: 'pequemico', minLv: 2, maxLv: 5, weight: 33 },
-        { speciesId: 'capi', minLv: 2, maxLv: 5, weight: 33 },
+        { speciesId: 'voara', minLv: 2, maxLv: 4, weight: 28 },
+        { speciesId: 'pequemico', minLv: 2, maxLv: 5, weight: 27 },
+        { speciesId: 'capi', minLv: 2, maxLv: 5, weight: 27 },
+        { speciesId: 'verdara', minLv: 2, maxLv: 5, weight: 16 },
+        { speciesId: 'rubiara', minLv: 2, maxLv: 5, weight: 16 },
         { speciesId: 'tamandui', minLv: 3, maxLv: 5, weight: 14 },
         { speciesId: 'magato', minLv: 2, maxLv: 5, weight: 14 },
         { speciesId: 'caramelo', minLv: 2, maxLv: 5, weight: 16 }
@@ -405,10 +407,14 @@
       subtitle: 'HortaMons Selvagens Nv. 5–9',
       scene: 'jardim',
       wildPool: [
-        { speciesId: 'voara', minLv: 5, maxLv: 6, weight: 22 },
-        { speciesId: 'pequemico', minLv: 5, maxLv: 6, weight: 20 },
-        { speciesId: 'capi', minLv: 5, maxLv: 6, weight: 22 },
+        { speciesId: 'voara', minLv: 5, maxLv: 6, weight: 18 },
+        { speciesId: 'pequemico', minLv: 5, maxLv: 6, weight: 18 },
+        { speciesId: 'capi', minLv: 5, maxLv: 6, weight: 18 },
+        { speciesId: 'verdara', minLv: 5, maxLv: 6, weight: 14 },
+        { speciesId: 'rubiara', minLv: 5, maxLv: 6, weight: 14 },
         { speciesId: 'azurara', minLv: 7, maxLv: 9, weight: 12 },
+        { speciesId: 'floreara', minLv: 7, maxLv: 9, weight: 12 },
+        { speciesId: 'brasara', minLv: 7, maxLv: 9, weight: 12 },
         { speciesId: 'micorado', minLv: 7, maxLv: 9, weight: 12 },
         { speciesId: 'varacapi', minLv: 7, maxLv: 9, weight: 12 },
         { speciesId: 'tamirim', minLv: 7, maxLv: 9, weight: 13 },
@@ -422,9 +428,11 @@
       subtitle: 'Santuário da Líder Flora',
       scene: 'jardim',
       wildPool: [
-        { speciesId: 'azurara', minLv: 8, maxLv: 10, weight: 34 },
-        { speciesId: 'micorado', minLv: 8, maxLv: 10, weight: 33 },
-        { speciesId: 'varacapi', minLv: 8, maxLv: 10, weight: 33 }
+        { speciesId: 'azurara', minLv: 8, maxLv: 10, weight: 24 },
+        { speciesId: 'floreara', minLv: 8, maxLv: 10, weight: 20 },
+        { speciesId: 'brasara', minLv: 8, maxLv: 10, weight: 20 },
+        { speciesId: 'micorado', minLv: 8, maxLv: 10, weight: 24 },
+        { speciesId: 'varacapi', minLv: 8, maxLv: 10, weight: 24 }
       ]
     },
     pomar: {
@@ -433,10 +441,14 @@
       subtitle: 'HortaMons Selvagens Nv. 10–15',
       scene: 'tropical',
       wildPool: [
-        { speciesId: 'azurara', minLv: 10, maxLv: 13, weight: 23 },
-        { speciesId: 'micorado', minLv: 10, maxLv: 13, weight: 23 },
-        { speciesId: 'varacapi', minLv: 10, maxLv: 13, weight: 23 },
-        { speciesId: 'ararazul', minLv: 14, maxLv: 15, weight: 11 },
+        { speciesId: 'azurara', minLv: 10, maxLv: 13, weight: 18 },
+        { speciesId: 'floreara', minLv: 10, maxLv: 13, weight: 16 },
+        { speciesId: 'brasara', minLv: 10, maxLv: 13, weight: 16 },
+        { speciesId: 'micorado', minLv: 10, maxLv: 13, weight: 18 },
+        { speciesId: 'varacapi', minLv: 10, maxLv: 13, weight: 18 },
+        { speciesId: 'ararazul', minLv: 14, maxLv: 15, weight: 10 },
+        { speciesId: 'matarara', minLv: 14, maxLv: 15, weight: 12 },
+        { speciesId: 'escarlara', minLv: 14, maxLv: 15, weight: 12 },
         { speciesId: 'douraleao', minLv: 14, maxLv: 15, weight: 10 },
         { speciesId: 'capilorde', minLv: 14, maxLv: 15, weight: 10 },
         { speciesId: 'amatirica', minLv: 14, maxLv: 15, weight: 10 },
@@ -449,13 +461,15 @@
       subtitle: 'Nv. 13–17 • Arena da Raiz Profunda',
       scene: 'caverna',
       wildPool: [
-        { speciesId: 'azurara', minLv: 13, maxLv: 13, weight: 9 },
-        { speciesId: 'micorado', minLv: 13, maxLv: 13, weight: 9 },
-        { speciesId: 'varacapi', minLv: 13, maxLv: 13, weight: 12 },
-        { speciesId: 'ararazul', minLv: 14, maxLv: 17, weight: 20 },
-        { speciesId: 'douraleao', minLv: 14, maxLv: 17, weight: 20 },
-        { speciesId: 'capilorde', minLv: 14, maxLv: 17, weight: 30 },
-        { speciesId: 'lutandua', minLv: 14, maxLv: 17, weight: 24 }
+        { speciesId: 'azurara', minLv: 13, maxLv: 13, weight: 8 },
+        { speciesId: 'micorado', minLv: 13, maxLv: 13, weight: 8 },
+        { speciesId: 'varacapi', minLv: 13, maxLv: 13, weight: 10 },
+        { speciesId: 'ararazul', minLv: 14, maxLv: 17, weight: 16 },
+        { speciesId: 'matarara', minLv: 14, maxLv: 17, weight: 14 },
+        { speciesId: 'escarlara', minLv: 14, maxLv: 17, weight: 14 },
+        { speciesId: 'douraleao', minLv: 14, maxLv: 17, weight: 18 },
+        { speciesId: 'capilorde', minLv: 14, maxLv: 17, weight: 24 },
+        { speciesId: 'lutandua', minLv: 14, maxLv: 17, weight: 22 }
       ]
     }
   };
