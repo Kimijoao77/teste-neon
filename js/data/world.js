@@ -307,8 +307,8 @@
       w: 4,
       h: 3,
       label: 'Lab do Prof. Pomar',
-      roofColor: '#2e7d32',
-      wallColor: '#fef3c7',
+      roofColor: '#42654f',
+      wallColor: '#e0d4b4',
       doorX: 4,
       doorY: 16
     },
@@ -318,8 +318,8 @@
       w: 4,
       h: 3,
       label: 'Estufa de Cura',
-      roofColor: '#ec4899',
-      wallColor: '#fff1f2',
+      roofColor: '#8e665a',
+      wallColor: '#e1d3c7',
       doorX: 10,
       doorY: 16
     },
@@ -329,8 +329,8 @@
       w: 4,
       h: 3,
       label: 'Loja de Sementes',
-      roofColor: '#ea580c',
-      wallColor: '#ffedd5',
+      roofColor: '#996247',
+      wallColor: '#ddc9a8',
       doorX: 4,
       doorY: 22
     },
@@ -340,8 +340,8 @@
       w: 6,
       h: 3,
       label: 'Arena da Estufa Dourada',
-      roofColor: '#eab308',
-      wallColor: '#fef9c3',
+      roofColor: '#a38c59',
+      wallColor: '#dfd6b0',
       doorX: 8,
       doorY: 4
     },
@@ -351,8 +351,8 @@
       w: 4,
       h: 3,
       label: 'Posto do Pomar',
-      roofColor: '#0d9488',
-      wallColor: '#fef3c7',
+      roofColor: '#50756f',
+      wallColor: '#e0d4b4',
       doorX: 40,
       doorY: 16
     },
@@ -362,7 +362,7 @@
       w: 6,
       h: 3,
       label: 'Arena da Raiz Profunda',
-      roofColor: '#92400e',
+      roofColor: '#775446',
       wallColor: '#e7e5e4',
       doorX: 43,
       doorY: 4

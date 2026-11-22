@@ -3005,3 +3005,248 @@ button,
     font-size: 1rem;
   }
 }
+
+/* Direção de arte e composição das telas de jogo. */
+:root {
+  --ink: #25332e;
+  --ink-soft: #526058;
+  --cream: #f0eee5;
+  --cream-warm: #e7e6dc;
+  --cream-deep: #d8ddcd;
+  --leaf: #81986f;
+  --leaf-dark: #3c624b;
+  --leaf-soft: #dce6d4;
+  --sun: #c7a877;
+  --sun-soft: #eae1c9;
+  --sky: #819fa6;
+  --sky-soft: #dce6e7;
+  --border-w: 1px;
+  --radius-sm: 5px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --shadow-cartoon: 0 9px 24px #06100e28;
+  --shadow-cartoon-sm: 0 2px 7px #06100e22;
+  --shadow-cartoon-lg: 0 12px 28px #06100e36;
+  --font-display: var(--font-main);
+}
+
+html,
+body {
+  background: #182622;
+}
+
+body::before { content: none; }
+
+.app-root {
+  min-height: 100dvh;
+  justify-content: flex-start;
+  padding: clamp(6px, 1vw, 14px);
+}
+
+.screen-title { max-width: none; }
+
+.title-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(234px, 300px);
+  gap: clamp(22px, 5vw, 74px);
+  width: min(100%, 1060px);
+  padding: clamp(18px, 4vw, 54px);
+  margin: 0;
+  background: linear-gradient(108deg, #13241fef, #172c27cc);
+  border: 1px solid #b8c5af4d;
+  border-radius: 12px;
+  box-shadow: 0 20px 70px #06100e80;
+}
+
+.title-hero { text-align: left; }
+.game-logo {
+  font-size: clamp(3rem, 8vw, 6rem);
+  font-weight: 1000;
+  letter-spacing: -0.075em;
+  -webkit-text-stroke: 0;
+  filter: none;
+}
+.logo-horta { color: #e9eee1; }
+.logo-mon { color: #c9ae7f; }
+
+.game-subtitle {
+  margin-top: 13px;
+  padding: 0;
+  color: #e3e9d9;
+  background: none;
+  border: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.76rem;
+}
+
+.title-creatures {
+  width: 100%;
+  gap: clamp(6px, 1vw, 18px);
+  margin: 22px 0 0;
+}
+
+.title-creatures img { filter: drop-shadow(0 10px 12px #07130dbb); }
+
+.title-menu { width: 100%; gap: 8px; }
+.menu-item {
+  align-items: flex-start;
+  padding: 12px 15px;
+  border: 1px solid #a6b6a65c;
+  border-radius: 6px;
+  background: #293d34;
+  color: #f4f3ea;
+  box-shadow: none;
+  font-size: 1rem;
+  font-weight: 800;
+}
+.menu-item::before { content: none; }
+.menu-item:hover,
+.menu-item:focus-visible { background: #426154; }
+.menu-item-main { background: #4b6552; }
+.menu-item-main:hover,
+.menu-item-main:focus-visible { background: #567660; }
+.mi-sub { color: #e3eadf; }
+.title-footer { color: #deeadc; }
+
+.top-bar,
+.dialogue-box,
+.controls-side-card,
+.quest-card,
+.starter-card,
+.battle-hud {
+  background: var(--cream);
+}
+
+.btn,
+.dpad-btn,
+.btab-btn,
+.starter-card,
+.dialogue-box {
+  border-width: 1px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-cartoon-sm);
+}
+
+.btn-primary,
+.btn-wood { background: #3c5a49; color: #f9f9f0; text-shadow: none; }
+.btn-cream,
+.dpad-btn { background: #eeeee4; }
+.btn-leaf { background: #dce6d4; }
+.btn-sun { background: #eaddbc; }
+.btn-sky { background: #dce8e8; }
+.btn-danger { background: #963f39; text-shadow: none; }
+.zone-pill,
+.stat-pill,
+.controls-hint-bar { border-width: 1px; border-radius: var(--radius-sm); }
+
+.starter-art-box {
+  background: radial-gradient(ellipse at 40% 37%, #f6f4e8 0%, var(--card-tint, #e5e6d8) 55%, #aab9a3 155%);
+  border: 1px solid #88948a;
+  border-radius: 8px;
+}
+
+.screen-overworld,
+.screen-battle { max-width: none; gap: 8px; }
+.overworld-layout {
+  grid-template-columns: minmax(0, 1fr) minmax(205px, 22%);
+  gap: 8px;
+  align-items: start;
+}
+.stage-column,
+.side-panel { min-width: 0; }
+.canvas-frame { background: #25372d; }
+#overworld-canvas {
+  height: max(360px, calc(100dvh - 128px));
+  aspect-ratio: auto;
+  touch-action: none;
+}
+.controls-hint-bar { display: none; }
+.side-panel {
+  display: flex;
+  max-height: calc(100dvh - 84px);
+  overflow-y: auto;
+  grid-template-columns: none;
+}
+
+.battle-shell {
+  max-width: none;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(272px, 26%);
+  grid-template-rows: auto auto 1fr;
+  gap: 8px;
+}
+
+.battle-topbar { grid-column: 1 / -1; }
+.battle-stage {
+  grid-column: 1;
+  grid-row: 2 / span 2;
+  align-self: start;
+  background: #d6e0d6;
+}
+#battle-canvas {
+  height: max(310px, calc(100dvh - 138px));
+  aspect-ratio: auto;
+}
+.battle-narration { grid-column: 2; grid-row: 2; }
+.battle-command-deck {
+  grid-column: 2;
+  grid-row: 3;
+  grid-template-columns: minmax(0, 1fr);
+  min-height: 0;
+  align-self: start;
+}
+.battle-tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.battle-action-pane { min-width: 0; }
+
+@media (max-width: 700px) and (orientation: portrait) {
+  .title-layout {
+    display: flex;
+    flex-direction: column;
+    width: min(100%, 460px);
+    gap: 20px;
+    padding: 24px 18px 18px;
+  }
+  .title-hero { text-align: center; }
+  .title-creatures { margin-top: 14px; }
+  .title-footer { padding-inline: 8px; }
+  .top-bar { flex-wrap: wrap; padding: 6px 8px; gap: 5px; }
+  .top-bar-left { justify-content: space-between; width: 100%; gap: 4px; }
+  .top-bar-actions { flex-wrap: nowrap; justify-content: space-between; width: 100%; gap: 3px; }
+  .top-bar-actions .btn { padding: 5px 8px; min-height: 32px; }
+  .overworld-layout { grid-template-columns: minmax(0, 1fr); gap: 7px; }
+  #overworld-canvas { height: max(300px, calc(100dvh - 240px)); }
+  .side-panel { display: contents; }
+  .controls-side-card { grid-row: 2; padding: 5px 8px; }
+  .quest-card { grid-row: 3; }
+  .party-side-card { grid-row: 4; }
+  .dpad { grid-template-columns: repeat(3, 40px); grid-template-rows: repeat(3, 34px); }
+  .dpad-btn { width: 40px; height: 34px; }
+  .battle-shell {
+    display: flex;
+    gap: 6px;
+  }
+  #battle-canvas {
+    height: auto;
+    aspect-ratio: 6 / 5;
+  }
+  .battle-stage { align-self: stretch; }
+  .battle-command-deck { align-self: stretch; }
+  .battle-tabs { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; padding: 4px; }
+  .btab-btn { font-size: 0.76rem; padding: 6px; justify-content: center; }
+  .battle-hud { padding: 5px 6px; margin: 3px 3px 5px; }
+}
+
+@media (orientation: landscape) and (max-height: 560px) {
+  .title-layout { gap: 20px; padding: 16px 24px; }
+  .title-creatures { width: min(265px, 100%); margin-top: 7px; }
+  .overworld-layout { grid-template-columns: minmax(0, 1fr) minmax(170px, 23%); }
+  #overworld-canvas { height: max(220px, calc(100dvh - 62px)); }
+  .side-panel { max-height: calc(100dvh - 62px); }
+  .battle-shell { grid-template-columns: minmax(0, 1fr) minmax(236px, 34%); }
+  #battle-canvas { height: max(180px, calc(100dvh - 118px)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .screen { animation: none; }
+}

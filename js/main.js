@@ -314,7 +314,7 @@
         `<img src="${spriteUrl(id, 320)}" alt="${escapeHtml(HM.SPECIES[id].name)}" />`
       )).join('');
     }
-    startTitleScene();
+    drawTitleBackground();
 
     const saveExists = typeof HM.hasSave === 'function' && HM.hasSave();
     const saved = saveExists ? ensureStateShape(typeof HM.loadGame === 'function' ? HM.loadGame() : null) : null;
@@ -337,201 +337,20 @@
     }
   }
 
-  // ---------------------------------------------------------------------------
-  // Cenário animado da tela inicial
-  // ---------------------------------------------------------------------------
-  const titleScene = {
-    running: false,
-    raf: 0,
-    clouds: [
-      { x: 0.12, y: 0.14, s: 1.1, v: 0.006 },
-      { x: 0.55, y: 0.08, s: 0.8, v: 0.004 },
-      { x: 0.86, y: 0.2, s: 1.3, v: 0.007 }
-    ]
-  };
-
-  function startTitleScene() {
+  function drawTitleBackground() {
     const canvas = $('title-scene');
-    if (!canvas || titleScene.running) return;
-    titleScene.running = true;
-    let last = performance.now();
-    const loop = (now) => {
-      if (ui.screen !== 'title' || !titleScene.running) {
-        titleScene.running = false;
-        return;
-      }
-      const dt = Math.min(0.05, (now - last) / 1000);
-      last = now;
-      drawTitleScene(canvas, now, dt);
-      titleScene.raf = requestAnimationFrame(loop);
-    };
-    titleScene.raf = requestAnimationFrame(loop);
-  }
-
-  function drawTitleScene(canvas, now, dt) {
+    if (!canvas) return;
     const dpr = Math.min(2, global.devicePixelRatio || 1);
-    const W = global.innerWidth;
-    const H = global.innerHeight;
-    if (canvas.width !== Math.round(W * dpr) || canvas.height !== Math.round(H * dpr)) {
-      canvas.width = Math.round(W * dpr);
-      canvas.height = Math.round(H * dpr);
-    }
-    const c = canvas.getContext('2d');
-    c.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const t = now / 1000;
-    const horizon = H * 0.62;
-
-    // Céu
-    const sky = c.createLinearGradient(0, 0, 0, horizon);
-    sky.addColorStop(0, '#7cc8f2');
-    sky.addColorStop(1, '#d9f4dd');
-    c.fillStyle = sky;
-    c.fillRect(0, 0, W, H);
-
-    // Sol
-    const sx = W * 0.84;
-    const sy = H * 0.15;
-    const glow = c.createRadialGradient(sx, sy, 10, sx, sy, 110);
-    glow.addColorStop(0, 'rgba(254, 240, 138, 0.9)');
-    glow.addColorStop(1, 'rgba(254, 240, 138, 0)');
-    c.fillStyle = glow;
-    c.fillRect(sx - 110, sy - 110, 220, 220);
-    c.fillStyle = '#fde047';
-    c.strokeStyle = '#2b1d14';
-    c.lineWidth = 3;
-    c.beginPath();
-    c.arc(sx, sy, 34, 0, Math.PI * 2);
-    c.fill();
-    c.stroke();
-
-    // Nuvens
-    titleScene.clouds.forEach((cl) => {
-      cl.x += cl.v * dt;
-      if (cl.x > 1.2) cl.x = -0.2;
-      drawTitleCloud(c, cl.x * W, cl.y * H, cl.s * Math.max(0.7, W / 1400));
-    });
-
-    // Colinas
-    const hill = (yTop, color, amp, phase) => {
-      c.fillStyle = color;
-      c.strokeStyle = '#2b1d14';
-      c.lineWidth = 3;
-      c.beginPath();
-      c.moveTo(-10, H);
-      c.lineTo(-10, yTop);
-      for (let x = 0; x <= W + 20; x += 20) {
-        c.lineTo(x, yTop - Math.sin(x / (W * 0.22) + phase) * amp - Math.sin(x / (W * 0.09) + phase * 2) * amp * 0.25);
-      }
-      c.lineTo(W + 10, H);
-      c.closePath();
-      c.fill();
-      c.stroke();
-    };
-    hill(horizon - H * 0.12, '#a7e08a', H * 0.05, 0.6);
-    hill(horizon - H * 0.03, '#86d26a', H * 0.035, 2.1);
-
-    // Árvores no horizonte
-    [0.07, 0.24, 0.69, 0.95].forEach((fx, k) => drawTitleTree(c, fx * W, horizon - H * 0.03, 26 + k * 3, t + k));
-
-    // Campo
-    const field = c.createLinearGradient(0, horizon, 0, H);
-    field.addColorStop(0, '#79c94f');
-    field.addColorStop(1, '#5aae3b');
-    c.fillStyle = field;
-    c.fillRect(0, horizon, W, H - horizon);
-    c.strokeStyle = '#2b1d14';
-    c.lineWidth = 3;
-    c.beginPath();
-    c.moveTo(0, horizon);
-    c.lineTo(W, horizon);
-    c.stroke();
-
-    // Cerquinha
-    c.fillStyle = '#c98f55';
-    c.lineWidth = 2.5;
-    const fenceY = horizon + 6;
-    for (let x = 12; x < W; x += 46) {
-      c.beginPath();
-      c.rect(x, fenceY - 26, 10, 30);
-      c.fill();
-      c.stroke();
-    }
-    c.beginPath();
-    c.rect(0, fenceY - 18, W, 7);
-    c.fill();
-    c.stroke();
-
-    // Tufos de grama na frente
-    c.strokeStyle = '#2f7d24';
-    c.lineWidth = 2.5;
-    c.lineCap = 'round';
-    for (let x = 20; x < W; x += 64) {
-      const gy = H - 14 - ((x * 7) % 30);
-      const sway = Math.sin(t * 2 + x) * 3;
-      c.beginPath();
-      c.moveTo(x, gy);
-      c.quadraticCurveTo(x - 4, gy - 10, x - 7 + sway, gy - 16);
-      c.moveTo(x, gy);
-      c.quadraticCurveTo(x + 1, gy - 12, x + sway, gy - 20);
-      c.moveTo(x, gy);
-      c.quadraticCurveTo(x + 5, gy - 9, x + 9 + sway, gy - 14);
-      c.stroke();
-    }
+    const width = global.innerWidth;
+    const height = global.innerHeight;
+    if (canvas.width === Math.round(width * dpr) && canvas.height === Math.round(height * dpr)) return;
+    canvas.width = Math.round(width * dpr);
+    canvas.height = Math.round(height * dpr);
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    HM.Scenery.paint(ctx, width, height);
   }
 
-  function drawTitleCloud(c, x, y, s) {
-    const shapes = (ctx) => {
-      ctx.beginPath();
-      ctx.arc(-26, 6, 18, 0, Math.PI * 2);
-      ctx.moveTo(26, -4);
-      ctx.arc(0, -4, 26, 0, Math.PI * 2);
-      ctx.moveTo(46, 6);
-      ctx.arc(28, 6, 18, 0, Math.PI * 2);
-      ctx.moveTo(-40, 10);
-      ctx.roundRect ? ctx.roundRect(-44, 4, 90, 20, 10) : ctx.rect(-44, 4, 90, 20);
-    };
-    c.save();
-    c.translate(x, y);
-    c.scale(s, s);
-    // 1) contorno grosso de todas as formas; 2) preenchimento por cima esconde os traços internos
-    c.strokeStyle = '#2b1d14';
-    c.lineWidth = 6;
-    c.lineJoin = 'round';
-    shapes(c);
-    c.stroke();
-    c.fillStyle = '#ffffff';
-    shapes(c);
-    c.fill();
-    c.restore();
-  }
-
-  function drawTitleTree(c, x, y, r, t) {
-    const sway = Math.sin(t * 0.8) * 1.5;
-    c.save();
-    c.strokeStyle = '#2b1d14';
-    c.lineWidth = 2.5;
-    c.fillStyle = '#8b5a2b';
-    c.beginPath();
-    c.rect(x - 5, y - r * 0.9, 10, r * 0.9);
-    c.fill();
-    c.stroke();
-    c.fillStyle = '#2f9e44';
-    c.beginPath();
-    c.arc(x - r * 0.55 + sway, y - r * 1.05, r * 0.62, 0, Math.PI * 2);
-    c.arc(x + r * 0.55 + sway, y - r * 1.05, r * 0.62, 0, Math.PI * 2);
-    c.arc(x + sway, y - r * 1.55, r * 0.72, 0, Math.PI * 2);
-    c.fill();
-    c.stroke();
-    c.fillStyle = '#f87171';
-    [[-0.5, -1.1], [0.35, -1.5], [0.6, -0.95]].forEach((p) => {
-      c.beginPath();
-      c.arc(x + p[0] * r + sway, y + p[1] * r, 3.2, 0, Math.PI * 2);
-      c.fill();
-    });
-    c.restore();
-  }
-
-  // Setas do teclado navegam pelo menu da tela inicial
   function handleTitleMenuKeys(ev) {
     if (ui.screen !== 'title' || ui.modal) return;
     if (ev.key !== 'ArrowDown' && ev.key !== 'ArrowUp') return;
@@ -3117,6 +2936,7 @@
 
   async function init() {
     await HM.Sprites.artReady;
+    global.addEventListener('resize', drawTitleBackground);
     cacheDom();
     applyToolbarIcons();
     bindGlobalEvents();

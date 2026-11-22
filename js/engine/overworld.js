@@ -71,7 +71,8 @@
   const ENCOUNTER_FLASH_MS = 320;
   const TRAINER_ALERT_MS = 380;
   const ZONE_BANNER_MS = 2600;
-  const OUTLINE = '#2b1d14';
+  const OUTLINE = '#233129';
+  const GROUND_TILT = 0.72;
 
   // Deterministic pseudo-random hash in [0, 1) for (col, row, seed)
   function hash2D(col, row, seed) {
@@ -216,19 +217,19 @@
     ctx.lineJoin = 'round';
 
     const colors = {
-      player: '#22c55e',
+      player: '#789263',
       prof: '#f8fafc',
-      healer: '#f472b6',
+      healer: '#c78993',
       shop: '#f59e0b',
       box: '#38bdf8',
       trainer: '#fb923c',
       leader: '#eab308',
       sign: '#a16207'
     };
-    const bodyColor = colors[style] || '#22c55e';
+    const bodyColor = colors[style] || '#789263';
 
     if (style === 'sign') {
-      ctx.fillStyle = '#8b5a2b';
+      ctx.fillStyle = '#68543e';
       ctx.fillRect(-4, 0, 8, r * 1.05);
       ctx.strokeRect(-4, 0, 8, r * 1.05);
       ctx.fillStyle = '#d4a373';
@@ -294,6 +295,27 @@
 
   // Camera
   const camera = { x: 0, y: 0, snapped: false };
+  const viewport = { width: 768, height: 480, scaleX: 1, scaleY: 1 };
+
+  function syncViewport() {
+    const width = canvas.clientWidth;
+    const height = canvas.clientHeight;
+    if (!width || !height) return false;
+    const dpr = Math.min(2, global.devicePixelRatio || 1);
+    const pixelWidth = Math.round(width * dpr);
+    const pixelHeight = Math.round(height * dpr);
+    const zoom = clamp(width / 620, 0.9, 1.28);
+    viewport.width = width / zoom;
+    viewport.height = height / zoom;
+    viewport.scaleX = pixelWidth / viewport.width;
+    viewport.scaleY = pixelHeight / viewport.height;
+    if (canvas.width !== pixelWidth || canvas.height !== pixelHeight) {
+      canvas.width = pixelWidth;
+      canvas.height = pixelHeight;
+      camera.snapped = false;
+    }
+    return true;
+  }
 
   // Zone tracking & banner
   let currentZone = null;
@@ -400,8 +422,8 @@
       [TILE.TREE]: '#266d32',
       [TILE.FENCE]: '#9a6332',
       [TILE.BUILDING]: '#c2594a',
-      [TILE.DOOR]: '#facc15',
-      [TILE.FLOWERS]: '#f472b6',
+      [TILE.DOOR]: '#d6b872',
+      [TILE.FLOWERS]: '#c78993',
       [TILE.GREENHOUSE_FLOOR]: '#efe3c6',
       [TILE.BRIDGE]: '#b57a44',
       [TILE.HEAL_COUNTER]: '#fb7185',
@@ -452,7 +474,7 @@
       }
     }
 
-    const wingColors = ['#fde047', '#f472b6', '#60a5fa', '#fb923c', '#ffffff'];
+    const wingColors = ['#fde047', '#c78993', '#60a5fa', '#fb923c', '#ffffff'];
     const count = Math.min(7, Math.max(4, Math.floor(flowerSpots.length / 4)));
     for (let i = 0; i < count; i++) {
       const anchor = flowerSpots.length > 0
@@ -488,7 +510,7 @@
     const S = world.tileSize || 48;
     const cx = (col + 0.5) * S;
     const cy = (row + 0.55) * S;
-    const colors = palette || ['#4ade80', '#22c55e', '#86efac', '#16a34a'];
+    const colors = palette || ['#83a87e', '#789263', '#9ba97e', '#567655'];
     for (let i = 0; i < count; i++) {
       const ang = -Math.PI * 0.15 - Math.random() * Math.PI * 0.7;
       const spd = 28 + Math.random() * 52;
@@ -535,7 +557,7 @@
     const S = world.tileSize || 48;
     const cx = (col + 0.5) * S;
     const cy = (row + 0.5) * S;
-    const colors = ['#fde047', '#86efac', '#ffffff', '#38bdf8'];
+    const colors = ['#fde047', '#9ba97e', '#ffffff', '#38bdf8'];
     for (let i = 0; i < 12; i++) {
       const ang = (i / 12) * Math.PI * 2;
       particles.push({
@@ -580,45 +602,21 @@
     }
   }
 
-  function snapCameraToPlayer() {
-    if (!canvas || !world) return;
-    const S = world.tileSize || 48;
-    const worldW = world.cols * S;
-    const worldH = world.rows * S;
-    const targetX = (player.renderX + 0.5) * S - canvas.width / 2;
-    const targetY = (player.renderY + 0.5) * S - canvas.height / 2;
-
-    camera.x = worldW <= canvas.width
-      ? -(canvas.width - worldW) / 2
-      : clamp(targetX, 0, worldW - canvas.width);
-    camera.y = worldH <= canvas.height
-      ? -(canvas.height - worldH) / 2
-      : clamp(targetY, 0, worldH - canvas.height);
-    camera.snapped = true;
+  function cameraTarget(position, span, worldSpan) {
+    return worldSpan <= span
+      ? (worldSpan - span) / 2
+      : clamp(position - span / 2, 0, worldSpan - span);
   }
 
-  function updateCamera(dt) {
+  function updateCamera(dt, snap = false) {
     if (!canvas || !world) return;
-    if (!camera.snapped) {
-      snapCameraToPlayer();
-      return;
-    }
     const S = world.tileSize || 48;
-    const worldW = world.cols * S;
-    const worldH = world.rows * S;
-    let targetX = (player.renderX + 0.5) * S - canvas.width / 2;
-    let targetY = (player.renderY + 0.5) * S - canvas.height / 2;
-
-    targetX = worldW <= canvas.width
-      ? -(canvas.width - worldW) / 2
-      : clamp(targetX, 0, worldW - canvas.width);
-    targetY = worldH <= canvas.height
-      ? -(canvas.height - worldH) / 2
-      : clamp(targetY, 0, worldH - canvas.height);
-
-    const alpha = 1 - Math.exp(-dt * 11);
-    camera.x += (targetX - camera.x) * alpha;
-    camera.y += (targetY - camera.y) * alpha;
+    const x = cameraTarget((player.renderX + 0.5) * S, viewport.width, world.cols * S);
+    const y = cameraTarget((player.renderY + 0.5) * S, viewport.height / GROUND_TILT, world.rows * S);
+    const alpha = snap || !camera.snapped ? 1 : 1 - Math.exp(-dt * 11);
+    camera.x += (x - camera.x) * alpha;
+    camera.y += (y - camera.y) * alpha;
+    camera.snapped = true;
   }
 
   function clearInputs() {
@@ -635,13 +633,13 @@
     if (performance.now() - pointerDownTime < 140 && !pointerMoved) return null;
     const rect = canvas.getBoundingClientRect();
     if (rect.width <= 0 || rect.height <= 0) return null;
-    const cx = ((pointerClientX - rect.left) / rect.width) * canvas.width;
-    const cy = ((pointerClientY - rect.top) / rect.height) * canvas.height;
+    const cx = ((pointerClientX - rect.left) / rect.width) * viewport.width;
+    const cy = ((pointerClientY - rect.top) / rect.height) * viewport.height;
     const S = world.tileSize || 48;
-    const playerScreenX = (player.renderX + 0.5) * S - camera.x;
-    const playerScreenY = (player.renderY + 0.5) * S - camera.y;
+    const playerScreenX = (player.renderX + 0.5) * S - Math.round(camera.x);
+    const playerScreenY = (player.renderY + 0.5) * S - Math.round(camera.y);
     const dx = cx - playerScreenX;
-    const dy = cy - playerScreenY;
+    const dy = cy / GROUND_TILT - playerScreenY;
     if (Math.hypot(dx, dy) < S * 0.42) return null;
     if (Math.abs(dx) > Math.abs(dy)) {
       return dx > 0 ? 'right' : 'left';
@@ -964,7 +962,7 @@
     } else if (destTile === TILE.CAVE_GRASS) {
       spawnLeafParticles(nx, ny, 6, ['#c084fc', '#a78bfa', '#22d3ee', '#e9d5ff']);
     } else if (destTile === TILE.FLOWERS) {
-      spawnLeafParticles(nx, ny, 4, ['#f9a8d4', '#fde047', '#86efac', '#fbcfe8']);
+      spawnLeafParticles(nx, ny, 4, ['#f9a8d4', '#fde047', '#9ba97e', '#fbcfe8']);
     } else if (destTile === TILE.DIRT) {
       spawnDustPuff(player.fromX, player.fromY);
     }
@@ -1153,13 +1151,12 @@
 
   function drawGrassTile(ctx, px, py, col, row, S) {
     const h = hash2D(col, row, 1);
-    const checker = (col + row) % 2 === 0;
-    ctx.fillStyle = checker ? '#79cc52' : '#73c64c';
+    ctx.fillStyle = h > 0.56 ? '#57744a' : '#58764a';
     ctx.fillRect(px, py, S, S);
 
     // Subtle sunlit patch
     if (h > 0.68) {
-      ctx.fillStyle = 'rgba(167, 240, 108, 0.28)';
+      ctx.fillStyle = 'rgba(185, 191, 127, 0.16)';
       ctx.beginPath();
       ctx.ellipse(px + S * (0.3 + (h * 0.4) % 0.4), py + S * 0.5, S * 0.34, S * 0.22, 0.3, 0, Math.PI * 2);
       ctx.fill();
@@ -1169,7 +1166,7 @@
     if (h < 0.36) {
       const tx = px + 10 + hash2D(col, row, 2) * (S - 20);
       const ty = py + 16 + hash2D(col, row, 3) * (S - 24);
-      ctx.strokeStyle = '#4e9c32';
+      ctx.strokeStyle = '#435e3d';
       ctx.lineWidth = 2;
       ctx.lineCap = 'round';
       ctx.beginPath();
@@ -1181,10 +1178,10 @@
       ctx.quadraticCurveTo(tx + 5, ty - 6, tx + 7, ty - 7);
       ctx.stroke();
     } else if (h > 0.86) {
-      // Tiny clover / pebble dot
+      // Pedrinhas nas áreas de gramado.
       const cx = px + 12 + hash2D(col, row, 4) * (S - 24);
       const cy = py + 12 + hash2D(col, row, 5) * (S - 24);
-      ctx.fillStyle = '#53a537';
+      ctx.fillStyle = '#476343';
       ctx.beginPath();
       ctx.arc(cx - 2.5, cy, 2.3, 0, Math.PI * 2);
       ctx.arc(cx + 2.5, cy, 2.3, 0, Math.PI * 2);
@@ -1205,13 +1202,13 @@
 
   function drawDirtTile(ctx, px, py, col, row, S) {
     // Base warm dirt
-    ctx.fillStyle = '#e7c58d';
+    ctx.fillStyle = '#b2a07c';
     ctx.fillRect(px, py, S, S);
 
     // Subtle soft dirt variation
     const h = hash2D(col, row, 10);
     if (h > 0.45) {
-      ctx.fillStyle = 'rgba(212, 168, 106, 0.35)';
+      ctx.fillStyle = 'rgba(98, 79, 52, 0.13)';
       ctx.beginPath();
       ctx.ellipse(px + S * 0.5, py + S * 0.52, S * 0.32, S * 0.22, h * 3, 0, Math.PI * 2);
       ctx.fill();
@@ -1223,28 +1220,28 @@
     const left = isPathLike(getTile(col - 1, row));
     const right = isPathLike(getTile(col + 1, row));
 
-    ctx.fillStyle = '#75c84e';
+    ctx.fillStyle = '#58764a';
     if (!up) {
       ctx.fillRect(px, py, S, 4);
-      ctx.fillStyle = '#cfa266';
+      ctx.fillStyle = '#89775b';
       ctx.fillRect(px, py + 4, S, 2);
-      ctx.fillStyle = '#75c84e';
+      ctx.fillStyle = '#58764a';
     }
     if (!down) {
       ctx.fillRect(px, py + S - 4, S, 4);
-      ctx.fillStyle = '#cfa266';
+      ctx.fillStyle = '#89775b';
       ctx.fillRect(px, py + S - 6, S, 2);
-      ctx.fillStyle = '#75c84e';
+      ctx.fillStyle = '#58764a';
     }
     if (!left) {
       ctx.fillRect(px, py, 4, S);
-      ctx.fillStyle = '#cfa266';
+      ctx.fillStyle = '#89775b';
       ctx.fillRect(px + 4, py, 2, S);
-      ctx.fillStyle = '#75c84e';
+      ctx.fillStyle = '#58764a';
     }
     if (!right) {
       ctx.fillRect(px + S - 4, py, 4, S);
-      ctx.fillStyle = '#cfa266';
+      ctx.fillStyle = '#89775b';
       ctx.fillRect(px + S - 6, py, 2, S);
     }
 
@@ -1349,7 +1346,7 @@
 
     const foamW = 2 + Math.sin(time * 0.004 + col + row) * 0.8;
     if (!upW) {
-      ctx.fillStyle = '#73c64c';
+      ctx.fillStyle = '#58764a';
       ctx.fillRect(px, py, S, 4);
       ctx.fillStyle = '#c9b07c';
       ctx.fillRect(px, py + 4, S, 3);
@@ -1357,7 +1354,7 @@
       ctx.fillRect(px + 2, py + 7, S - 4, foamW);
     }
     if (!downW) {
-      ctx.fillStyle = '#73c64c';
+      ctx.fillStyle = '#58764a';
       ctx.fillRect(px, py + S - 4, S, 4);
       ctx.fillStyle = '#c9b07c';
       ctx.fillRect(px, py + S - 7, S, 3);
@@ -1365,7 +1362,7 @@
       ctx.fillRect(px + 2, py + S - 7 - foamW, S - 4, foamW);
     }
     if (!leftW) {
-      ctx.fillStyle = '#73c64c';
+      ctx.fillStyle = '#58764a';
       ctx.fillRect(px, py, 4, S);
       ctx.fillStyle = '#c9b07c';
       ctx.fillRect(px + 4, py, 3, S);
@@ -1373,7 +1370,7 @@
       ctx.fillRect(px + 7, py + 2, foamW, S - 4);
     }
     if (!rightW) {
-      ctx.fillStyle = '#73c64c';
+      ctx.fillStyle = '#58764a';
       ctx.fillRect(px + S - 4, py, 4, S);
       ctx.fillStyle = '#c9b07c';
       ctx.fillRect(px + S - 7, py, 3, S);
@@ -1449,7 +1446,7 @@
         ctx.fill();
       }
       // Outer rails only (so 2-tile-wide bridges stay wide & seamless!)
-      ctx.fillStyle = '#8b5a2b';
+      ctx.fillStyle = '#68543e';
       if (!bridgeUp) {
         ctx.fillRect(px, py + 1, S, 6);
         ctx.strokeRect(px, py + 1, S, 6);
@@ -1475,7 +1472,7 @@
         ctx.arc(px + S - rightPad - 5, py + i * ph + ph * 0.5, 1.3, 0, Math.PI * 2);
         ctx.fill();
       }
-      ctx.fillStyle = '#8b5a2b';
+      ctx.fillStyle = '#68543e';
       if (!bridgeLeft) {
         ctx.fillRect(px + 1, py, 6, S);
         ctx.strokeRect(px + 1, py, 6, S);
@@ -1493,7 +1490,7 @@
     const petalSets = [
       { petal: '#ff6b9d', center: '#fde047' },
       { petal: '#fde047', center: '#f97316' },
-      { petal: '#ffffff', center: '#facc15' },
+      { petal: '#ffffff', center: '#d6b872' },
       { petal: '#c084fc', center: '#fef08a' },
       { petal: '#fb7185', center: '#fef9c3' }
     ];
@@ -1640,7 +1637,7 @@
     ctx.strokeStyle = OUTLINE;
     ctx.lineWidth = 2.3;
     ctx.lineJoin = 'round';
-    ctx.fillStyle = '#c2803d';
+    ctx.fillStyle = '#917551';
     ctx.beginPath();
     ctx.moveTo(cx - 6, baseY);
     ctx.quadraticCurveTo(cx - 4 + lean * 0.3, baseY - 22, cx - 3 + lean, baseY - 40);
@@ -1669,7 +1666,7 @@
       ctx.save();
       ctx.translate(topX, topY);
       ctx.rotate(angles[i] + sway);
-      ctx.fillStyle = i % 2 === 0 ? '#22a34a' : '#16803c';
+      ctx.fillStyle = i % 2 === 0 ? '#527653' : '#3b5948';
       ctx.strokeStyle = OUTLINE;
       ctx.beginPath();
       ctx.moveTo(0, 0);
@@ -1806,107 +1803,43 @@
   }
 
   function drawTreeObject(ctx, col, row, S, time) {
-    const px = col * S;
-    const py = row * S;
-    const cx = px + S * 0.5;
-    const baseY = py + S * 0.88;
+    const x = (col + 0.5) * S;
+    const y = (row + 0.88) * S;
+    const height = S * (1.64 + hash2D(col, row, 60) * 0.52);
     const sway = Math.sin(time * 0.002 + col * 1.1 + row * 0.7) * 1.4;
-    const h = hash2D(col, row, 60);
 
-    // Round ground shadow
-    ctx.fillStyle = 'rgba(28, 56, 22, 0.28)';
+    ctx.fillStyle = '#22322268';
     ctx.beginPath();
-    ctx.ellipse(cx + 2, baseY - 2, S * 0.42, S * 0.2, 0, 0, Math.PI * 2);
+    ctx.ellipse(x + S * 0.18, y + 1, S * 0.64, S * 0.13, -0.12, 0, Math.PI * 2);
     ctx.fill();
 
-    // Cartoon trunk
-    ctx.fillStyle = '#8b5a2b';
-    ctx.strokeStyle = OUTLINE;
-    ctx.lineWidth = 2.4;
-    ctx.lineJoin = 'round';
+    ctx.strokeStyle = '#50483b';
+    ctx.lineWidth = S * 0.15;
     ctx.beginPath();
-    ctx.moveTo(cx - 8, baseY - 2);
-    ctx.quadraticCurveTo(cx - 6, baseY - 14, cx - 5, baseY - 22);
-    ctx.lineTo(cx + 5, baseY - 22);
-    ctx.quadraticCurveTo(cx + 6, baseY - 14, cx + 8, baseY - 2);
-    ctx.closePath();
-    ctx.fill();
+    ctx.moveTo(x, y);
+    ctx.quadraticCurveTo(x - 2, y - height * 0.38, x + 3, y - height * 0.75);
     ctx.stroke();
 
-    // Trunk sunlit edge
-    ctx.fillStyle = '#aa723c';
-    ctx.fillRect(cx - 3.5, baseY - 20, 3.5, 15);
-
-    // Fluffy cartoon canopy (3 overlapping circles + bright crown highlight)
-    const canopyY = py + S * 0.28;
-    ctx.save();
-    ctx.translate(sway, 0);
-
-    // Underside shadow leaf mass
-    ctx.fillStyle = '#1f7a34';
-    ctx.strokeStyle = OUTLINE;
-    ctx.lineWidth = 2.6;
+    const canopy = ctx.createLinearGradient(x - S * 0.5, y - height, x + S * 0.45, y - height * 0.22);
+    canopy.addColorStop(0, '#8da46d');
+    canopy.addColorStop(0.55, '#567b55');
+    canopy.addColorStop(1, '#2e4d40');
+    ctx.fillStyle = canopy;
     ctx.beginPath();
-    ctx.arc(cx - 12, canopyY + 5, 15, 0, Math.PI * 2);
-    ctx.arc(cx + 12, canopyY + 5, 15, 0, Math.PI * 2);
-    ctx.arc(cx, canopyY - 6, 17, 0, Math.PI * 2);
+    ctx.moveTo(x + sway, y - height);
+    ctx.bezierCurveTo(x + S * 0.45, y - height, x + S * 0.78, y - height * 0.51,
+      x + S * 0.52, y - height * 0.37);
+    ctx.quadraticCurveTo(x + 6, y - height * 0.19, x - S * 0.26, y - height * 0.34);
+    ctx.bezierCurveTo(x - S * 0.7, y - height * 0.36, x - S * 0.54, y - height * 0.82,
+      x + sway, y - height);
     ctx.fill();
 
-    // Outer dark contour around puff silhouette
+    ctx.strokeStyle = '#d3ce8342';
+    ctx.lineWidth = 1.4;
     ctx.beginPath();
-    ctx.arc(cx - 12, canopyY + 5, 15, Math.PI * 0.5, Math.PI * 1.55);
-    ctx.arc(cx, canopyY - 6, 17, Math.PI * 1.05, Math.PI * 1.95);
-    ctx.arc(cx + 12, canopyY + 5, 15, -Math.PI * 0.55, Math.PI * 0.5);
-    ctx.closePath();
-    ctx.fillStyle = '#2fa346';
-    ctx.fill();
+    ctx.moveTo(x - S * 0.32, y - height * 0.66);
+    ctx.quadraticCurveTo(x - 3, y - height * 0.84, x + S * 0.24, y - height * 0.75);
     ctx.stroke();
-
-    // Shaded bottom rim inside canopy
-    ctx.fillStyle = '#227c35';
-    ctx.beginPath();
-    ctx.ellipse(cx, canopyY + 12, 18, 6.5, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Sunlit top leaf puffs
-    ctx.fillStyle = '#5cd454';
-    ctx.beginPath();
-    ctx.arc(cx - 7, canopyY - 5, 9.5, 0, Math.PI * 2);
-    ctx.arc(cx + 6, canopyY - 3, 8, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.fillStyle = '#8ef076';
-    ctx.beginPath();
-    ctx.ellipse(cx - 8, canopyY - 9, 5, 3, -0.35, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Colorful cartoon fruits! (apples, oranges, lemons, berries)
-    const fruitColors = ['#ef4444', '#f97316', '#facc15', '#ec4899'];
-    const fruitColor = fruitColors[Math.floor(h * fruitColors.length) % fruitColors.length];
-    const fruitSpots = [
-      { dx: -11, dy: 4 },
-      { dx: 9, dy: 2 },
-      { dx: -1, dy: -8 }
-    ];
-    const fruitCount = h > 0.3 ? 3 : 2;
-    for (let i = 0; i < fruitCount; i++) {
-      const fx = cx + fruitSpots[i].dx;
-      const fy = canopyY + fruitSpots[i].dy;
-      ctx.fillStyle = fruitColor;
-      ctx.strokeStyle = OUTLINE;
-      ctx.lineWidth = 1.6;
-      ctx.beginPath();
-      ctx.arc(fx, fy, 4.1, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-      // White specular dot
-      ctx.fillStyle = '#ffffff';
-      ctx.beginPath();
-      ctx.arc(fx - 1.3, fy - 1.3, 1.2, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    ctx.restore();
   }
 
   function drawFenceObject(ctx, col, row, S) {
@@ -1999,7 +1932,7 @@
     ctx.stroke();
 
     // Cute heart
-    ctx.fillStyle = '#ef4444';
+    ctx.fillStyle = '#c47965';
     ctx.beginPath();
     ctx.moveTo(cx, cy + 4.8);
     ctx.bezierCurveTo(cx - 7, cy + 0.5, cx - 5.5, cy - 5.5, cx, cy - 1.5);
@@ -2007,7 +1940,7 @@
     ctx.fill();
 
     // Tiny emerald leaf sprout on counter top
-    ctx.fillStyle = '#22c55e';
+    ctx.fillStyle = '#789263';
     ctx.beginPath();
     ctx.ellipse(cx + 12, py + 12, 4.5, 2.5, -0.5, 0, Math.PI * 2);
     ctx.fill();
@@ -2092,7 +2025,7 @@
     ctx.fill();
     ctx.lineWidth = 1.6;
     ctx.stroke();
-    ctx.fillStyle = '#facc15';
+    ctx.fillStyle = '#d6b872';
     ctx.beginPath();
     ctx.arc(doorX + doorW - 7, doorY + doorH * 0.64, 2.5, 0, Math.PI * 2);
     ctx.fill();
@@ -2143,7 +2076,7 @@
       ctx.lineWidth = 1.6;
       ctx.fillRect(wx - 2, winY + winH - 1, winW + 4, 6);
       ctx.strokeRect(wx - 2, winY + winH - 1, winW + 4, 6);
-      ctx.fillStyle = i % 2 === 0 ? '#f472b6' : '#fde047';
+      ctx.fillStyle = i % 2 === 0 ? '#c78993' : '#fde047';
       ctx.beginPath();
       ctx.arc(wx + 5, winY + winH - 2, 2.5, 0, Math.PI * 2);
       ctx.arc(wx + 12, winY + winH - 3, 2.5, 0, Math.PI * 2);
@@ -2224,16 +2157,16 @@
       ctx.arc(badgeCx, badgeCy, 11, 0, Math.PI * 2);
       ctx.fill();
       ctx.stroke();
-      ctx.font = 'bold 13px "Fredoka", "Nunito", system-ui, sans-serif';
+      ctx.font = 'bold 13px "Nunito", system-ui, sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillStyle = isHealer ? '#16a34a' : '#d97706';
+      ctx.fillStyle = isHealer ? '#567655' : '#d97706';
       ctx.fillText(isHealer ? '♥' : '★', badgeCx, badgeCy + 1);
     }
 
     // Crisp readable wooden signboard with building name!
     if (label) {
-      ctx.font = '700 12px "Fredoka", "Nunito", system-ui, sans-serif';
+      ctx.font = '700 12px "Nunito", system-ui, sans-serif';
       const textW = ctx.measureText(label).width;
       const signW = Math.min(w + 26, Math.max(textW + 18, 72));
       const signH = 22;
@@ -2299,7 +2232,7 @@
       case 'leader':
         return {
           icon: '👑',
-          bg: defeated ? '#fef9c3' : '#facc15',
+          bg: defeated ? '#fef9c3' : '#d6b872',
           border: OUTLINE,
           actionLabel: defeated ? 'Revanche' : 'Desafiar!'
         };
@@ -2338,8 +2271,8 @@
       const topY = npc.y * S - 6;
 
       // Skip if offscreen
-      if (cx < camera.x - 60 || cx > camera.x + canvas.width + 60 ||
-          topY < camera.y - 60 || topY > camera.y + canvas.height + 60) {
+      if (cx < camera.x - 60 || cx > camera.x + viewport.width + 60 ||
+          topY < camera.y - 60 || topY > camera.y + viewport.height / GROUND_TILT + 60) {
         continue;
       }
 
@@ -2350,14 +2283,14 @@
         ctx.save();
         ctx.translate(cx, topY - 12);
         ctx.scale(scale, scale);
-        ctx.fillStyle = '#ef4444';
+        ctx.fillStyle = '#c47965';
         ctx.strokeStyle = OUTLINE;
         ctx.lineWidth = 2.5;
         roundRectPath(ctx, -14, -16, 28, 28, 9);
         ctx.fill();
         ctx.stroke();
         ctx.fillStyle = '#ffffff';
-        ctx.font = '800 18px "Fredoka", "Nunito", system-ui, sans-serif';
+        ctx.font = '800 18px "Nunito", system-ui, sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText('!', 0, -1);
@@ -2369,14 +2302,14 @@
       const isFocused = activeNpcId === npc.id;
       const dist = Math.abs(npc.x - player.x) + Math.abs(npc.y - player.y);
 
-      if (info.onlyWhenNear && !isFocused && dist > 2) continue;
+      if (!isFocused && dist > (info.onlyWhenNear ? 2 : 6)) continue;
 
       const bob = Math.sin(time * 0.0042 + i * 1.3) * 3;
 
       if (isFocused) {
         // Prominent [Espaço] interaction pill!
         const label = '[Espaço] ' + info.actionLabel;
-        ctx.font = '700 11.5px "Fredoka", "Nunito", system-ui, sans-serif';
+        ctx.font = '700 11.5px "Nunito", system-ui, sans-serif';
         const tw = ctx.measureText(label).width;
         const pw = tw + 18;
         const ph = 24;
@@ -2433,7 +2366,7 @@
         ctx.fill();
         ctx.stroke();
 
-        ctx.font = '700 12px "Fredoka", "Nunito", system-ui, sans-serif';
+        ctx.font = '700 12px "Nunito", system-ui, sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillStyle = OUTLINE;
@@ -2449,8 +2382,8 @@
     // Sunlit drifting pollen motes
     for (let i = 0; i < pollen.length; i++) {
       const m = pollen[i];
-      if (m.x < camera.x - 10 || m.x > camera.x + canvas.width + 10 ||
-          m.y < camera.y - 10 || m.y > camera.y + canvas.height + 10) continue;
+      if (m.x < camera.x - 10 || m.x > camera.x + viewport.width + 10 ||
+          m.y < camera.y - 10 || m.y > camera.y + viewport.height / GROUND_TILT + 10) continue;
       const alpha = 0.25 + 0.25 * Math.sin(time * 0.002 + m.phase);
       ctx.fillStyle = 'rgba(255, 252, 210, ' + alpha.toFixed(2) + ')';
       ctx.beginPath();
@@ -2461,8 +2394,8 @@
     // Butterflies
     for (let i = 0; i < butterflies.length; i++) {
       const b = butterflies[i];
-      if (b.x < camera.x - 20 || b.x > camera.x + canvas.width + 20 ||
-          b.y < camera.y - 20 || b.y > camera.y + canvas.height + 20) continue;
+      if (b.x < camera.x - 20 || b.x > camera.x + viewport.width + 20 ||
+          b.y < camera.y - 20 || b.y > camera.y + viewport.height / GROUND_TILT + 20) continue;
       const flap = Math.abs(Math.sin(time * 0.015 + b.phase));
       ctx.save();
       ctx.translate(b.x, b.y);
@@ -2554,7 +2487,7 @@
     if (minimapCompact) {
       const w = 92;
       const h = 28;
-      const x = canvas.width - w - pad;
+      const x = viewport.width - w - pad;
       const y = pad;
       minimapRect.x = x;
       minimapRect.y = y;
@@ -2570,7 +2503,7 @@
       ctx.fill();
       ctx.stroke();
 
-      ctx.font = '700 11px "Fredoka", "Nunito", system-ui, sans-serif';
+      ctx.font = '700 11px "Nunito", system-ui, sans-serif';
       ctx.fillStyle = OUTLINE;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
@@ -2583,7 +2516,7 @@
     const mapH = Math.round(mapW * (world.rows / world.cols));
     const frameW = mapW + 10;
     const frameH = mapH + 24;
-    const fx = canvas.width - frameW - pad;
+    const fx = viewport.width - frameW - pad;
     const fy = pad;
     minimapRect.x = fx;
     minimapRect.y = fy;
@@ -2642,7 +2575,7 @@
     if (healPos) {
       const hx = mx + healPos.x * sx;
       const hy = my + healPos.y * sy;
-      ctx.fillStyle = '#22c55e';
+      ctx.fillStyle = '#789263';
       ctx.strokeStyle = '#ffffff';
       ctx.lineWidth = 1.4;
       ctx.beginPath();
@@ -2658,7 +2591,7 @@
     if (arenaPos) {
       const ax = mx + arenaPos.x * sx;
       const ay = my + arenaPos.y * sy;
-      ctx.fillStyle = '#facc15';
+      ctx.fillStyle = '#d6b872';
       ctx.strokeStyle = OUTLINE;
       ctx.lineWidth = 1.4;
       ctx.beginPath();
@@ -2676,7 +2609,7 @@
     ctx.arc(px, py, pulse + 2, 0, Math.PI * 2);
     ctx.fill();
 
-    ctx.fillStyle = '#ef4444';
+    ctx.fillStyle = '#c47965';
     ctx.strokeStyle = '#ffffff';
     ctx.lineWidth = 1.6;
     ctx.beginPath();
@@ -2694,11 +2627,11 @@
 
     // Compact legend footer
     const legY = my + mapH + 10;
-    ctx.font = '700 9.5px "Fredoka", "Nunito", system-ui, sans-serif';
+    ctx.font = '700 9.5px "Nunito", system-ui, sans-serif';
     ctx.textBaseline = 'middle';
     ctx.textAlign = 'left';
 
-    ctx.fillStyle = '#22c55e';
+    ctx.fillStyle = '#789263';
     ctx.beginPath();
     ctx.arc(fx + 11, legY, 3, 0, Math.PI * 2);
     ctx.fill();
@@ -2712,7 +2645,7 @@
     ctx.fillStyle = OUTLINE;
     ctx.fillText('Arena', fx + 58, legY + 0.5);
 
-    ctx.fillStyle = '#ef4444';
+    ctx.fillStyle = '#c47965';
     ctx.beginPath();
     ctx.arc(fx + 96, legY, 3, 0, Math.PI * 2);
     ctx.fill();
@@ -2740,9 +2673,9 @@
 
     ctx.save();
     ctx.globalAlpha = alpha;
-    ctx.font = '700 15px "Fredoka", "Nunito", system-ui, sans-serif';
+    ctx.font = '700 15px "Nunito", system-ui, sans-serif';
     const titleW = ctx.measureText(zoneBanner.name).width;
-    ctx.font = '600 11px "Fredoka", "Nunito", system-ui, sans-serif';
+    ctx.font = '600 11px "Nunito", system-ui, sans-serif';
     const subW = zoneBanner.subtitle ? ctx.measureText(zoneBanner.subtitle).width : 0;
 
     const bw = Math.max(168, Math.max(titleW, subW) + 38);
@@ -2762,19 +2695,19 @@
     ctx.stroke();
 
     // Accent green leaf bar on left
-    ctx.fillStyle = '#22c55e';
+    ctx.fillStyle = '#789263';
     roundRectPath(ctx, bx + 4, by + 4, 6, bh - 8, 4);
     ctx.fill();
 
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
     ctx.fillStyle = OUTLINE;
-    ctx.font = '700 14.5px "Fredoka", "Nunito", system-ui, sans-serif';
+    ctx.font = '700 14.5px "Nunito", system-ui, sans-serif';
     ctx.fillText(zoneBanner.name, bx + 18, zoneBanner.subtitle ? by + 15 : by + bh * 0.52);
 
     if (zoneBanner.subtitle) {
       ctx.fillStyle = '#5c4b3c';
-      ctx.font = '600 11px "Fredoka", "Nunito", system-ui, sans-serif';
+      ctx.font = '600 11px "Nunito", system-ui, sans-serif';
       ctx.fillText(zoneBanner.subtitle, bx + 18, by + 31);
     }
 
@@ -2790,11 +2723,11 @@
 
     ctx.save();
     ctx.fillStyle = 'rgba(255, 253, 235, ' + clamp(flashWave * 0.72 + finalCover * 0.9, 0, 0.95).toFixed(2) + ')';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillRect(0, 0, viewport.width, viewport.height);
 
     // Expanding vibrant green ring around center
-    const cx = canvas.width * 0.5;
-    const cy = canvas.height * 0.5;
+    const cx = viewport.width * 0.5;
+    const cy = viewport.height * 0.5;
     ctx.strokeStyle = 'rgba(34, 197, 94, ' + (1 - p * 0.5).toFixed(2) + ')';
     ctx.lineWidth = 10 * (1 - p * 0.4);
     ctx.beginPath();
@@ -2806,8 +2739,9 @@
   function render() {
     if (!ctx || !canvas || !world) return;
 
-    // Skip expensive drawing if canvas is hidden (e.g., battle screen active)
-    if (paused && canvas.getBoundingClientRect().width === 0) return;
+    if (!syncViewport()) return;
+    if (!camera.snapped) updateCamera(0, true);
+    ctx.setTransform(viewport.scaleX, 0, 0, viewport.scaleY, 0, 0);
 
     const S = world.tileSize || 48;
     const camX = Math.round(camera.x);
@@ -2815,16 +2749,16 @@
     const time = elapsedTime;
 
     ctx.save();
-    // Sunlit green backdrop outside map edges
-    ctx.fillStyle = '#5ea83c';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#25372d';
+    ctx.fillRect(0, 0, viewport.width, viewport.height);
 
+    ctx.scale(1, GROUND_TILT);
     ctx.translate(-camX, -camY);
 
     const startCol = Math.max(0, Math.floor(camX / S) - 1);
-    const endCol = Math.min(world.cols - 1, Math.ceil((camX + canvas.width) / S) + 1);
+    const endCol = Math.min(world.cols - 1, Math.ceil((camX + viewport.width) / S) + 1);
     const startRow = Math.max(0, Math.floor(camY / S) - 2);
-    const endRow = Math.min(world.rows - 1, Math.ceil((camY + canvas.height) / S) + 2);
+    const endRow = Math.min(world.rows - 1, Math.ceil((camY + viewport.height / GROUND_TILT) / S) + 2);
 
     // PASS 1: Ground Terrain
     for (let r = startRow; r <= endRow; r++) {
@@ -2906,6 +2840,14 @@
 
     // PASS 2: Y-Sorted Depth Drawables (Buildings, Trees, Fences, Counters, Tall Grass Front, NPCs, Player)
     const drawList = [];
+    function upright(anchorY, draw) {
+      ctx.save();
+      ctx.translate(0, anchorY);
+      ctx.scale(1, 1 / GROUND_TILT);
+      ctx.translate(0, -anchorY);
+      draw();
+      ctx.restore();
+    }
 
     // Buildings
     if (Array.isArray(world.buildings)) {
@@ -2932,7 +2874,7 @@
           drawList.push({
             sortY: (r + 0.88) * S,
             draw: function () {
-              drawTreeObject(ctx, c, r, S, time);
+              upright((r + 0.88) * S, () => drawTreeObject(ctx, c, r, S, time));
             }
           });
         } else if (t === TILE.FENCE) {
@@ -2960,7 +2902,7 @@
           drawList.push({
             sortY: (r + 0.9) * S,
             draw: function () {
-              drawPalmObject(ctx, c, r, S, time);
+              upright((r + 0.90) * S, () => drawPalmObject(ctx, c, r, S, time));
             }
           });
         } else if (t === TILE.ROCK) {
@@ -2994,16 +2936,9 @@
         drawList.push({
           sortY: (npc.y + 0.78) * S,
           draw: function () {
-            drawCharacterEntity(
-              ctx,
-              (npc.x + 0.5) * S,
-              (npc.y + 0.44) * S,
-              S * 0.92,
-              npc.style || npc.role || 'prof',
-              npcDir,
-              0,
-              false
-            );
+            upright((npc.y + 0.78) * S, () => drawCharacterEntity(ctx,
+              (npc.x + 0.5) * S, (npc.y + 0.44) * S, S * 0.92,
+              npc.style || npc.role || 'prof', npcDir, 0, false));
           }
         });
       }
@@ -3013,16 +2948,9 @@
     drawList.push({
       sortY: (player.renderY + 0.8) * S,
       draw: function () {
-        drawCharacterEntity(
-          ctx,
-          (player.renderX + 0.5) * S,
-          (player.renderY + 0.44) * S,
-          S * 0.94,
-          'player',
-          player.dir,
-          player.walkFrame,
-          player.moving
-        );
+        upright((player.renderY + 0.80) * S, () => drawCharacterEntity(ctx,
+          (player.renderX + 0.5) * S, (player.renderY + 0.44) * S, S * 0.94,
+          'player', player.dir, player.walkFrame, player.moving));
       }
     });
 
@@ -3042,15 +2970,14 @@
 
     ctx.restore();
 
-    // PASS 5: Screen-Space Subtle Sunlit Vignette, Zone Banner, Minimap & Encounter Flash
-    const sunGrad = ctx.createRadialGradient(
-      canvas.width * 0.15, canvas.height * 0.08, 20,
-      canvas.width * 0.15, canvas.height * 0.08, canvas.width * 0.85
+    const light = ctx.createRadialGradient(
+      viewport.width * 0.42, viewport.height * 0.40, 10,
+      viewport.width * 0.42, viewport.height * 0.40, viewport.width * 0.72
     );
-    sunGrad.addColorStop(0, 'rgba(255, 250, 210, 0.12)');
-    sunGrad.addColorStop(1, 'rgba(255, 250, 210, 0)');
-    ctx.fillStyle = sunGrad;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    light.addColorStop(0, 'rgba(234, 218, 175, 0.09)');
+    light.addColorStop(1, 'rgba(15, 29, 31, 0.36)');
+    ctx.fillStyle = light;
+    ctx.fillRect(0, 0, viewport.width, viewport.height);
 
     drawZoneBanner(ctx);
     drawMinimapHUD(ctx, time);
@@ -3129,8 +3056,8 @@
     const rect = canvas.getBoundingClientRect();
     if (rect.width <= 0 || rect.height <= 0) return null;
     return {
-      x: ((clientX - rect.left) / rect.width) * canvas.width,
-      y: ((clientY - rect.top) / rect.height) * canvas.height
+      x: ((clientX - rect.left) / rect.width) * viewport.width,
+      y: ((clientY - rect.top) / rect.height) * viewport.height
     };
   }
 
@@ -3184,8 +3111,8 @@
     if (!pos) return;
 
     const S = world.tileSize || 48;
-    const worldX = pos.x + camera.x;
-    const worldY = pos.y + camera.y;
+    const worldX = pos.x + Math.round(camera.x);
+    const worldY = pos.y / GROUND_TILT + Math.round(camera.y);
     const tileCol = Math.floor(worldX / S);
     const tileRow = Math.floor(worldY / S);
 
@@ -3333,6 +3260,7 @@
       encounterPending = null;
       trainerAlert = null;
       tallGrassCooldown = 2;
+      minimapCompact = canvas.clientWidth < 540;
       currentZone = null;
       zoneBanner = null;
       particles = [];
@@ -3347,7 +3275,7 @@
 
       buildWorldCaches();
       camera.snapped = false;
-      snapCameraToPlayer();
+      updateCamera(0, true);
       updateZone(player.x, player.y, true);
 
       attachListeners();
@@ -3372,7 +3300,7 @@
         player.moving = false;
         player.stepElapsed = 0;
         player.walkFrame = 0;
-        snapCameraToPlayer();
+        updateCamera(0, true);
         updateZone(player.x, player.y, false);
       }
       if (VALID_DIRS.has(pos.dir)) {
@@ -3443,7 +3371,7 @@
       tallGrassCooldown = ENCOUNTER_COOLDOWN_STEPS;
 
       syncPlayerPosToState(state, player.x, player.y, player.dir);
-      snapCameraToPlayer();
+      updateCamera(0, true);
       spawnTeleportSparkles(player.x, player.y);
       updateZone(player.x, player.y, true);
     },

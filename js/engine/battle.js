@@ -78,7 +78,7 @@
   let activeTweens = [];
 
   // Nuvens e pétalas ambientais do cenário
-  let clouds = [];
+  let landscape = null;
   let ambientMotes = [];
 
   function createCreatureAnim() {
@@ -327,7 +327,9 @@
   // =========================================================================
   function getLayout() {
     const W = ARENA_WIDTH;
-    const H = ARENA_HEIGHT;
+    const H = canvas?.clientWidth > 0 && canvas.clientHeight > 0
+      ? Math.round(W * canvas.clientHeight / canvas.clientWidth)
+      : ARENA_HEIGHT;
     const playerStage = HM.SPECIES[getPlayerCreature()?.speciesId]?.stage;
     const enemyStage = HM.SPECIES[getEnemyCreature()?.speciesId]?.stage;
     const playerSize = Math.round(Math.min(W * 0.40, H * 0.64) * (HM.LIFE_STAGES[playerStage]?.battleScale || 1));
@@ -356,12 +358,6 @@
 
   function initEnvironment() {
     const { W, H } = getLayout();
-    clouds = [
-      { x: W * 0.12, y: H * 0.15, scale: 1.0, speed: 7.5 },
-      { x: W * 0.48, y: H * 0.10, scale: 0.78, speed: 5.2 },
-      { x: W * 0.82, y: H * 0.19, scale: 0.92, speed: 6.4 },
-      { x: W * 0.28, y: H * 0.24, scale: 0.62, speed: 4.5 }
-    ];
     ambientMotes = [];
     const count = battleType === 'leader' ? 26 : 16;
     for (let i = 0; i < count; i++) {
@@ -2373,13 +2369,6 @@
       }
     }
 
-    // Nuvens
-    for (let i = 0; i < clouds.length; i++) {
-      const c = clouds[i];
-      c.x += c.speed * dt;
-      if (c.x > W + 90) c.x = -90;
-    }
-
     // Pétalas / pólen ambiental
     for (let i = 0; i < ambientMotes.length; i++) {
       const m = ambientMotes[i];
@@ -2455,19 +2444,20 @@
       ctx.translate(sx, sy);
     }
 
-    // 1. Cenário (Estufa Dourada para Líder Flora, Jardim Ensolarado para os demais)
-    if (battleScene === 'caverna') {
-      drawCaveBackground(ctx, W, H);
-    } else if (battleType === 'leader') {
-      drawGoldenGreenhouseBackground(ctx, W, H);
-    } else {
-      drawGardenBackground(ctx, W, H);
-      if (battleScene === 'tropical') drawTropicalTouches(ctx, W, H);
+    const scene = battleScene === 'caverna' ? 'caverna' : battleType === 'leader' ? 'estufa' : battleScene;
+    if (!landscape || landscape.height !== H * 2 || landscape.scene !== scene) {
+      const background = document.createElement('canvas');
+      background.width = W * 2;
+      background.height = H * 2;
+      const backgroundCtx = background.getContext('2d');
+      backgroundCtx.scale(2, 2);
+      HM.Scenery.paint(backgroundCtx, W, H, scene);
+      landscape = { scene, height: H * 2, background };
     }
+    ctx.drawImage(landscape.background, 0, 0, W, H);
 
-    // 2. Plataformas ovais iluminadas
-    drawPlatform(ctx, layout.enemyPlatformX, layout.enemyPlatformY, W * 0.145, H * 0.088, battleType === 'leader');
-    drawPlatform(ctx, layout.playerPlatformX, layout.playerPlatformY, W * 0.175, H * 0.105, battleType === 'leader');
+    drawPlatform(ctx, layout.enemyPlatformX, layout.enemyPlatformY, W * 0.165, H * 0.065);
+    drawPlatform(ctx, layout.playerPlatformX, layout.playerPlatformY, W * 0.196, H * 0.081);
 
     // 3. Criatura Inimiga (em cima à direita olhando para esquerda)
     const enemy = getEnemyCreature();
@@ -2512,662 +2502,38 @@
     ctx.restore();
   }
 
-  // -------------------------------------------------------------------------
-  // CENÁRIO 1: JARDIM CARTOON ENSOLARADO
-  // -------------------------------------------------------------------------
-  function drawGardenBackground(c, W, H) {
-    // Céu azul ensolarado
-    const skyGrad = c.createLinearGradient(0, 0, 0, H * 0.62);
-    skyGrad.addColorStop(0, '#4cc3ff');
-    skyGrad.addColorStop(0.55, '#99e2ff');
-    skyGrad.addColorStop(1, '#e6fad8');
-    c.fillStyle = skyGrad;
-    c.fillRect(-20, -20, W + 40, H * 0.68);
+  function drawPlatform(ctx, x, y, rx, ry) {
+    const stone = ctx.createLinearGradient(x - rx, y - ry, x + rx, y + ry);
+    stone.addColorStop(0, '#8d9a81');
+    stone.addColorStop(1, '#505f53');
 
-    // Sol animado com raios suaves
-    const sunX = W * 0.14;
-    const sunY = H * 0.16;
-    c.save();
-    c.translate(sunX, sunY);
-    c.rotate(sceneTime * 0.18);
-    for (let i = 0; i < 10; i++) {
-      c.rotate((Math.PI * 2) / 10);
-      c.fillStyle = 'rgba(254, 240, 138, 0.34)';
-      c.beginPath();
-      c.moveTo(-7, 26);
-      c.lineTo(0, 50);
-      c.lineTo(7, 26);
-      c.closePath();
-      c.fill();
-    }
-    c.restore();
-
-    const sunGlow = c.createRadialGradient(sunX, sunY, 10, sunX, sunY, 54);
-    sunGlow.addColorStop(0, '#fef08a');
-    sunGlow.addColorStop(0.5, 'rgba(250, 204, 21, 0.55)');
-    sunGlow.addColorStop(1, 'rgba(250, 204, 21, 0)');
-    c.fillStyle = sunGlow;
-    c.beginPath();
-    c.arc(sunX, sunY, 54, 0, Math.PI * 2);
-    c.fill();
-
-    c.fillStyle = '#fde047';
-    c.strokeStyle = '#f59e0b';
-    c.lineWidth = 2.5;
-    c.beginPath();
-    c.arc(sunX, sunY, 21, 0, Math.PI * 2);
-    c.fill();
-    c.stroke();
-
-    // Nuvens fofinhas movendo devagar
-    for (let i = 0; i < clouds.length; i++) {
-      drawCartoonCloud(c, clouds[i].x, clouds[i].y, clouds[i].scale);
-    }
-
-    // Colinas distantes
-    const backHillGrad = c.createLinearGradient(0, H * 0.35, 0, H * 0.62);
-    backHillGrad.addColorStop(0, '#86efac');
-    backHillGrad.addColorStop(1, '#4ade80');
-    c.fillStyle = backHillGrad;
-    c.beginPath();
-    c.moveTo(-20, H * 0.62);
-    c.quadraticCurveTo(W * 0.18, H * 0.31, W * 0.42, H * 0.48);
-    c.quadraticCurveTo(W * 0.68, H * 0.27, W + 20, H * 0.48);
-    c.lineTo(W + 20, H * 0.65);
-    c.lineTo(-20, H * 0.65);
-    c.closePath();
-    c.fill();
-
-    // Pequenas copas de árvores frutíferas na colina ao fundo
-    drawBgTree(c, W * 0.08, H * 0.45, 22, '#22c55e', '#f87171');
-    drawBgTree(c, W * 0.31, H * 0.43, 18, '#16a34a', '#facc15');
-    drawBgTree(c, W * 0.62, H * 0.39, 20, '#22c55e', '#fb923c');
-    drawBgTree(c, W * 0.91, H * 0.43, 24, '#16a34a', '#f87171');
-
-    // Colina média mais viva
-    const midHillGrad = c.createLinearGradient(0, H * 0.43, 0, H * 0.64);
-    midHillGrad.addColorStop(0, '#5ae070');
-    midHillGrad.addColorStop(1, '#26a945');
-    c.fillStyle = midHillGrad;
-    c.beginPath();
-    c.moveTo(-20, H * 0.62);
-    c.quadraticCurveTo(W * 0.25, H * 0.44, W * 0.55, H * 0.54);
-    c.quadraticCurveTo(W * 0.82, H * 0.43, W + 20, H * 0.55);
-    c.lineTo(W + 20, H * 0.66);
-    c.lineTo(-20, H * 0.66);
-    c.closePath();
-    c.fill();
-
-    // Cerca de madeira ao fundo do jardim
-    const fenceY = H * 0.545;
-    drawWoodenFence(c, W, fenceY);
-
-    // Gramado principal da arena
-    const lawnGrad = c.createLinearGradient(0, fenceY + 14, 0, H);
-    lawnGrad.addColorStop(0, '#6ce062');
-    lawnGrad.addColorStop(0.45, '#46c449');
-    lawnGrad.addColorStop(1, '#2b9c3a');
-    c.fillStyle = lawnGrad;
-    c.fillRect(-20, fenceY + 14, W + 40, H - fenceY + 20);
-
-    // Faixas suaves de sol no gramado
-    c.fillStyle = 'rgba(255, 255, 224, 0.11)';
-    c.beginPath();
-    c.moveTo(W * 0.15, fenceY + 14);
-    c.lineTo(W * 0.36, fenceY + 14);
-    c.lineTo(W * 0.12, H);
-    c.lineTo(-W * 0.08, H);
-    c.closePath();
-    c.fill();
-
-    c.beginPath();
-    c.moveTo(W * 0.58, fenceY + 14);
-    c.lineTo(W * 0.78, fenceY + 14);
-    c.lineTo(W * 0.56, H);
-    c.lineTo(W * 0.36, H);
-    c.closePath();
-    c.fill();
-
-    // Tufinhos de grama e florzinhas determinísticas
-    const decor = [
-      [0.07, 0.67, '#fde047'], [0.16, 0.62, '#ffffff'], [0.44, 0.65, '#f9a8d4'],
-      [0.52, 0.86, '#fde047'], [0.88, 0.74, '#ffffff'], [0.93, 0.63, '#fbcfe8'],
-      [0.64, 0.89, '#fef08a'], [0.06, 0.91, '#ffffff'], [0.46, 0.74, '#ffffff']
-    ];
-    for (let i = 0; i < decor.length; i++) {
-      const dx = W * decor[i][0];
-      const dy = H * decor[i][1];
-      const sway = Math.sin(sceneTime * 2.4 + i) * 2;
-      c.strokeStyle = '#15803d';
-      c.lineWidth = 2;
-      c.beginPath();
-      c.moveTo(dx, dy);
-      c.lineTo(dx - 4 + sway, dy - 7);
-      c.moveTo(dx, dy);
-      c.lineTo(dx + 4 + sway, dy - 6);
-      c.stroke();
-      // Florzinha
-      c.fillStyle = decor[i][2];
-      c.beginPath();
-      c.arc(dx + sway, dy - 8, 3.3, 0, Math.PI * 2);
-      c.fill();
-      c.fillStyle = '#f59e0b';
-      c.beginPath();
-      c.arc(dx + sway, dy - 8, 1.3, 0, Math.PI * 2);
-      c.fill();
-    }
-  }
-
-  // ---------------------------------------------------------------------------
-  // CENÁRIO: POMAR TROPICAL (céu de fim de tarde + coqueiros no fundo)
-  // ---------------------------------------------------------------------------
-  function drawTropicalTouches(c, W, H) {
-    const warm = c.createLinearGradient(0, 0, 0, H * 0.6);
-    warm.addColorStop(0, 'rgba(251, 146, 60, 0.30)');
-    warm.addColorStop(0.6, 'rgba(244, 114, 182, 0.16)');
-    warm.addColorStop(1, 'rgba(244, 114, 182, 0)');
-    c.fillStyle = warm;
-    c.fillRect(-20, -20, W + 40, H * 0.62);
-    drawBgPalm(c, W * 0.2, H * 0.5, 0.9, -0.08);
-    drawBgPalm(c, W * 0.78, H * 0.47, 1.05, 0.1);
-    drawBgPalm(c, W * 0.95, H * 0.5, 0.8, -0.05);
-  }
-
-  function drawBgPalm(c, x, baseY, sc, lean) {
-    const sway = Math.sin(sceneTime * 1.3 + x) * 0.06;
-    c.save();
-    c.translate(x, baseY);
-    c.scale(sc, sc);
-    c.strokeStyle = '#2b1d14';
-    c.lineWidth = 2.4;
-    // Tronco curvo
-    c.beginPath();
-    c.moveTo(-5, 0);
-    c.quadraticCurveTo(-2 + lean * 60, -34, lean * 80, -62);
-    c.lineTo(lean * 80 + 7, -60);
-    c.quadraticCurveTo(6 + lean * 60, -32, 5, 0);
-    c.closePath();
-    c.fillStyle = '#b45309';
-    c.fill();
-    c.stroke();
-    // Folhas
-    c.translate(lean * 80 + 3, -62);
-    const fronds = [-2.7, -2.1, -1.4, -0.9, -0.3];
-    for (let i = 0; i < fronds.length; i++) {
-      c.save();
-      c.rotate(fronds[i] + sway);
-      c.beginPath();
-      c.moveTo(0, 0);
-      c.quadraticCurveTo(16, -9, 34, 4);
-      c.quadraticCurveTo(16, 2, 0, 0);
-      c.closePath();
-      c.fillStyle = i % 2 ? '#16a34a' : '#22c55e';
-      c.fill();
-      c.stroke();
-      c.restore();
-    }
-    // Cocos
-    c.fillStyle = '#78350f';
-    c.beginPath();
-    c.arc(-3, 4, 4, 0, Math.PI * 2);
-    c.arc(5, 5, 4, 0, Math.PI * 2);
-    c.fill();
-    c.stroke();
-    c.restore();
-  }
-
-  // ---------------------------------------------------------------------------
-  // CENÁRIO: HORTA SUBTERRÂNEA (caverna com cogumelos brilhantes)
-  // ---------------------------------------------------------------------------
-  function drawCaveBackground(c, W, H) {
-    const wall = c.createLinearGradient(0, 0, 0, H * 0.6);
-    wall.addColorStop(0, '#1e1530');
-    wall.addColorStop(0.7, '#3b2a4f');
-    wall.addColorStop(1, '#4a3626');
-    c.fillStyle = wall;
-    c.fillRect(-20, -20, W + 40, H * 0.64);
-
-    // Paredes de pedra ao fundo
-    c.fillStyle = '#2e2240';
-    c.strokeStyle = '#2b1d14';
-    c.lineWidth = 2.5;
-    c.beginPath();
-    c.moveTo(-20, H * 0.6);
-    const peaks = [[0.06, 0.34], [0.16, 0.44], [0.27, 0.3], [0.4, 0.42], [0.52, 0.28], [0.66, 0.4], [0.78, 0.26], [0.9, 0.38], [1.02, 0.3]];
-    for (let i = 0; i < peaks.length; i++) c.lineTo(W * peaks[i][0], H * peaks[i][1]);
-    c.lineTo(W + 20, H * 0.6);
-    c.closePath();
-    c.fill();
-    c.stroke();
-
-    // Estalactites
-    const tips = [[0.05, 0.16, 14], [0.13, 0.1, 10], [0.24, 0.2, 16], [0.37, 0.12, 11], [0.5, 0.18, 13], [0.63, 0.09, 9], [0.74, 0.21, 15], [0.86, 0.13, 12], [0.96, 0.19, 14]];
-    for (let i = 0; i < tips.length; i++) {
-      const tx = W * tips[i][0];
-      const len = H * tips[i][1];
-      const w = tips[i][2];
-      c.beginPath();
-      c.moveTo(tx - w, -4);
-      c.quadraticCurveTo(tx - w * 0.3, len * 0.6, tx, len);
-      c.quadraticCurveTo(tx + w * 0.3, len * 0.6, tx + w, -4);
-      c.closePath();
-      c.fillStyle = i % 2 ? '#4c3a62' : '#584570';
-      c.fill();
-      c.stroke();
-    }
-
-    // Raízes penduradas do teto
-    c.strokeStyle = 'rgba(180, 120, 70, 0.75)';
-    c.lineWidth = 3;
-    [[0.19, 0.22], [0.45, 0.17], [0.69, 0.24], [0.91, 0.16]].forEach(function (r, i) {
-      const rx = W * r[0];
-      const sway = Math.sin(sceneTime * 1.1 + i) * 4;
-      c.beginPath();
-      c.moveTo(rx, -4);
-      c.bezierCurveTo(rx + 8, H * r[1] * 0.4, rx - 8 + sway, H * r[1] * 0.7, rx + sway, H * r[1]);
-      c.stroke();
-    });
-
-    // Chão de terra escura
-    const floor = c.createLinearGradient(0, H * 0.56, 0, H);
-    floor.addColorStop(0, '#6b4a2e');
-    floor.addColorStop(1, '#3f2a19');
-    c.fillStyle = floor;
-    c.beginPath();
-    c.moveTo(-20, H * 0.6);
-    c.quadraticCurveTo(W * 0.3, H * 0.54, W * 0.6, H * 0.58);
-    c.quadraticCurveTo(W * 0.85, H * 0.61, W + 20, H * 0.57);
-    c.lineTo(W + 20, H + 20);
-    c.lineTo(-20, H + 20);
-    c.closePath();
-    c.fill();
-    c.strokeStyle = '#2b1d14';
-    c.lineWidth = 2.5;
-    c.stroke();
-
-    // Pedrinhas no chão
-    c.fillStyle = '#5b4332';
-    [[0.1, 0.8, 9], [0.33, 0.93, 7], [0.58, 0.74, 6], [0.9, 0.86, 10], [0.72, 0.95, 6]].forEach(function (p) {
-      c.beginPath();
-      c.ellipse(W * p[0], H * p[1], p[2], p[2] * 0.6, 0, 0, Math.PI * 2);
-      c.fill();
-      c.stroke();
-    });
-
-    // Cogumelos e cristais brilhantes
-    drawGlowMushroom(c, W * 0.04, H * 0.66, 1.0, '#22d3ee');
-    drawGlowMushroom(c, W * 0.09, H * 0.7, 0.7, '#c084fc');
-    drawGlowMushroom(c, W * 0.95, H * 0.64, 1.1, '#c084fc');
-    drawGlowMushroom(c, W * 0.9, H * 0.68, 0.75, '#22d3ee');
-    drawGlowMushroom(c, W * 0.47, H * 0.58, 0.6, '#a3e635');
-  }
-
-  function drawGlowMushroom(c, x, y, sc, color) {
-    const pulse = 0.55 + 0.45 * Math.sin(sceneTime * 2.2 + x * 0.05);
-    c.save();
-    c.translate(x, y);
-    c.scale(sc, sc);
-    const glow = c.createRadialGradient(0, -14, 2, 0, -14, 34);
-    glow.addColorStop(0, color);
-    glow.addColorStop(1, 'rgba(0, 0, 0, 0)');
-    c.globalAlpha = 0.35 * pulse;
-    c.fillStyle = glow;
-    c.beginPath();
-    c.arc(0, -14, 34, 0, Math.PI * 2);
-    c.fill();
-    c.globalAlpha = 1;
-    c.strokeStyle = '#2b1d14';
-    c.lineWidth = 2.2;
-    c.fillStyle = '#f5f5f4';
-    c.beginPath();
-    c.moveTo(-4, 0);
-    c.lineTo(-3, -14);
-    c.lineTo(3, -14);
-    c.lineTo(4, 0);
-    c.closePath();
-    c.fill();
-    c.stroke();
-    c.fillStyle = color;
-    c.beginPath();
-    c.moveTo(-14, -13);
-    c.quadraticCurveTo(0, -32, 14, -13);
-    c.closePath();
-    c.fill();
-    c.stroke();
-    c.fillStyle = 'rgba(255, 255, 255, 0.7)';
-    c.beginPath();
-    c.arc(-5, -19, 2.2, 0, Math.PI * 2);
-    c.arc(4, -22, 1.6, 0, Math.PI * 2);
-    c.fill();
-    c.restore();
-  }
-
-  function drawCartoonCloud(c, x, y, scale) {
-    c.save();
-    c.translate(x, y);
-    c.scale(scale, scale);
-
-    // Sombra suave azulada da nuvem
-    c.fillStyle = 'rgba(186, 230, 253, 0.75)';
-    c.beginPath();
-    c.arc(-22, 6, 16, 0, Math.PI * 2);
-    c.arc(0, 2, 22, 0, Math.PI * 2);
-    c.arc(24, 6, 15, 0, Math.PI * 2);
-    c.fill();
-
-    // Corpo branco quente
-    c.fillStyle = '#fffdf7';
-    c.beginPath();
-    c.arc(-22, 3, 15, 0, Math.PI * 2);
-    c.arc(-4, -5, 20, 0, Math.PI * 2);
-    c.arc(16, -2, 17, 0, Math.PI * 2);
-    c.arc(26, 4, 13, 0, Math.PI * 2);
-    c.fill();
-
-    c.restore();
-  }
-
-  function drawBgTree(c, x, y, r, leafColor, fruitColor) {
-    c.save();
-    c.fillStyle = '#8b5a2b';
-    c.fillRect(x - 4, y + r * 0.5, 8, r * 0.9);
-    c.fillStyle = leafColor;
-    c.beginPath();
-    c.arc(x, y, r, 0, Math.PI * 2);
-    c.arc(x - r * 0.55, y + r * 0.25, r * 0.7, 0, Math.PI * 2);
-    c.arc(x + r * 0.55, y + r * 0.25, r * 0.7, 0, Math.PI * 2);
-    c.fill();
-    // Frutinhas
-    c.fillStyle = fruitColor;
-    c.beginPath();
-    c.arc(x - r * 0.35, y - r * 0.1, 3, 0, Math.PI * 2);
-    c.arc(x + r * 0.32, y + r * 0.12, 3, 0, Math.PI * 2);
-    c.arc(x + 1, y - r * 0.4, 2.8, 0, Math.PI * 2);
-    c.fill();
-    c.restore();
-  }
-
-  function drawWoodenFence(c, W, fenceY) {
-    c.save();
-    // Travessas horizontais
-    c.fillStyle = '#a1622e';
-    c.strokeStyle = '#2b1d14';
-    c.lineWidth = 2;
-    c.fillRect(-10, fenceY - 6, W + 20, 7);
-    c.strokeRect(-10, fenceY - 6, W + 20, 7);
-    c.fillRect(-10, fenceY + 6, W + 20, 7);
-    c.strokeRect(-10, fenceY + 6, W + 20, 7);
-
-    // Estacas verticais arredondadas
-    const spacing = 36;
-    for (let x = -4; x < W + spacing; x += spacing) {
-      const grad = c.createLinearGradient(x, fenceY - 22, x + 14, fenceY + 18);
-      grad.addColorStop(0, '#d6995b');
-      grad.addColorStop(1, '#9a5e2c');
-      c.fillStyle = grad;
-
-      c.beginPath();
-      c.moveTo(x, fenceY + 17);
-      c.lineTo(x, fenceY - 14);
-      c.lineTo(x + 7, fenceY - 22);
-      c.lineTo(x + 14, fenceY - 14);
-      c.lineTo(x + 14, fenceY + 17);
-      c.closePath();
-      c.fill();
-      c.stroke();
-
-      // Preguinho
-      c.fillStyle = '#4a3222';
-      c.beginPath();
-      c.arc(x + 7, fenceY - 2.5, 1.5, 0, Math.PI * 2);
-      c.arc(x + 7, fenceY + 9.5, 1.5, 0, Math.PI * 2);
-      c.fill();
-    }
-    c.restore();
-  }
-
-  // -------------------------------------------------------------------------
-  // CENÁRIO 2: ESTUFA DOURADA DA LÍDER FLORA
-  // -------------------------------------------------------------------------
-  function drawGoldenGreenhouseBackground(c, W, H) {
-    // Céu luminoso através do teto de vidro
-    const glassSky = c.createLinearGradient(0, 0, 0, H * 0.64);
-    glassSky.addColorStop(0, '#fef08a');
-    glassSky.addColorStop(0.45, '#fefce8');
-    glassSky.addColorStop(1, '#dcfce7');
-    c.fillStyle = glassSky;
-    c.fillRect(-20, -20, W + 40, H * 0.68);
-
-    // Feixes diagonais de luz dourada entrando pela estufa
-    c.save();
-    for (let i = 0; i < 4; i++) {
-      const bx = W * (0.08 + i * 0.26) + Math.sin(sceneTime * 0.5 + i) * 6;
-      const beamGrad = c.createLinearGradient(bx, 0, bx - 60, H);
-      beamGrad.addColorStop(0, 'rgba(253, 224, 71, 0.28)');
-      beamGrad.addColorStop(1, 'rgba(253, 224, 71, 0.0)');
-      c.fillStyle = beamGrad;
-      c.beginPath();
-      c.moveTo(bx, 0);
-      c.lineTo(bx + 68, 0);
-      c.lineTo(bx - 42, H);
-      c.lineTo(bx - 110, H);
-      c.closePath();
-      c.fill();
-    }
-    c.restore();
-
-    // Arcos dourados de vidro da Estufa Real
-    const archCount = 4;
-    const archW = W / archCount;
-    const wallBottom = H * 0.56;
-
-    for (let i = 0; i < archCount; i++) {
-      const ax = i * archW;
-      const cx = ax + archW * 0.5;
-
-      // Vidraça translúcida com reflexo diagonal
-      c.fillStyle = 'rgba(255, 255, 255, 0.25)';
-      c.beginPath();
-      c.moveTo(ax + 6, wallBottom);
-      c.lineTo(ax + 6, H * 0.22);
-      c.arc(cx, H * 0.22, archW * 0.5 - 6, Math.PI, 0, false);
-      c.lineTo(ax + archW - 6, wallBottom);
-      c.closePath();
-      c.fill();
-
-      // Brilho diagonal no vidro
-      c.strokeStyle = 'rgba(255, 255, 255, 0.5)';
-      c.lineWidth = 4;
-      c.beginPath();
-      c.moveTo(ax + 22, H * 0.28);
-      c.lineTo(ax + 54, H * 0.14);
-      c.stroke();
-
-      // Moldura do arco em ouro envelhecido
-      c.strokeStyle = '#d97706';
-      c.lineWidth = 7;
-      c.beginPath();
-      c.moveTo(ax + 3, wallBottom);
-      c.lineTo(ax + 3, H * 0.22);
-      c.arc(cx, H * 0.22, archW * 0.5 - 3, Math.PI, 0, false);
-      c.lineTo(ax + archW - 3, wallBottom);
-      c.stroke();
-
-      // Contorno cartoon fino
-      c.strokeStyle = '#78350f';
-      c.lineWidth = 2;
-      c.beginPath();
-      c.moveTo(ax + 3, wallBottom);
-      c.lineTo(ax + 3, H * 0.22);
-      c.arc(cx, H * 0.22, archW * 0.5 - 3, Math.PI, 0, false);
-      c.lineTo(ax + archW - 3, wallBottom);
-      c.stroke();
-
-      // Travessas finas da vidraça
-      c.strokeStyle = 'rgba(217, 119, 6, 0.45)';
-      c.lineWidth = 2;
-      c.beginPath();
-      c.moveTo(cx, H * 0.22 - (archW * 0.5 - 3));
-      c.lineTo(cx, wallBottom);
-      c.moveTo(ax + 4, H * 0.36);
-      c.lineTo(ax + archW - 4, H * 0.36);
-      c.stroke();
-
-      // Cesto de flores suspenso balançando suavemente
-      const sway = Math.sin(sceneTime * 1.6 + i * 1.3) * 3;
-      const basketX = cx + sway;
-      const basketY = H * 0.24;
-      c.strokeStyle = '#92400e';
-      c.lineWidth = 2;
-      c.beginPath();
-      c.moveTo(cx, H * 0.08);
-      c.lineTo(basketX, basketY);
-      c.stroke();
-
-      // Folhagem e flores do cesto
-      c.fillStyle = '#22c55e';
-      c.beginPath();
-      c.arc(basketX, basketY + 3, 15, 0, Math.PI * 2);
-      c.fill();
-      const flowerColors = ['#f43f5e', '#facc15', '#ec4899', '#a855f7'];
-      for (let f = -1; f <= 1; f++) {
-        c.fillStyle = flowerColors[(i + f + 4) % flowerColors.length];
-        c.beginPath();
-        c.arc(basketX + f * 9, basketY + (f === 0 ? -4 : 1), 4.5, 0, Math.PI * 2);
-        c.fill();
+    function slab(offset, material) {
+      ctx.fillStyle = material;
+      ctx.beginPath();
+      for (let corner = 0; corner < 8; corner++) {
+        const angle = (corner + 0.5) * Math.PI / 4;
+        ctx.lineTo(x + Math.cos(angle) * rx, y + offset + Math.sin(angle) * ry);
       }
-      // Vaso trançado do cesto
-      c.fillStyle = '#c2854c';
-      c.strokeStyle = '#2b1d14';
-      c.lineWidth = 2;
-      c.beginPath();
-      c.moveTo(basketX - 14, basketY + 4);
-      c.lineTo(basketX + 14, basketY + 4);
-      c.lineTo(basketX + 9, basketY + 16);
-      c.lineTo(basketX - 9, basketY + 16);
-      c.closePath();
-      c.fill();
-      c.stroke();
+      ctx.closePath();
+      ctx.fill();
     }
 
-    // Canteiros floridos internos ao pé da parede de vidro
-    c.fillStyle = '#16a34a';
-    for (let x = 0; x < W + 30; x += 26) {
-      c.beginPath();
-      c.arc(x, wallBottom - 2, 18, Math.PI, 0);
-      c.fill();
-    }
-    const bedColors = ['#fb7185', '#facc15', '#c084fc', '#f472b6', '#fb923c'];
-    for (let i = 0; i < 22; i++) {
-      const fx = (i + 0.5) * (W / 22);
-      const fy = wallBottom - 8 - (i % 3) * 5;
-      c.fillStyle = bedColors[i % bedColors.length];
-      c.beginPath();
-      c.arc(fx, fy, 4.5, 0, Math.PI * 2);
-      c.fill();
-      c.fillStyle = '#fef08a';
-      c.beginPath();
-      c.arc(fx, fy, 1.8, 0, Math.PI * 2);
-      c.fill();
-    }
-
-    // Mureta dourada / mármore
-    c.fillStyle = '#fef3c7';
-    c.strokeStyle = '#b45309';
-    c.lineWidth = 2.5;
-    c.fillRect(-10, wallBottom - 2, W + 20, 14);
-    c.strokeRect(-10, wallBottom - 2, W + 20, 14);
-
-    // Piso nobre da Estufa Dourada
-    const floorGrad = c.createLinearGradient(0, wallBottom + 12, 0, H);
-    floorGrad.addColorStop(0, '#fef9c3');
-    floorGrad.addColorStop(0.5, '#fde68a');
-    floorGrad.addColorStop(1, '#d9f99d');
-    c.fillStyle = floorGrad;
-    c.fillRect(-20, wallBottom + 12, W + 40, H - wallBottom + 20);
-
-    // Padrão geométrico sutil no piso
-    c.strokeStyle = 'rgba(180, 83, 9, 0.16)';
-    c.lineWidth = 1.5;
-    for (let x = -W * 0.2; x < W * 1.2; x += 64) {
-      c.beginPath();
-      c.moveTo(x, wallBottom + 12);
-      c.lineTo(x - 80, H);
-      c.stroke();
-    }
-    for (let y = wallBottom + 36; y < H; y += 34) {
-      c.beginPath();
-      c.moveTo(0, y);
-      c.lineTo(W, y);
-      c.stroke();
-    }
+    ctx.save();
+    ctx.fillStyle = '#101e22a8';
+    ctx.beginPath();
+    ctx.ellipse(x + 3, y + 12, rx * 1.06, ry * 1.08, 0, 0, Math.PI * 2);
+    ctx.fill();
+    slab(8, '#33443f');
+    slab(0, stone);
+    ctx.strokeStyle = '#e9e0ae55';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.ellipse(x, y - 2, rx * 0.72, ry * 0.61, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
   }
 
-  // -------------------------------------------------------------------------
-  // PLATAFORMAS OVAIS DE GRAMA ILUMINADA
-  // -------------------------------------------------------------------------
-  function drawPlatform(c, cx, cy, rx, ry, isLeaderArena) {
-    c.save();
-
-    // Sombra suave sob a plataforma
-    c.fillStyle = 'rgba(20, 50, 20, 0.22)';
-    c.beginPath();
-    c.ellipse(cx, cy + 8, rx * 1.05, ry * 1.02, 0, 0, Math.PI * 2);
-    c.fill();
-
-    // Borda inferior de terra / borda dourada na Estufa
-    c.fillStyle = isLeaderArena ? '#d97706' : '#8b5a2b';
-    c.strokeStyle = '#2b1d14';
-    c.lineWidth = 3;
-    c.beginPath();
-    c.ellipse(cx, cy + 4, rx, ry, 0, 0, Math.PI * 2);
-    c.fill();
-    c.stroke();
-
-    // Topo de grama iluminada (na caverna vira pedra com musgo brilhante)
-    const isCave = battleScene === 'caverna';
-    const grassGrad = c.createRadialGradient(cx - rx * 0.15, cy - ry * 0.25, rx * 0.1, cx, cy, rx);
-    if (isCave) {
-      grassGrad.addColorStop(0, '#c4b5fd');
-      grassGrad.addColorStop(0.45, '#7c6a96');
-      grassGrad.addColorStop(1, '#4c3d63');
-    } else {
-      grassGrad.addColorStop(0, '#bbf7d0');
-      grassGrad.addColorStop(0.45, '#4ade80');
-      grassGrad.addColorStop(1, '#16a34a');
-    }
-    c.fillStyle = grassGrad;
-    c.beginPath();
-    c.ellipse(cx, cy - 2, rx * 0.96, ry * 0.9, 0, 0, Math.PI * 2);
-    c.fill();
-    c.strokeStyle = isLeaderArena ? '#b45309' : isCave ? '#2e1065' : '#14532d';
-    c.lineWidth = 2.5;
-    c.stroke();
-
-    // Anel luminoso interno
-    c.strokeStyle = isLeaderArena ? 'rgba(254, 240, 138, 0.72)' : 'rgba(220, 252, 231, 0.65)';
-    c.lineWidth = 2;
-    c.beginPath();
-    c.ellipse(cx, cy - 3, rx * 0.74, ry * 0.66, 0, 0, Math.PI * 2);
-    c.stroke();
-
-    // Pequenas folhinhas / flores decorando a borda da plataforma
-    for (let i = 0; i < 6; i++) {
-      const a = (i / 6) * Math.PI * 2 + 0.35;
-      const fx = cx + Math.cos(a) * rx * 0.88;
-      const fy = cy - 2 + Math.sin(a) * ry * 0.82;
-      c.fillStyle = isLeaderArena ? (i % 2 === 0 ? '#fde047' : '#f472b6') : isCave ? '#67e8f9' : '#86efac';
-      c.beginPath();
-      c.arc(fx, fy, isLeaderArena ? 3.2 : 2.3, 0, Math.PI * 2);
-      c.fill();
-    }
-
-    c.restore();
-  }
-
-  // -------------------------------------------------------------------------
-  // DESENHO DE CRIATURAS, AURAS E VASO DE CAPTURA
-  // -------------------------------------------------------------------------
   function drawAuraGlow(c, cx, cy, radius, color, alpha) {
     if (!color || alpha <= 0.01) return;
     c.save();
@@ -3193,7 +2559,7 @@
       status: creature.status || null,
       silhouette: false,
       golden: !!creature.golden,
-      shadow: true
+      shadow: false
     };
 
     if (HM.Sprites && typeof HM.Sprites.drawCreature === 'function') {
