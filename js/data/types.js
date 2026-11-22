@@ -55,10 +55,28 @@
       bg: '#f3e8ff',
       dark: '#6b21a8',
       desc: 'Cogumelos e vegetais místicos de esporos.'
+    },
+    voltaico: {
+      id: 'voltaico',
+      name: 'Voltaico',
+      icon: '⚡',
+      color: '#b87909',
+      bg: '#fff1b5',
+      dark: '#6d4805',
+      desc: 'Criaturas que acumulam e descarregam eletricidade.'
+    },
+    neutro: {
+      id: 'neutro',
+      name: 'Neutro',
+      icon: '◉',
+      color: '#777c83',
+      bg: '#e9ebee',
+      dark: '#393d42',
+      desc: 'Golpes que causam dano normal contra qualquer tipo.'
     }
   };
 
-  // Tabela V2 — ciclo de 6 tipos, cada um com identidade própria.
+  // Os seis tipos originais formam um ciclo. Voltaico tem relações próprias.
   // Ordem do ciclo: Picante → Fungo → Folha → Raiz → Fresco → Cítrico → (Picante)
   // Cada tipo vence os 2 próximos do ciclo (2×) e causa pouco dano (0.5×) nos 2 que o vencem.
   //   Picante: queima Folhas e seca Fungos       | sofre com Fresco e Cítrico
@@ -72,12 +90,14 @@
     picante: { fungo: 2, folha: 2, fresco: 0.5, citrico: 0.5 },
     fungo: { folha: 2, raiz: 2, citrico: 0.5, picante: 0.5 },
     folha: { raiz: 2, fresco: 2, picante: 0.5, fungo: 0.5 },
-    raiz: { fresco: 2, citrico: 2, fungo: 0.5, folha: 0.5 },
-    fresco: { citrico: 2, picante: 2, folha: 0.5, raiz: 0.5 },
-    citrico: { picante: 2, fungo: 2, raiz: 0.5, fresco: 0.5 }
+    raiz: { fresco: 2, citrico: 2, fungo: 0.5, folha: 0.5, voltaico: 2 },
+    fresco: { citrico: 2, picante: 2, folha: 0.5, raiz: 0.5, voltaico: 0.5 },
+    citrico: { picante: 2, fungo: 2, raiz: 0.5, fresco: 0.5 },
+    voltaico: { fresco: 2, raiz: 0.5 },
+    neutro: {}
   };
 
-  HM.TYPE_LIST = ['picante', 'fungo', 'folha', 'raiz', 'fresco', 'citrico'];
+  HM.TYPE_LIST = ['picante', 'fungo', 'folha', 'raiz', 'fresco', 'citrico', 'voltaico', 'neutro'];
 
   HM.getTypeEffectiveness = function (moveType, defenderType) {
     const row = HM.TYPE_CHART[moveType];

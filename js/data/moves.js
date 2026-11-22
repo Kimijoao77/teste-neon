@@ -528,6 +528,116 @@
       fx: 'water',
       effect: { type: 'defDown', chance: 0.25 },
       desc: 'Uma onda pesada bate no alvo e pode baixar a Defesa.'
+    },
+
+    // Família do tamanduá
+    cavar_raso: {
+      id: 'cavar_raso',
+      name: 'Cavar Raso',
+      type: 'raiz',
+      category: 'status',
+      power: 0,
+      accuracy: 100,
+      maxPp: 20,
+      fx: 'buff',
+      effect: { type: 'defUp', chance: 1 },
+      desc: 'Se protege junto ao chão e aumenta a própria Defesa.'
+    },
+    gancho_de_garra: {
+      id: 'gancho_de_garra',
+      name: 'Gancho de Garra',
+      type: 'raiz',
+      category: 'attack',
+      power: 63,
+      accuracy: 100,
+      maxPp: 16,
+      fx: 'impact',
+      desc: 'Alcança o alvo com um golpe lateral de garra.'
+    },
+    abalo_das_garras: {
+      id: 'abalo_das_garras',
+      name: 'Abalo das Garras',
+      type: 'raiz',
+      category: 'attack',
+      power: 83,
+      accuracy: 90,
+      maxPp: 8,
+      fx: 'earth',
+      effect: { type: 'defDown', chance: 0.25 },
+      desc: 'Golpeia o solo e pode baixar a Defesa rival com o tremor.'
+    },
+
+    // Família do felino voltaico
+    estalo_da_cauda: {
+      id: 'estalo_da_cauda',
+      name: 'Estalo da Cauda',
+      type: 'voltaico',
+      category: 'attack',
+      power: 41,
+      accuracy: 100,
+      maxPp: 25,
+      fx: 'citrus',
+      desc: 'Dispara uma pequena faísca pela ponta da cauda.'
+    },
+    faisca_dupla: {
+      id: 'faisca_dupla',
+      name: 'Faísca Dupla',
+      type: 'voltaico',
+      category: 'attack',
+      power: 62,
+      accuracy: 95,
+      maxPp: 15,
+      fx: 'citrus',
+      effect: { type: 'paralyze', chance: 0.15 },
+      desc: 'Descarrega energia das duas pontas da cauda. Pode paralisar.'
+    },
+    salto_de_trovao: {
+      id: 'salto_de_trovao',
+      name: 'Salto de Trovão',
+      type: 'voltaico',
+      category: 'attack',
+      power: 80,
+      accuracy: 90,
+      maxPp: 8,
+      fx: 'citrus',
+      effect: { type: 'paralyze', chance: 0.25 },
+      desc: 'Salta sobre o alvo e libera uma descarga que pode paralisar.'
+    },
+
+    // Família do vira-lata
+    latido_de_alerta: {
+      id: 'latido_de_alerta',
+      name: 'Latido de Alerta',
+      type: 'neutro',
+      category: 'status',
+      power: 0,
+      accuracy: 100,
+      maxPp: 20,
+      fx: 'buff',
+      effect: { type: 'atkUp', chance: 1 },
+      desc: 'Dá um latido curto e aumenta o próprio Ataque.'
+    },
+    bote_de_esquina: {
+      id: 'bote_de_esquina',
+      name: 'Bote de Esquina',
+      type: 'neutro',
+      category: 'attack',
+      power: 63,
+      accuracy: 100,
+      maxPp: 16,
+      fx: 'impact',
+      desc: 'Muda de direção e atinge o rival de lado.'
+    },
+    avanco_de_guarda: {
+      id: 'avanco_de_guarda',
+      name: 'Avanço de Guarda',
+      type: 'neutro',
+      category: 'attack',
+      power: 83,
+      accuracy: 95,
+      maxPp: 9,
+      fx: 'impact',
+      desc: 'Avança com todo o peso do corpo para afastar o rival.'
     }
 
   };

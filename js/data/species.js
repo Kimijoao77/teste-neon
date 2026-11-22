@@ -123,6 +123,93 @@
     baseXp: 155, catchRate: 0.25
   });
 
+  addSpecies({
+    id: 'tamandui', dexNum: 10, name: 'Tamanduí', title: 'Farejador de Trilhas',
+    type: 'raiz', stage: 1, evolvesTo: null, evolveLevel: null,
+    desc: 'Procura insetos entre as raízes e se encolhe quando sente o chão vibrar.',
+    baseStats: { hp: 53, atk: 49, def: 61, spd: 39 },
+    baseXp: 53, catchRate: 0.50,
+    palette: { primary: '#e5b473', secondary: '#834c31', accent: '#fff1cf', leaf: '#684336' },
+    learnset: [
+      { level: 1, moveId: 'investida' },
+      { level: 1, moveId: 'cavar_raso' },
+      { level: 7, moveId: 'gancho_de_garra' },
+      { level: 14, moveId: 'abalo_das_garras' }
+    ]
+  });
+
+  addEvolution('tamandui', 7, {
+    id: 'tamirim', dexNum: 11, name: 'Tamirim', title: 'Escavador do Bosque',
+    desc: 'Abre trilhas no chão batido com as garras e se equilibra com a cauda erguida.',
+    baseStats: { hp: 68, atk: 67, def: 79, spd: 52 },
+    baseXp: 97, catchRate: 0.35
+  });
+
+  addEvolution('tamirim', 14, {
+    id: 'lutandua', dexNum: 12, name: 'Lutanduá', title: 'Guardião dos Túneis',
+    desc: 'Apoia o peso nas garras dianteiras e sacode o chão para defender os túneis.',
+    baseStats: { hp: 85, atk: 88, def: 100, spd: 66 },
+    baseXp: 155, catchRate: 0.24
+  });
+
+  addSpecies({
+    id: 'magato', dexNum: 13, name: 'Magato', title: 'Vigia da Faísca',
+    type: 'voltaico', stage: 1, evolvesTo: null, evolveLevel: null,
+    desc: 'Acende a ponta da cauda quando percebe movimento no meio do capim.',
+    baseStats: { hp: 45, atk: 53, def: 42, spd: 69 },
+    baseXp: 54, catchRate: 0.48,
+    palette: { primary: '#edc55e', secondary: '#524035', accent: '#fff3b0', leaf: '#f2d74d' },
+    learnset: [
+      { level: 1, moveId: 'investida' },
+      { level: 1, moveId: 'estalo_da_cauda' },
+      { level: 7, moveId: 'faisca_dupla' },
+      { level: 14, moveId: 'salto_de_trovao' }
+    ]
+  });
+
+  addEvolution('magato', 7, {
+    id: 'maragaiato', dexNum: 14, name: 'Maragaiato', title: 'Felino das Duas Faíscas',
+    desc: 'Alterna a carga entre as pontas da cauda enquanto corre pela grama alta.',
+    baseStats: { hp: 60, atk: 73, def: 54, spd: 89 },
+    baseXp: 98, catchRate: 0.34
+  });
+
+  addEvolution('maragaiato', 14, {
+    id: 'amatirica', dexNum: 15, name: 'Amatirica', title: 'Caçadora da Trovoada',
+    desc: 'Mantém o corpo rente ao chão antes de saltar e descarregar a energia acumulada.',
+    baseStats: { hp: 75, atk: 95, def: 69, spd: 108 },
+    baseXp: 156, catchRate: 0.24
+  });
+
+  addSpecies({
+    id: 'caramelo', dexNum: 16, name: 'Caramelo', title: 'Companheiro do Caminho',
+    type: 'neutro', stage: 1, evolvesTo: null, evolveLevel: null,
+    desc: 'Segue pegadas recentes por curiosidade e costuma voltar com a cauda levantada.',
+    baseStats: { hp: 53, atk: 55, def: 47, spd: 53 },
+    baseXp: 52, catchRate: 0.52,
+    palette: { primary: '#edaa54', secondary: '#703e2a', accent: '#ffe3aa', leaf: '#ba6f2e' },
+    learnset: [
+      { level: 1, moveId: 'investida' },
+      { level: 1, moveId: 'latido_de_alerta' },
+      { level: 7, moveId: 'bote_de_esquina' },
+      { level: 14, moveId: 'avanco_de_guarda' }
+    ]
+  });
+
+  addEvolution('caramelo', 7, {
+    id: 'caralata', dexNum: 17, name: 'Caralata', title: 'Patrulheiro da Trilha',
+    desc: 'Conhece os atalhos do caminho e espera na curva antes de avançar.',
+    baseStats: { hp: 69, atk: 73, def: 63, spd: 69 },
+    baseXp: 97, catchRate: 0.36
+  });
+
+  addEvolution('caralata', 14, {
+    id: 'viramelo', dexNum: 18, name: 'Viramelo', title: 'Guarda do Pomar',
+    desc: 'Patrulha o pomar de orelhas erguidas e se põe à frente do grupo quando ouve um ruído.',
+    baseStats: { hp: 87, atk: 94, def: 82, spd: 86 },
+    baseXp: 154, catchRate: 0.25
+  });
+
   HM.STARTER_IDS = ['voara', 'pequemico', 'capi'];
   HM.SPECIES_LIST = SPECIES_ARRAY.slice();
 })(window);

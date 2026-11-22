@@ -393,7 +393,10 @@
       wildPool: [
         { speciesId: 'voara', minLv: 2, maxLv: 4, weight: 34 },
         { speciesId: 'pequemico', minLv: 2, maxLv: 5, weight: 33 },
-        { speciesId: 'capi', minLv: 2, maxLv: 5, weight: 33 }
+        { speciesId: 'capi', minLv: 2, maxLv: 5, weight: 33 },
+        { speciesId: 'tamandui', minLv: 3, maxLv: 5, weight: 14 },
+        { speciesId: 'magato', minLv: 2, maxLv: 5, weight: 14 },
+        { speciesId: 'caramelo', minLv: 2, maxLv: 5, weight: 16 }
       ]
     },
     rota2: {
@@ -407,7 +410,10 @@
         { speciesId: 'capi', minLv: 5, maxLv: 6, weight: 22 },
         { speciesId: 'azurara', minLv: 7, maxLv: 9, weight: 12 },
         { speciesId: 'micorado', minLv: 7, maxLv: 9, weight: 12 },
-        { speciesId: 'varacapi', minLv: 7, maxLv: 9, weight: 12 }
+        { speciesId: 'varacapi', minLv: 7, maxLv: 9, weight: 12 },
+        { speciesId: 'tamirim', minLv: 7, maxLv: 9, weight: 13 },
+        { speciesId: 'maragaiato', minLv: 7, maxLv: 9, weight: 12 },
+        { speciesId: 'caralata', minLv: 7, maxLv: 9, weight: 12 }
       ]
     },
     arena: {
@@ -432,7 +438,9 @@
         { speciesId: 'varacapi', minLv: 10, maxLv: 13, weight: 23 },
         { speciesId: 'ararazul', minLv: 14, maxLv: 15, weight: 11 },
         { speciesId: 'douraleao', minLv: 14, maxLv: 15, weight: 10 },
-        { speciesId: 'capilorde', minLv: 14, maxLv: 15, weight: 10 }
+        { speciesId: 'capilorde', minLv: 14, maxLv: 15, weight: 10 },
+        { speciesId: 'amatirica', minLv: 14, maxLv: 15, weight: 10 },
+        { speciesId: 'viramelo', minLv: 14, maxLv: 15, weight: 12 }
       ]
     },
     subterranea: {
@@ -446,7 +454,8 @@
         { speciesId: 'varacapi', minLv: 13, maxLv: 13, weight: 12 },
         { speciesId: 'ararazul', minLv: 14, maxLv: 17, weight: 20 },
         { speciesId: 'douraleao', minLv: 14, maxLv: 17, weight: 20 },
-        { speciesId: 'capilorde', minLv: 14, maxLv: 17, weight: 30 }
+        { speciesId: 'capilorde', minLv: 14, maxLv: 17, weight: 30 },
+        { speciesId: 'lutandua', minLv: 14, maxLv: 17, weight: 24 }
       ]
     }
   };

@@ -2357,7 +2357,7 @@
     openModal({
       kind: 'types',
       title: 'Tabela de tipos',
-      subtitle: 'Picante → Fungo → Folha → Raiz → Fresco → Cítrico → Picante. Cada tipo vence os 2 seguintes (2×) e causa pouco dano nos 2 anteriores (½×).',
+      subtitle: 'Voltaico é forte contra Fresco e fraco contra Raiz. Neutro causa dano normal contra todos os tipos.',
       sizeClass: 'modal-wide'
     });
 
