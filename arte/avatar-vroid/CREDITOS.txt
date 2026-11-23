@@ -1,0 +1,10 @@
+Elenco VRoid do HortaMon
+
+Modelos-base originais da pixiv Inc., distribuídos sob CC0.
+Sakurada Fumiriya: https://vroid.pixiv.help/hc/en-us/articles/360014788554
+Sendagaya Shino: https://vroid.pixiv.help/hc/en-us/articles/360013482714
+Sendagaya Shibu (β AvatarSample_1): https://vroid.pixiv.help/hc/en-us/articles/360012381793
+HairSample_Male: https://vroid.pixiv.help/hc/en-us/articles/4402614652569
+
+Arquivos VRM: https://github.com/madjin/vrm-samples/tree/master/vroid/beta
+Adaptação para o jogo: roupas, acessórios, poses, retratos e renderização direcional no Blender.

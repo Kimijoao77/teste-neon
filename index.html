@@ -14,26 +14,35 @@
   <meta name="theme-color" content="#172722" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <link rel="stylesheet" href="css/style.css?v=3.0" />
+  <link rel="stylesheet" href="css/style.css?v=3d" />
+  <link rel="stylesheet" href="css/mundo3d.css?v=giro" />
 
   <!-- Ordem exata de carregamento (compatível com file:// sem ES modules) -->
   <script defer src="js/data/types.js?v=2.5"></script>
   <script defer src="js/data/moves.js?v=2.5"></script>
-  <script defer src="js/data/species.js?v=2.6"></script>
-  <script defer src="js/data/world.js?v=2.6"></script>
+  <script defer src="js/data/species.js?v=2.5"></script>
+  <script defer src="js/data/world.js?v=2.5"></script>
+  <script defer src="js/data/cenario-unity.js"></script>
+  <script defer src="js/data/interiores-unity.js"></script>
+  <script defer src="js/data/modelos-unity.js"></script>
   <script defer src="js/engine/audio.js"></script>
-  <script defer src="js/data/animal-art.js"></script>
-  <script defer src="js/data/family-art.js?v=2.6"></script>
+  <script defer src="js/data/animal-art.js?v=atlas"></script>
+  <script defer src="js/data/family-art.js?v=atlas"></script>
   <script defer src="js/engine/sprites.js?v=2.4"></script>
-  <script defer src="js/engine/save.js?v=2.4"></script>
+  <script defer src="js/engine/save.js?v=diario"></script>
   <script defer src="js/engine/scenery.js?v=2.4"></script>
   <script defer src="js/vendor/three.min.js"></script>
-  <script defer src="js/engine/hd2d-core.js?v=3.0"></script>
-  <script defer src="js/engine/battle-3d.js?v=3.0"></script>
-  <script defer src="js/engine/battle.js?v=3.0"></script>
-  <script defer src="js/engine/overworld-3d.js?v=3.0"></script>
-  <script defer src="js/engine/overworld.js?v=3.0"></script>
-  <script defer src="js/main.js?v=3.0"></script>
+  <script defer src="js/engine/modelos3d.js"></script>
+  <script defer src="js/engine/renderer3d.js?v=giro"></script>
+    <script defer src="js/engine/paisagem.js"></script>
+  <script defer src="js/engine/avatar-elenco.js"></script>
+  <script defer src="js/engine/movimento.js?v=giro"></script>
+  <script defer src="js/engine/interiores.js?v=giro"></script>
+  <script defer src="js/engine/cenario3d.js?v=giro"></script>
+  <script defer src="js/engine/battle.js?v=diario"></script>
+  <script defer src="js/engine/overworld.js?v=giro"></script>
+  <script defer src="js/main.js?v=giro"></script>
+  <link rel="stylesheet" href="css/diario.css?v=elenco" />
 </head>
 <body>
   <div id="app" class="app-root">
@@ -70,7 +79,7 @@
       </div>
 
       <footer class="title-footer">
-        <span>v3.0 HD-2D</span>
+        <span></span>
         <span id="title-count-pill"></span>
       </footer>
     </section>
@@ -134,32 +143,43 @@
               <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="color:#ea580c"><path d="M8 3l4 6 4-6"/><circle cx="12" cy="15" r="5"/></svg> <strong id="hud-badges">0</strong>
             </span>
             <span class="stat-pill stat-dex" title="Espécies capturadas na BotaniDex">
-              <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="color:#0369a1"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5z"/><path d="M20 5.5c0-.8-.7-1.5-1.5-1.5H13v16h5.5c.8 0 1.5-.7 1.5-1.5z"/></svg> <strong id="hud-dex">1/24</strong>
+              <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="color:#0369a1"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5z"/><path d="M20 5.5c0-.8-.7-1.5-1.5-1.5H13v16h5.5c.8 0 1.5-.7 1.5-1.5z"/></svg> <strong id="hud-dex">1/9</strong>
             </span>
           </div>
         </div>
 
         <nav class="top-bar-actions" aria-label="Ações rápidas">
+          <button id="btn-room-exit" type="button" class="btn btn-xs" aria-label="Sair da casa">
+            <img src="arte/interface/porta.png" alt="" /> <span>Saída</span>
+          </button>
           <button id="btn-open-party" type="button" class="btn btn-leaf btn-xs" title="Gerenciar Time (P)">
-            🌿 <span>Time</span>
+            <img src="arte/interface/time.png" alt="" /> <span>Time</span>
           </button>
           <button id="btn-open-bag" type="button" class="btn btn-cream btn-xs" title="Abrir Mochila (I)">
-            🎒 <span>Mochila</span>
+            <img src="arte/interface/mochila.png" alt="" /> <span>Mochila</span>
           </button>
           <button id="btn-open-dex" type="button" class="btn btn-sun btn-xs" title="Abrir BotaniDex (X)">
-            📖 <span>BotaniDex</span>
+            <img src="arte/interface/indice.png" alt="" /> <span>BotaniDex</span>
           </button>
           <button id="btn-open-types" type="button" class="btn btn-cream btn-xs" title="Tabela de Tipos (T)">
-            ⚖️ <span>Tipos</span>
+            <img src="arte/interface/folha.png" alt="" /> <span>Tipos</span>
           </button>
           <button id="btn-save-game" type="button" class="btn btn-sky btn-xs" title="Salvar Progresso (K)">
-            💾 <span>Salvar</span>
+            <img src="arte/interface/mapa.png" alt="" /> <span>Salvar</span>
           </button>
           <button id="btn-toggle-sound" type="button" class="btn btn-cream btn-xs btn-icon-only" title="Alternar Som (M)" aria-label="Alternar som">
             🔊
           </button>
+          <div id="camera-controls" role="group" aria-label="Câmera">
+            <button id="btn-rotate-left" type="button" class="btn btn-xs" aria-label="Girar câmera à esquerda" title="Girar câmera à esquerda (Q)" aria-keyshortcuts="Q">↶</button>
+            <button id="btn-view-3d" type="button" class="btn btn-leaf btn-xs" aria-label="Alternar altura da câmera">Câmera baixa</button>
+            <button id="btn-rotate-right" type="button" class="btn btn-xs" aria-label="Girar câmera à direita" title="Girar câmera à direita (R)" aria-keyshortcuts="R">↷</button>
+          </div>
+          <a class="btn btn-cream btn-xs" href="cartas.html?galeria=todas" aria-label="Álbum de cartas" title="Álbum de cartas">
+            <img src="arte/interface/cartas.png" alt="" /> <span>Cartas</span>
+          </a>
           <button id="btn-open-menu" type="button" class="btn btn-wood btn-xs" title="Menu e Ajuda (Esc)">
-            🏠 <span>Menu</span>
+            <img src="arte/interface/menu.png" alt="" /> <span>Menu</span>
           </button>
         </nav>
       </header>
@@ -167,7 +187,11 @@
       <main class="overworld-layout">
         <div class="stage-column">
           <div class="canvas-frame cartoon-card">
-            <canvas id="overworld-canvas" width="768" height="480"></canvas>
+            <div class="view3d-stage">
+              <canvas id="overworld-canvas" width="768" height="480" aria-label="Mapa 3D"></canvas>
+              <canvas id="room-canvas" class="hidden" aria-label="Interior da casa"></canvas>
+              <div id="webgl-fallback" hidden role="status">O navegador está usando o mapa 2D. Ative a aceleração gráfica para jogar em 3D.</div>
+            </div>
 
             <!-- Caixa de Diálogo RPG sobreposta -->
             <div id="dialogue-box" class="dialogue-box hidden" role="dialog" aria-live="polite">
@@ -257,7 +281,7 @@
         </header>
 
         <div class="battle-stage cartoon-card">
-          <div class="battle-canvas-wrap">
+          <div class="view3d-stage">
             <canvas id="battle-canvas" width="760" height="480" aria-label="Arena de batalha"></canvas>
           </div>
 
@@ -390,11 +414,6 @@
       </button>
     </div>
   </div>
-
-  <!-- =========================================================
-       TRANSIÇÃO CINEMATOGRÁFICA DE ENTRADA EM BATALHA
-  ========================================================== -->
-  <div id="battle-transition" class="battle-transition hidden" aria-hidden="true"></div>
 
   <!-- =========================================================
        NOTIFICAÇÕES TOAST

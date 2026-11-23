@@ -28,6 +28,7 @@ No celular, abra o link no Chrome e use **⋮ → Adicionar à tela inicial** pa
 | Ação | Teclado / Mouse |
 | --- | --- |
 | Mover pelo mapa | `W A S D`, `Setas`, **D-Pad na tela** ou **clique/toque no mapa** |
+| Girar a câmera no mapa externo | `Q`, `R`, botões ao lado da altura da câmera ou arrastar com o botão direito do mouse |
 | Interagir / Avançar diálogo | `Espaço`, `Enter`, botão **Interagir** ou clique em NPCs/placas |
 | Abrir **Time** | `P` (ou botão **Time**) |
 | Abrir **Mochila** | `I` (ou botão **Mochila**) |

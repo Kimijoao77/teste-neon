@@ -3185,7 +3185,7 @@ body::before { content: none; }
   background: #d6e0d6;
 }
 #battle-canvas {
-  height: max(310px, calc(100dvh - 200px));
+  height: max(310px, calc(100dvh - 138px));
   aspect-ratio: auto;
 }
 .battle-narration { grid-column: 2; grid-row: 2; }
@@ -3197,34 +3197,7 @@ body::before { content: none; }
   align-self: start;
 }
 .battle-tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.battle-action-pane { min-width: 0; overflow: hidden; }
-.moves-grid {
-  grid-template-columns: 1fr;
-  gap: 6px;
-}
-.move-card {
-  min-width: 0;
-  padding: 7px 10px;
-  gap: 4px;
-}
-.move-card-top { min-width: 0; }
-.move-name {
-  min-width: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.move-eff-badge,
-.move-meta-right {
-  flex-shrink: 0;
-}
-.battle-items-grid {
-  grid-template-columns: 1fr;
-  max-height: 240px;
-}
-.battle-party-grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
+.battle-action-pane { min-width: 0; }
 
 @media (max-width: 700px) and (orientation: portrait) {
   .title-layout {
@@ -3274,169 +3247,6 @@ body::before { content: none; }
   #battle-canvas { height: max(180px, calc(100dvh - 118px)); }
 }
 
-/* ==========================================================================
-   V3.0 — CAMADAS HD-2D 3D (THREE.JS WEBGL) & POLIMENTO CINEMATOGRÁFICO
-   ========================================================================== */
-
-.canvas-frame {
-  position: relative;
-  overflow: hidden;
-  isolation: isolate;
-}
-
-.overworld-3d-layer {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  display: block;
-  pointer-events: none;
-  z-index: 1;
-}
-
-#overworld-canvas {
-  position: relative;
-  z-index: 2;
-  background: transparent;
-}
-
-.canvas-frame::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 3;
-  background: radial-gradient(
-    ellipse at 50% 48%,
-    transparent 62%,
-    rgba(14, 28, 22, 0.24) 100%
-  );
-  box-shadow: inset 0 0 0 1px rgba(255, 253, 245, 0.14);
-}
-
-.battle-stage {
-  position: relative;
-  background: linear-gradient(180deg, #21372d 0%, #192b24 100%);
-  isolation: isolate;
-}
-
-.battle-canvas-wrap {
-  grid-column: 1 / -1;
-  grid-row: 2;
-  position: relative;
-  width: 100%;
-  overflow: hidden;
-  line-height: 0;
-  background: #1a2d25;
-}
-
-.battle-3d-layer {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  display: block;
-  pointer-events: none;
-  z-index: 1;
-}
-
-#battle-canvas {
-  position: relative;
-  z-index: 2;
-  display: block;
-  width: 100%;
-  background: transparent;
-}
-
-.battle-canvas-wrap::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 3;
-  background: radial-gradient(
-    ellipse at 50% 50%,
-    transparent 58%,
-    rgba(12, 24, 19, 0.28) 100%
-  );
-  box-shadow: inset 0 1px 0 rgba(255, 253, 245, 0.18);
-}
-
-/* Placas de HUD de batalha refinadas sobre arenas 3D vibrantes */
-.battle-hud {
-  position: relative;
-  z-index: 4;
-  background: linear-gradient(180deg, rgba(255, 253, 246, 0.98) 0%, rgba(240, 238, 229, 0.96) 100%);
-  border: 1.5px solid rgba(37, 51, 46, 0.85);
-  box-shadow:
-    0 3px 10px rgba(10, 20, 16, 0.24),
-    0 2px 0 rgba(37, 51, 46, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.85);
-}
-
-.battle-hud.hud-player {
-  border-top: 3px solid #2e8b57;
-}
-
-.battle-hud.hud-enemy {
-  border-top: 3px solid #c96842;
-}
-
-/* Transição rápida de entrada em batalha (flash + iris suave ~240ms) */
-.battle-transition {
-  position: fixed;
-  inset: 0;
-  z-index: 95;
-  pointer-events: none;
-  opacity: 0;
-  background: radial-gradient(
-    circle at 50% 50%,
-    rgba(255, 253, 240, 0.95) 0%,
-    rgba(255, 249, 219, 0.72) 42%,
-    rgba(23, 39, 34, 0.92) 100%
-  );
-}
-
-.battle-transition.is-leader {
-  background: radial-gradient(
-    circle at 50% 50%,
-    rgba(254, 243, 199, 0.98) 0%,
-    rgba(234, 179, 8, 0.62) 45%,
-    rgba(31, 42, 34, 0.94) 100%
-  );
-}
-
-.battle-transition.is-active {
-  animation: battleIrisFlash 240ms cubic-bezier(0.22, 0.85, 0.36, 1) forwards;
-}
-
-@keyframes battleIrisFlash {
-  0% {
-    opacity: 0;
-    transform: scale(1.12);
-  }
-  28% {
-    opacity: 0.96;
-    transform: scale(1);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(1.04);
-  }
-}
-
-/* Toggle de Gráficos HD-2D 3D nos menus Opções/Pausa */
-.menu-row:disabled {
-  opacity: 0.62;
-  cursor: not-allowed;
-}
-
-.toggle-pill.hd3d {
-  background: #2f7d52;
-  color: #fffdf5;
-}
-
 @media (prefers-reduced-motion: reduce) {
   .screen { animation: none; }
-  .battle-transition.is-active { animation: none; opacity: 0; }
 }

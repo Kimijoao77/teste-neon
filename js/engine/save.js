@@ -494,6 +494,10 @@
       updatedAt: raw.updatedAt || Date.now()
     };
 
+    if (HM.browserRooms?.some((room) => room.id === raw.interior?.id)) {
+      const { id, x, y, dir } = raw.interior;
+      if (Number.isInteger(x) && Number.isInteger(y)) state.interior = { id, x, y, dir };
+    }
     party.concat(box).forEach(function (c) {
       HM.registerCaught(state, c.speciesId);
     });

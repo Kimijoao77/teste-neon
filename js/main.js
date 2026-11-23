@@ -94,11 +94,15 @@
     return '';
   }
 
-  function drawCharOnCanvas(canvas, style, size) {
+  function drawCharOnCanvas(canvas, style, size, npcId) {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    canvas.dataset.avatarId = npcId || '';
+    if (npcId && HM.CharacterArt.drawPortrait(ctx, npcId, Math.min(canvas.width, canvas.height), () => {
+      if (canvas.dataset.avatarId === npcId) drawCharOnCanvas(canvas, style, size, npcId);
+    })) return;
     try {
       if (HM.Sprites && typeof HM.Sprites.drawCharacter === 'function') {
         HM.Sprites.drawCharacter(ctx, canvas.width / 2, canvas.height * 0.56, size || 40, style || 'prof', 'down', 0);
@@ -284,93 +288,12 @@
     }
   }
 
-  function getGraphicsInfo() {
-    const hasCore = !!(HM.HD2D && typeof HM.HD2D.isAvailable === 'function');
-    const available = hasCore && HM.HD2D.isAvailable();
-    const enabled = available && typeof HM.HD2D.isEnabled === 'function' && HM.HD2D.isEnabled();
-    return {
-      available,
-      enabled,
-      pillText: enabled ? 'HD-2D 3D (WebGL)' : '2.5D Clássico',
-      subText: available
-        ? enabled
-          ? 'Diorama 3D com iluminação dinâmica'
-          : 'Renderização 2.5D clássica'
-        : 'WebGL indisponível neste navegador'
-    };
-  }
-
-  function syncGraphicsButton() {
-    const info = getGraphicsInfo();
-    const btn = $('opt-graphics-btn');
-    const pill = $('opt-graphics-state');
-    const sub = $('opt-graphics-sub');
-    if (btn) btn.disabled = !info.available;
-    if (pill) {
-      pill.textContent = info.pillText;
-      pill.classList.toggle('hd3d', info.enabled);
-      pill.classList.toggle('off', !info.enabled);
-    }
-    if (sub) sub.textContent = info.subText;
-  }
-
-  function renderGraphicsOptionRow() {
-    const info = getGraphicsInfo();
-    const pillCls = info.enabled ? 'toggle-pill hd3d' : 'toggle-pill off';
-    return `<button type="button" class="menu-row" id="opt-graphics-btn"${info.available ? '' : ' disabled'} title="${escapeHtml(info.subText)}"><span>Gráficos <small id="opt-graphics-sub">${escapeHtml(info.subText)}</small></span><span id="opt-graphics-state" class="${pillCls}">${escapeHtml(info.pillText)}</span></button>`;
-  }
-
-  function toggleGraphicsMode() {
-    const info = getGraphicsInfo();
-    if (!info.available || !HM.HD2D || typeof HM.HD2D.setEnabled !== 'function') {
-      audio('playError');
-      showToast('WebGL 3D não está disponível neste navegador. Usando 2.5D Clássico.', 'error');
-      return;
-    }
-    const next = !info.enabled;
-    const effective = HM.HD2D.setEnabled(next);
-    audio('playSelect');
-    syncGraphicsButton();
-
-    if (ui.overworldReady && HM.Overworld) {
-      if (typeof HM.Overworld.set3DEnabled === 'function') {
-        HM.Overworld.set3DEnabled(effective);
-      } else if (typeof HM.Overworld.refreshRenderer === 'function') {
-        HM.Overworld.refreshRenderer();
-      }
-    }
-
-    showToast(
-      effective ? '✨ Gráficos: HD-2D 3D (WebGL) ativado!' : '🎨 Gráficos: 2.5D Clássico ativado!',
-      effective ? 'success' : undefined
-    );
-  }
-
-  let battleTransitionTimer = null;
-
-  function playBattleTransition(type) {
-    const el = dom.battleTransition;
-    if (!el) return;
-    if (battleTransitionTimer) {
-      clearTimeout(battleTransitionTimer);
-      battleTransitionTimer = null;
-    }
-    el.classList.remove('hidden', 'is-active', 'is-leader');
-    if (type === 'leader') el.classList.add('is-leader');
-    void el.offsetWidth;
-    el.classList.add('is-active');
-    battleTransitionTimer = setTimeout(() => {
-      el.classList.add('hidden');
-      el.classList.remove('is-active', 'is-leader');
-      battleTransitionTimer = null;
-    }, 260);
-  }
-
   // =========================================================================
   // TROCA DE TELAS
   // =========================================================================
 
   function showScreen(name) {
+    if (name !== 'overworld') HM.Rooms.close();
     ui.screen = name;
     const map = {
       title: dom.screenTitle,
@@ -447,6 +370,26 @@
     audio('playSelect');
   }
 
+  function avatarOption() {
+    const active = HM.CharacterArt.isEnabled();
+    return `<button type="button" id="avatar-preview-option" class="menu-row" aria-pressed="${active}">
+      Visual dos personagens <span class="toggle-pill${active ? '' : ' off'}">${active ? 'VRoid' : 'Clássico'}</span>
+    </button>`;
+  }
+
+  function bindAvatarOption() {
+    const button = $('avatar-preview-option');
+    const status = button.querySelector('.toggle-pill');
+    button.addEventListener('click', () => {
+      const active = !HM.CharacterArt.isEnabled();
+      HM.CharacterArt.setEnabled(active);
+      button.setAttribute('aria-pressed', String(active));
+      status.textContent = active ? 'VRoid' : 'Clássico';
+      status.classList.toggle('off', !active);
+      audio('playSelect');
+    });
+  }
+
   function openOptionsModal() {
     audio('playSelect');
     const muted = !!(HM.Audio && HM.Audio.muted);
@@ -454,14 +397,14 @@
     dom.modalBody.innerHTML = `
       <div class="menu-list">
         <button type="button" class="menu-row" id="opt-sound">Som <span id="opt-sound-state" class="toggle-pill${muted ? ' off' : ''}">${muted ? 'Desligado' : 'Ligado'}</span></button>
-        ${renderGraphicsOptionRow()}
+        ${avatarOption()}
         <button type="button" class="menu-row" id="opt-help">Como jogar</button>
         <button type="button" class="menu-row" id="opt-types">Tabela de tipos</button>
         <button type="button" class="menu-row" id="opt-import">Importar save <small>arquivo .json</small></button>
       </div>
     `;
+    bindAvatarOption();
     $('opt-sound').addEventListener('click', () => toggleSound());
-    $('opt-graphics-btn').addEventListener('click', () => toggleGraphicsMode());
     $('opt-help').addEventListener('click', () => {
       closeModal(true);
       openHelpModal();
@@ -513,7 +456,7 @@
 
   function openStarterScreen() {
     showScreen('starter');
-    drawCharOnCanvas(dom.profAvatarCanvas, 'prof', 48);
+    drawCharOnCanvas(dom.profAvatarCanvas, 'prof', 48, 'prof_pomar');
 
     const cardsHtml = HM.STARTER_IDS.map((id) => {
       const sp = HM.SPECIES && HM.SPECIES[id];
@@ -603,6 +546,7 @@
           callbacks: {
             onZoneChange: handleZoneChange,
             onEncounter: handleWildEncounter,
+            onDoor: openDoor,
             onNpcInteract: handleNpcInteract
           }
         });
@@ -613,7 +557,31 @@
       }
     }
 
+    const savedRoom = HM.browserRooms.find((room) => room.id === ui.state?.interior?.id);
+    if (savedRoom) openDoor(savedRoom.doorX, savedRoom.doorY);
+    else refreshOverworldHud();
+  }
+
+  function openDoor(x, y) {
+    const layout = HM.Rooms.find(x, y);
+    if (!layout || ui.modal || ui.dialogue || HM.Rooms.active()) return false;
+    HM.Overworld.teleport(x, y + 1, 'up');
+    HM.Overworld.pause();
+    HM.Rooms.open(layout, ui.state, {
+      canMove: () => ui.screen === 'overworld' && !ui.modal && !ui.dialogue,
+      onNpc: handleNpcInteract,
+      onLeave: () => {
+        delete ui.state.interior;
+        HM.Rooms.close();
+        HM.Overworld.teleport(x, y + 1, 'down');
+        HM.Overworld.resume();
+        refreshOverworldHud();
+        HM.saveGame(ui.state);
+      }
+    });
     refreshOverworldHud();
+    HM.saveGame(ui.state);
+    return true;
   }
 
   function handleZoneChange(zone) {
@@ -623,6 +591,11 @@
   }
 
   function updateZoneDisplay(zone) {
+    if (HM.Rooms.active()) {
+      dom.hudZoneName.textContent = HM.Rooms.name();
+      dom.hudZoneSub.textContent = 'Vila da Horta';
+      return;
+    }
     let z = zone;
     if (!z && HM.WORLD && ui.state && ui.state.player && typeof HM.WORLD.getZoneAt === 'function') {
       z = HM.WORLD.getZoneAt(ui.state.player.x, ui.state.player.y);
@@ -754,7 +727,7 @@
       onFinish: onFinish || null,
       openedAt: Date.now()
     };
-    drawCharOnCanvas(dom.dialoguePortrait, (npc && (npc.style || npc.role)) || 'prof', 38);
+    drawCharOnCanvas(dom.dialoguePortrait, npc?.style || npc?.role || 'prof', 38, npc?.id);
     dom.dialogueSpeaker.textContent = (npc && npc.name) || 'Aviso';
     dom.dialogueBox.classList.remove('hidden');
     renderDialoguePage();
@@ -827,6 +800,18 @@
     audio('playSelect');
 
     switch (npc.role) {
+      case 'rest':
+        showDialogue({ npc, lines: normalizeLines(npc.dialogue, 'Descanse aqui.'), actions: [{
+          label: 'Descansar', cls: 'btn-primary', onClick: () => {
+            HM.healParty(ui.state);
+            HM.saveGame(ui.state);
+            audio('playHeal');
+            refreshOverworldHud();
+            showToast('Seu time está recuperado.', 'success');
+          }
+        }] });
+        break;
+
       case 'healer': {
         showDialogue({
           npc,
@@ -1062,7 +1047,6 @@
     ui.battleSnapshot = null;
 
     showScreen('battle');
-    playBattleTransition(type);
 
     if (type === 'leader') {
       dom.battleTypeBadge.className = 'pill pill-sun';
@@ -2518,6 +2502,7 @@
           <h4>Exploração</h4>
           <ul>
             <li>Use <strong>WASD</strong>, <strong>Setas</strong> ou o <strong>D-Pad</strong> na tela para caminhar.</li>
+            <li>Gire a câmera do mapa com <strong>Q</strong> e <strong>R</strong>, com os botões ao lado da altura da câmera ou arrastando com o botão direito do mouse.</li>
             <li>Pressione <strong>Espaço / Enter</strong> ou clique em NPCs e placas para conversar.</li>
             <li>Ande na <strong>grama alta</strong> (ou nos canteiros sombrios da caverna) para encontrar HortaMons selvagens!</li>
             <li>No celular, toque no mapa para andar até o lugar tocado.</li>
@@ -2585,7 +2570,7 @@
         <button type="button" id="menu-resume-btn" class="menu-row">Continuar jogando</button>
         <button type="button" id="menu-save-btn" class="menu-row">Salvar agora</button>
         <button type="button" id="menu-sound-btn" class="menu-row">Som <span id="opt-sound-state" class="toggle-pill${muted ? ' off' : ''}">${muted ? 'Desligado' : 'Ligado'}</span></button>
-        ${renderGraphicsOptionRow()}
+        ${avatarOption()}
         <button type="button" id="menu-help-btn" class="menu-row">Como jogar</button>
         <a id="menu-cards-btn" class="menu-row" href="cartas.html?galeria=todas">Álbum de cartas</a>
         <button type="button" id="menu-export-btn" class="menu-row">Exportar save <small>arquivo .json</small></button>
@@ -2609,8 +2594,8 @@
       closeModal(true);
     });
 
+    bindAvatarOption();
     $('menu-sound-btn').addEventListener('click', () => toggleSound());
-    $('opt-graphics-btn').addEventListener('click', () => toggleGraphicsMode());
 
     $('menu-help-btn').addEventListener('click', () => {
       closeModal(true);
@@ -2736,11 +2721,12 @@
         audio('unlock');
         btn.classList.add('pressed');
         if (ui.screen === 'overworld' && !ui.modal && !ui.dialogue && HM.Overworld) {
-          HM.Overworld.setHeldDirection(dir);
+          (HM.Rooms.active() ? HM.Rooms : HM.Overworld).setHeldDirection(dir);
         }
       };
       const stopMove = () => {
         btn.classList.remove('pressed');
+        HM.Rooms.setHeldDirection(null);
         if (HM.Overworld) HM.Overworld.setHeldDirection(null);
       };
       btn.addEventListener('pointerdown', startMove);
@@ -2795,12 +2781,13 @@
     dom.btnOpenMenu.addEventListener('click', openMenuModal);
 
     // Interagir / Diálogo
+    $('btn-room-exit').addEventListener('click', () => HM.Rooms.leave());
     dom.btnDpadInteract.addEventListener('click', () => {
       audio('unlock');
       if (ui.dialogue) {
         advanceDialogue();
       } else if (ui.screen === 'overworld' && !ui.modal && HM.Overworld) {
-        HM.Overworld.interact();
+        (HM.Rooms.active() ? HM.Rooms : HM.Overworld).interact();
       }
     });
     dom.dialogueBox.addEventListener('click', (ev) => {
@@ -3018,7 +3005,6 @@
     dom.evoDesc = $('evo-desc');
     dom.evoConfirmBtn = $('evo-confirm-btn');
 
-    dom.battleTransition = $('battle-transition');
     dom.toastContainer = $('toast-container');
   }
 

@@ -11,11 +11,11 @@
   />
   <script defer src="js/data/types.js?v=2.5"></script>
   <script defer src="js/data/moves.js?v=2.5"></script>
-  <script defer src="js/data/species.js?v=2.6"></script>
-  <script defer src="js/data/animal-art.js"></script>
-  <script defer src="js/data/family-art.js?v=2.6"></script>
+  <script defer src="js/data/species.js?v=2.5"></script>
+  <script defer src="js/data/animal-art.js?v=atlas"></script>
+  <script defer src="js/data/family-art.js?v=atlas"></script>
   <script defer src="js/engine/sprites.js?v=2.4"></script>
-  <script defer src="js/engine/save.js?v=2.4"></script>
+  <script defer src="js/engine/save.js?v=diario"></script>
   <style>
     :root {
       --ink: #25332e;
@@ -489,14 +489,13 @@
       min-height: 0;
       display: flex;
       flex-direction: column;
-      gap: 0.38em;
-      padding: 0.5em 0.78em 0.62em;
+      gap: 0.5em;
+      padding: 0.6em 0.8em 0.75em;
     }
 
     .back-meta {
-      font-size: 0.78em;
+      font-size: 0.8em;
       font-weight: 800;
-      line-height: 1.18;
       color: var(--t-dark);
     }
 
@@ -532,7 +531,7 @@
     }
 
     .back-label {
-      padding-top: 0.34em;
+      padding-top: 0.45em;
       border-top: 1.5px dashed rgba(43, 29, 20, 0.28);
       font-size: 0.68em;
       font-weight: 900;
@@ -608,18 +607,12 @@
       gap: 0.3em;
     }
 
-    .mu-none {
-      color: var(--ink-soft);
-      font-weight: 700;
-      opacity: 0.75;
-    }
-
     .back-desc {
       margin: auto 0 0;
-      font-size: 0.72em;
+      font-size: 0.74em;
       font-weight: 600;
       font-style: italic;
-      line-height: 1.24;
+      line-height: 1.3;
       color: var(--ink-soft);
     }
 
@@ -792,13 +785,14 @@
       border-left: 1.5px dashed var(--ink);
     }
   </style>
+  <link rel="stylesheet" href="css/album-diario.css?v=atlas" />
 </head>
 <body>
   <div class="page-wrap">
     <header class="gallery-header">
       <div class="brand-block">
         <h1 class="brand-title">
-          <span class="brand-horta">Horta</span><span class="brand-mon">Mon</span>
+          Álbum de HortaMon
         </h1>
         <span id="brand-sub" class="brand-sub">🃏 Álbum de Cartas Colecionáveis</span>
       </div>
@@ -821,9 +815,9 @@
         <span class="sheet-logo">
           🌱 <span class="brand-horta">Horta</span><span class="brand-mon">Mon</span>
         </span>
-        <span id="sheet-subtitle" class="sheet-subtitle">Coleção Completa de Cartas</span>
+        <span class="sheet-subtitle">Coleção Completa de Cartas Botânicas</span>
       </div>
-      <span id="sheet-pill" class="sheet-pill">Folha 1/6 • #001–#004 • recorte, dobre e cole</span>
+      <span id="sheet-pill" class="sheet-pill">Página 1/3 • #01–#08</span>
     </header>
 
     <main id="cards-grid" class="cards-grid" aria-live="polite"></main>
@@ -854,6 +848,7 @@
       }
 
       function spriteUrl(HM, id, size, silhouette, golden) {
+        if (!silhouette && !golden && HM.creatureArt[id]) return HM.creatureArt[id];
         return HM.Sprites && typeof HM.Sprites.renderCreatureToDataURL === 'function'
           ? HM.Sprites.renderCreatureToDataURL(id, size, !!silhouette, !!golden)
           : '';
@@ -912,11 +907,21 @@
 
       // ---------------- Faces ----------------
       function frontFace(sp, HM, golden) {
+        const type = typeOf(sp, HM);
+        const stage = HM.LIFE_STAGES[sp.stage].label;
+        const number = String(sp.dexNum).padStart(3, '0');
         return `
-          <div class="face face-front">
+          <div class="face face-front face-identified">
             <div class="front-window">
-              <img src="${spriteUrl(HM, sp.id, 520, false, golden)}" alt="${escapeHtml(sp.name)}" draggable="false" />
-              ${golden ? '<span class="foil"></span>' : ''}
+              <div class="front-index">#${number}</div>
+              <div class="front-art">
+                <img src="${spriteUrl(HM, sp.id, 680, false, golden)}" alt="" draggable="false" />
+              </div>
+              <div class="front-identity">
+                <strong class="front-name">${escapeHtml(sp.name)}</strong>
+                <span class="front-meta">${escapeHtml(type.name)} · ${escapeHtml(stage)}</span>
+              </div>
+              ${golden ? '<span class="foil" aria-hidden="true"></span>' : ''}
               <span class="flip-hint" aria-hidden="true">↻</span>
             </div>
           </div>`;
@@ -929,14 +934,12 @@
         const strong = list.filter((d) => (chart[sp.type] || {})[d] >= 2);
         const weak = list.filter((a) => (chart[a] || {})[sp.type] >= 2);
         const names = (ids) =>
-          ids.length
-            ? ids
-                .map((id) => {
-                  const t = HM.TYPES[id];
-                  return `<span class="mu-type"><span class="mv-dot" style="background:${t.color}"></span>${escapeHtml(t.name)}</span>`;
-                })
-                .join(' ')
-            : '<span class="mu-none">Nenhum</span>';
+          ids
+            .map((id) => {
+              const t = HM.TYPES[id];
+              return `<span class="mu-type"><span class="mv-dot" style="background:${t.color}"></span>${escapeHtml(t.name)}</span>`;
+            })
+            .join(' ');
         return `
           <div class="back-label">Tipos</div>
           <div class="matchups">
@@ -1039,9 +1042,15 @@
       }
 
       // ---------------- Interação ----------------
+      function setFlipped(card, flipped) {
+        card.classList.toggle('flipped', flipped);
+        card.setAttribute('aria-pressed', String(flipped));
+        card.querySelector('.face-front').setAttribute('aria-hidden', String(flipped));
+        card.querySelector('.face-back').setAttribute('aria-hidden', String(!flipped));
+      }
+
       function toggle(card) {
-        const flipped = card.classList.toggle('flipped');
-        card.setAttribute('aria-pressed', flipped ? 'true' : 'false');
+        setFlipped(card, !card.classList.contains('flipped'));
       }
 
       function bindCards(grid) {
@@ -1084,9 +1093,6 @@
           const start = (sheet - 1) * PAIRS_PER_SHEET;
           const end = Math.min(total, start + PAIRS_PER_SHEET);
           const pad = (n) => String(n).padStart(3, '0');
-          const familyCount = HM.SPECIES_LIST.filter((sp) => sp.stage === 1).length;
-          const sheetSub = document.getElementById('sheet-subtitle');
-          if (sheetSub) sheetSub.textContent = `Coleção Completa · ${total} Espécies (${familyCount} Famílias)`;
           sheetPill.textContent = `Folha ${sheet}/${pages} • #${pad(start + 1)}–#${pad(end)} • recorte, dobre e cole`;
           grid.innerHTML = HM.SPECIES_LIST.slice(start, end).map((sp) => printPair(sp, HM)).join('');
           return;
@@ -1099,16 +1105,15 @@
         const caughtCount = HM.SPECIES_LIST.filter((sp) => col.caught[sp.id]).length;
         if (col.hasSave) {
           const pct = Math.round((caughtCount / total) * 100);
-          brandSub.innerHTML = `<span class="collect-bar">Sua coleção: ${caughtCount}/${total} <span class="collect-track"><span class="collect-fill" style="width:${pct}%"></span></span></span>`;
+          brandSub.innerHTML = `<span class="collect-bar">Sua coleção ${caughtCount}/${total} <span class="collect-track"><span class="collect-fill" style="width:${pct}%"></span></span></span>`;
         } else {
           brandSub.textContent = `${total} cartas para colecionar — jogue para liberar as suas`;
         }
 
-        const availableTypes = (HM.TYPE_LIST || []).filter((tid) =>
-          HM.SPECIES_LIST.some((sp) => sp.type === tid)
-        );
+        const typeCounts = new Map();
+        HM.SPECIES_LIST.forEach((sp) => typeCounts.set(sp.type, (typeCounts.get(sp.type) || 0) + 1));
         const galleryType = new URLSearchParams(location.search).get('galeria');
-        let activeType = availableTypes.includes(galleryType) ? galleryType : 'all';
+        let activeType = typeCounts.has(galleryType) ? galleryType : 'all';
         const preview = galleryType === 'todas' || activeType !== 'all';
         let allFlipped = false;
 
@@ -1116,18 +1121,21 @@
           const btns = [
             `<button type="button" class="filter-btn${activeType === 'all' ? ' active' : ''}" data-type="all" style="--f-bg:#fde047;--f-color:#2b1d14;">Todas (${total})</button>`
           ];
-          availableTypes.forEach((tid) => {
+          (HM.TYPE_LIST || []).forEach((tid) => {
             const t = HM.TYPES[tid];
-            const count = HM.SPECIES_LIST.filter((sp) => sp.type === tid).length;
+            const count = typeCounts.get(tid);
+            if (!count) return;
             btns.push(
               `<button type="button" class="filter-btn${activeType === tid ? ' active' : ''}" data-type="${escapeHtml(tid)}" style="--f-bg:${t.bg};--f-color:${t.dark};">${t.icon} ${escapeHtml(t.name)} (${count})</button>`
             );
           });
           filterPills.innerHTML = btns.join('');
           filterPills.querySelectorAll('[data-type]').forEach((btn) => {
+            btn.setAttribute('aria-pressed', String(btn.classList.contains('active')));
             btn.addEventListener('click', () => {
               activeType = btn.getAttribute('data-type');
               renderFilters();
+              filterPills.querySelector('.active').focus({ preventScroll: true });
               renderCards();
             });
           });
@@ -1151,14 +1159,14 @@
             grid.innerHTML = list.filter(sp => sp.stage === 1).map(first => {
               const cards = [];
               for (let sp = first; sp; sp = HM.SPECIES[sp.evolvesTo]) {
-                cards.push(`<figure>${cardFor(sp)}<figcaption><strong>${escapeHtml(sp.name)}</strong> · ${HM.LIFE_STAGES[sp.stage].label}</figcaption></figure>`);
+                cards.push(cardFor(sp));
               }
               return `<section class="family-row" id="familia-${escapeHtml(first.id)}" aria-label="Família de ${escapeHtml(first.name)}">${cards.join('')}</section>`;
             }).join('');
           } else {
             grid.innerHTML = list.map(cardFor).join('');
           }
-          if (allFlipped) grid.querySelectorAll('.tcard').forEach((c) => toggle(c));
+          grid.querySelectorAll('.tcard').forEach((card) => setFlipped(card, allFlipped));
         }
 
         if (showAllBox) {
@@ -1168,9 +1176,8 @@
         if (flipAllBtn) {
           flipAllBtn.addEventListener('click', () => {
             allFlipped = !allFlipped;
-            grid.querySelectorAll('.tcard').forEach((c) => {
-              if (c.classList.contains('flipped') !== allFlipped) toggle(c);
-            });
+            flipAllBtn.textContent = allFlipped ? '↻ Mostrar frentes' : '↻ Virar todas';
+            grid.querySelectorAll('.tcard').forEach((card) => setFlipped(card, allFlipped));
           });
         }
 

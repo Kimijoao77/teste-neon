@@ -56,9 +56,7 @@
   // Loop & Tempo
   let rafId = null;
   let lastFrameTime = 0;
-  let lastFrameDt = 0.016;
   let sceneTime = 0;
-  let using3D = false;
 
   // Animações das criaturas
   let playerAnim = createCreatureAnim();
@@ -100,8 +98,6 @@
   function createPotAnim() {
     return {
       active: false,
-      phase: 'throw',
-      phaseT: 0,
       x: 0,
       y: 0,
       groundY: 0,
@@ -117,34 +113,6 @@
       settled: false,
       glowAlpha: 0
     };
-  }
-
-  function shouldUse3D() {
-    return Boolean(
-      HM.Battle3D &&
-      typeof HM.Battle3D.start === 'function' &&
-      HM.HD2D &&
-      typeof HM.HD2D.isEnabled === 'function' &&
-      HM.HD2D.isEnabled()
-    );
-  }
-
-  function tryEnable3D() {
-    if (!shouldUse3D() || !canvas) {
-      using3D = false;
-      return false;
-    }
-    using3D = Boolean(
-      HM.Battle3D.start({
-        overlayCanvas: canvas,
-        sceneKey: battleScene,
-        battleType: battleType,
-        trainerNpc: trainerNpc,
-        playerCreature: getPlayerCreature(),
-        enemyCreature: getEnemyCreature()
-      })
-    );
-    return using3D;
   }
 
   // =========================================================================
@@ -368,9 +336,9 @@
     const enemySize = Math.round(Math.min(W * 0.37, H * 0.61) * (HM.LIFE_STAGES[enemyStage]?.battleScale || 1));
 
     const playerPlatformX = W * 0.255;
-    const playerPlatformY = H * 0.865;
+    const playerPlatformY = H * 0.77;
     const enemyPlatformX = W * 0.745;
-    const enemyPlatformY = H * 0.68;
+    const enemyPlatformY = H * 0.60;
 
     return {
       W: W,
@@ -415,9 +383,6 @@
     shakeIntensity = Math.max(shakeIntensity, intensity);
     shakeDuration = Math.max(durationMs, 100);
     shakeTime = shakeDuration;
-    if (using3D && HM.Battle3D && typeof HM.Battle3D.triggerShake === 'function') {
-      HM.Battle3D.triggerShake(intensity, durationMs);
-    }
   }
 
   function triggerScreenFlash(color, alpha) {
@@ -428,16 +393,8 @@
   function spawnFloatingText(side, text, opts) {
     const layout = getLayout();
     const isPlayer = side === 'player';
-    let baseX = isPlayer ? layout.playerCenterX : layout.enemyCenterX;
-    let baseY = isPlayer ? layout.playerCenterY - layout.playerSize * 0.45 : layout.enemyCenterY - layout.enemySize * 0.48;
-
-    if (using3D && HM.Battle3D && typeof HM.Battle3D.projectToScreen === 'function') {
-      const proj = HM.Battle3D.projectToScreen(side, 0.12, layout.W, layout.H);
-      if (proj && isFinite(proj.x) && isFinite(proj.y)) {
-        baseX = clamp(proj.x, 96, layout.W - 96);
-        baseY = clamp(proj.y, 44, layout.H - 44);
-      }
-    }
+    const baseX = isPlayer ? layout.playerCenterX : layout.enemyCenterX;
+    const baseY = isPlayer ? layout.playerCenterY - layout.playerSize * 0.45 : layout.enemyCenterY - layout.enemySize * 0.48;
 
     const o = opts || {};
     // Evitar sobreposição vertical com textos recentes do mesmo lado
@@ -464,10 +421,6 @@
   }
 
   function spawnMoveParticles(fxType, fromSide, toSide) {
-    if (using3D && HM.Battle3D && typeof HM.Battle3D.spawnMoveFx === 'function') {
-      HM.Battle3D.spawnMoveFx(fxType, fromSide, toSide);
-      return;
-    }
     const layout = getLayout();
     const fromX = fromSide === 'player' ? layout.playerCenterX : layout.enemyCenterX;
     const fromY = fromSide === 'player' ? layout.playerCenterY : layout.enemyCenterY;
@@ -587,9 +540,8 @@
           life: 0.5 + Math.random() * 0.3
         });
       }
-    } else if (fxType === 'citrus' || fxType === 'voltaic') {
-      // Raios cítricos/voltaicos + estrelas elétricas
-      const isVoltaic = fxType === 'voltaic';
+    } else if (fxType === 'citrus') {
+      // Raios cítricos + estrelas elétricas amarelas
       for (let b = 0; b < 5; b++) {
         particles.push({
           shape: 'bolt',
@@ -600,7 +552,7 @@
           gravity: 0,
           size: 46 + Math.random() * 22,
           rot: (Math.random() - 0.5) * 0.6,
-          color: isVoltaic ? (b % 2 === 0 ? '#67e8f9' : '#fef08a') : (b % 2 === 0 ? '#fef08a' : '#facc15'),
+          color: b % 2 === 0 ? '#fef08a' : '#facc15',
           age: -b * 0.04,
           life: 0.28
         });
@@ -618,43 +570,9 @@
           size: 6 + Math.random() * 6,
           rot: Math.random() * Math.PI,
           vrot: (Math.random() - 0.5) * 12,
-          color: isVoltaic ? (i % 3 === 0 ? '#ffffff' : i % 3 === 1 ? '#22d3ee' : '#fde047') : (i % 3 === 0 ? '#ffffff' : i % 3 === 1 ? '#fde047' : '#eab308'),
+          color: i % 3 === 0 ? '#ffffff' : i % 3 === 1 ? '#fde047' : '#eab308',
           age: 0,
           life: 0.4 + Math.random() * 0.28
-        });
-      }
-    } else if (fxType === 'wind') {
-      for (let r = 0; r < 3; r++) {
-        particles.push({
-          shape: 'ring',
-          x: toX,
-          y: toY - 8 + r * 10,
-          vx: 0,
-          vy: -25,
-          gravity: 0,
-          size: 16 + r * 10,
-          maxSize: 84 + r * 14,
-          color: r % 2 === 0 ? '#ffffff' : '#86efac',
-          age: -r * 0.06,
-          life: 0.45
-        });
-      }
-      for (let i = 0; i < 16; i++) {
-        const ang = Math.random() * Math.PI * 2;
-        const speed = 95 + Math.random() * 125;
-        particles.push({
-          shape: 'leaf',
-          x: toX + (Math.random() - 0.5) * 32,
-          y: toY + (Math.random() - 0.5) * 28,
-          vx: Math.cos(ang) * speed,
-          vy: Math.sin(ang) * speed - 40,
-          gravity: 20,
-          size: 7 + Math.random() * 5,
-          rot: ang,
-          vrot: 10,
-          color: i % 2 === 0 ? '#f0fdf4' : '#86efac',
-          age: 0,
-          life: 0.48 + Math.random() * 0.22
         });
       }
     } else if (fxType === 'spore') {
@@ -781,10 +699,6 @@
   }
 
   function spawnCaptureBurst(x, y, success) {
-    if (using3D && HM.Battle3D && typeof HM.Battle3D.spawnCaptureBurst === 'function') {
-      HM.Battle3D.spawnCaptureBurst(success);
-      return;
-    }
     if (success) {
       particles.push({
         shape: 'ring',
@@ -854,10 +768,6 @@
   }
 
   function spawnAbsorptionParticles(fromX, fromY, toX, toY) {
-    if (using3D && HM.Battle3D && typeof HM.Battle3D.spawnAbsorptionFx === 'function') {
-      HM.Battle3D.spawnAbsorptionFx();
-      return;
-    }
     for (let i = 0; i < 20; i++) {
       const rx = fromX + (Math.random() - 0.5) * 70;
       const ry = fromY + (Math.random() - 0.5) * 70;
@@ -886,10 +796,6 @@
     const anim = side === 'player' ? playerAnim : enemyAnim;
     const dirX = side === 'player' ? 1 : -1;
     const dirY = side === 'player' ? -1 : 1;
-
-    if (using3D && HM.Battle3D && typeof HM.Battle3D.setCameraFocus === 'function') {
-      HM.Battle3D.setCameraFocus(side === 'player' ? 'attack_player' : 'attack_enemy', 0.65);
-    }
 
     await runTween(130, (t) => {
       const e = Math.sin(t * Math.PI * 0.5);
@@ -920,9 +826,6 @@
     triggerShake(strong ? 11 : 5, strong ? 290 : 170);
     if (strong) {
       triggerScreenFlash('#fff7ed', 0.3);
-      if (using3D && HM.Battle3D && typeof HM.Battle3D.setCameraFocus === 'function') {
-        HM.Battle3D.setCameraFocus(side === 'player' ? 'hit_player' : 'hit_enemy', 0.55);
-      }
     }
 
     await runTween(260, (t) => {
@@ -1497,11 +1400,6 @@
       if (typeof HM.registerSeen === 'function') HM.registerSeen(state, evolution.toId);
       if (typeof HM.registerCaught === 'function') HM.registerCaught(state, evolution.toId);
 
-      if (using3D && HM.Battle3D) {
-        if (typeof HM.Battle3D.setCameraFocus === 'function') HM.Battle3D.setCameraFocus('evolve', 1.6);
-        if (typeof HM.Battle3D.setCreatures === 'function') HM.Battle3D.setCreatures(player, getEnemyCreature());
-      }
-
       playSfx('playEvolve');
       triggerScreenFlash('#fef9c3', 0.55);
       spawnMoveParticles('buff', 'player', 'player');
@@ -1807,25 +1705,17 @@
 
     potAnim = createPotAnim();
     potAnim.active = true;
-    potAnim.phase = 'throw';
-    potAnim.phaseT = 0;
     potAnim.isSuper = isSuper;
     potAnim.radius = 22;
     potAnim.x = startX;
     potAnim.y = startY;
     potAnim.groundY = groundY;
 
-    if (using3D && HM.Battle3D && typeof HM.Battle3D.setCameraFocus === 'function') {
-      HM.Battle3D.setCameraFocus('capture_throw', 1.2);
-    }
-
     setMessage('Você arremessou ' + item.name + '!');
     playSfx('playPotThrow');
 
     // Fase 1: Arco parabólico de arremesso
     await runTween(470, (t) => {
-      potAnim.phase = 'throw';
-      potAnim.phaseT = t;
       potAnim.x = lerp(startX, apexX, t);
       const linearY = lerp(startY, apexY, t);
       const arcLift = Math.sin(t * Math.PI) * 95;
@@ -1836,8 +1726,6 @@
     if (!isAliveSession(sid)) return;
 
     // Fase 2: Abertura do vaso + feixe verde-dourado absorvendo o inimigo
-    potAnim.phase = 'absorb';
-    potAnim.phaseT = 0;
     potAnim.angle = 0;
     potAnim.beamTargetX = layout.enemyCenterX;
     potAnim.beamTargetY = layout.enemyCenterY;
@@ -1845,8 +1733,6 @@
     playSfx('playHeal');
 
     await runTween(420, (t) => {
-      potAnim.phase = 'absorb';
-      potAnim.phaseT = t;
       potAnim.openAmount = Math.sin(Math.min(1, t * 1.4) * Math.PI * 0.5);
       potAnim.beamAlpha = Math.sin(t * Math.PI);
       const shrink = Math.max(0, 1 - t);
@@ -1861,13 +1747,8 @@
     enemyAnim.alpha = 0;
     potAnim.beamAlpha = 0;
 
-    // Fase 3: Fechar tampa e quicar no chão (câmera aproxima para o suspense!)
-    if (using3D && HM.Battle3D && typeof HM.Battle3D.setCameraFocus === 'function') {
-      HM.Battle3D.setCameraFocus('capture_wobble', 4.5);
-    }
+    // Fase 3: Fechar tampa e quicar no chão
     await runTween(380, (t) => {
-      potAnim.phase = 'drop';
-      potAnim.phaseT = t;
       potAnim.openAmount = Math.max(0, 1 - t * 3);
       // Queda com 2 quiques elásticos
       let yNorm;
@@ -1897,8 +1778,6 @@
       playSfx('playPotWobble');
       const wobbleDir = w % 2 === 0 ? -1 : 1;
       await runTween(360, (t) => {
-        potAnim.phase = 'wobble';
-        potAnim.phaseT = t;
         potAnim.angle = Math.sin(t * Math.PI * 2) * 0.44 * wobbleDir * (1 - t * 0.25);
         potAnim.x = apexX + Math.sin(t * Math.PI * 2) * 7 * wobbleDir;
       }, sid);
@@ -1912,13 +1791,8 @@
 
     // Fase 5: Capturou ou Escapou!
     if (caught) {
-      potAnim.phase = 'caught';
-      potAnim.phaseT = 1;
       potAnim.settled = true;
       potAnim.glowAlpha = 1;
-      if (using3D && HM.Battle3D && typeof HM.Battle3D.setCameraFocus === 'function') {
-        HM.Battle3D.setCameraFocus('capture_win', 2.8);
-      }
       playSfx('playCatchSuccess');
       triggerScreenFlash('#fef9c3', 0.35);
       spawnCaptureBurst(potAnim.x, potAnim.y - 6, true);
@@ -1976,17 +1850,12 @@
       });
     } else {
       // Escapou!
-      if (using3D && HM.Battle3D && typeof HM.Battle3D.setCameraFocus === 'function') {
-        HM.Battle3D.setCameraFocus('idle', 0);
-      }
       playSfx('playCatchFail');
       spawnCaptureBurst(potAnim.x, potAnim.y - 6, false);
       spawnFloatingText('enemy', 'ESCAPOU!', { color: '#fca5a5', size: 22 });
       setMessage('Ah não! ' + enemyName + ' escapou do vaso!');
 
       await runTween(340, (t) => {
-        potAnim.phase = 'escape';
-        potAnim.phaseT = t;
         potAnim.openAmount = 1;
         potAnim.alpha = 1 - t;
         const pop = t < 0.7 ? lerp(0, 1.14, t / 0.7) : lerp(1.14, 1, (t - 0.7) / 0.3);
@@ -2105,7 +1974,6 @@
     }
 
     initEnvironment();
-    tryEnable3D();
     startLoop();
 
     // Mensagem de abertura e entrada animada
@@ -2456,10 +2324,6 @@
     sessionId++;
     stopLoop();
     clearAllTweens();
-    if (HM.Battle3D && typeof HM.Battle3D.stop === 'function') {
-      HM.Battle3D.stop();
-    }
-    using3D = false;
     active = false;
     busy = false;
     ended = false;
@@ -2467,7 +2331,7 @@
   }
 
   // =========================================================================
-  // LOOP 60FPS E RENDERIZAÇÃO CARTOON / HD-2D 3D DA ARENA
+  // LOOP 60FPS E RENDERIZAÇÃO CARTOON DA ARENA
   // =========================================================================
   function startLoop() {
     stopLoop();
@@ -2475,7 +2339,6 @@
     const tick = (now) => {
       const dt = Math.min(0.05, Math.max(0.001, (now - lastFrameTime) / 1000));
       lastFrameTime = now;
-      lastFrameDt = dt;
       sceneTime += dt;
 
       updateSimulation(now, dt);
@@ -2567,51 +2430,9 @@
       canvas.height = height;
     }
 
-    // Permitir alternância dinâmica entre HD-2D 3D e 2.5D Clássico sem travar
-    const want3D = shouldUse3D();
-    if (using3D && !want3D) {
-      if (HM.Battle3D && typeof HM.Battle3D.stop === 'function') HM.Battle3D.stop();
-      using3D = false;
-    } else if (!using3D && want3D) {
-      tryEnable3D();
-    }
-
-    // CAMADA 1 (3D WebGL atrás) + CAMADA 2 (#battle-canvas transparente na frente para textos flutuantes nítidos)
-    if (using3D && HM.Battle3D && typeof HM.Battle3D.syncState === 'function') {
-      const ok3D = HM.Battle3D.syncState({
-        dt: lastFrameDt,
-        nowMs: now,
-        playerCreature: getPlayerCreature(),
-        enemyCreature: getEnemyCreature(),
-        playerAnim: playerAnim,
-        enemyAnim: enemyAnim,
-        potAnim: potAnim
-      });
-      if (ok3D) {
-        ctx.save();
-        ctx.setTransform(width / W, 0, 0, height / H, 0, 0);
-        ctx.clearRect(0, 0, W, H);
-        ctx.lineJoin = 'round';
-        ctx.lineCap = 'round';
-
-        // Textos flutuantes ultra-nítidos sobre os standees 3D
-        drawFloatingTexts(ctx);
-
-        // Flash sutil de impacto / evolução
-        if (screenFlashAlpha > 0.005) {
-          ctx.fillStyle = screenFlashColor;
-          ctx.globalAlpha = screenFlashAlpha;
-          ctx.fillRect(-20, -20, W + 40, H + 40);
-          ctx.globalAlpha = 1;
-        }
-        ctx.restore();
-        return;
-      }
-      using3D = false;
-    }
-
     ctx.save();
     ctx.setTransform(width / W, 0, 0, height / H, 0, 0);
+    ctx.clearRect(0, 0, W, H);
     ctx.imageSmoothingQuality = 'high';
     ctx.lineJoin = 'round';
     ctx.lineCap = 'round';
@@ -2625,19 +2446,23 @@
     }
 
     const scene = battleScene === 'caverna' ? 'caverna' : battleType === 'leader' ? 'estufa' : battleScene;
-    if (!landscape || landscape.height !== H * 2 || landscape.scene !== scene) {
-      const background = document.createElement('canvas');
-      background.width = W * 2;
-      background.height = H * 2;
-      const backgroundCtx = background.getContext('2d');
-      backgroundCtx.scale(2, 2);
-      HM.Scenery.paint(backgroundCtx, W, H, scene);
-      landscape = { scene, height: H * 2, background };
-    }
-    ctx.drawImage(landscape.background, 0, 0, W, H);
+    const rendered3d = HM.Scene3D?.renderBattle(canvas, scene, layout);
+    if (!rendered3d) {
+      if (!landscape || landscape.height !== H * 2 || landscape.scene !== scene) {
+        const background = document.createElement('canvas');
+        background.width = W * 2;
+        background.height = H * 2;
+        const backgroundCtx = background.getContext('2d');
+        backgroundCtx.scale(2, 2);
+        HM.Scenery.paint(backgroundCtx, W, H, scene);
+        landscape = { scene, height: H * 2, background };
+      }
+      ctx.drawImage(landscape.background, 0, 0, W, H);
 
-    drawPlatform(ctx, layout.enemyPlatformX, layout.enemyPlatformY, W * 0.165, H * 0.065);
-    drawPlatform(ctx, layout.playerPlatformX, layout.playerPlatformY, W * 0.196, H * 0.081);
+      drawPlatform(ctx, layout.enemyPlatformX, layout.enemyPlatformY, W * 0.165, H * 0.065);
+      drawPlatform(ctx, layout.playerPlatformX, layout.playerPlatformY, W * 0.196, H * 0.081);
+
+    }
 
     // 3. Criatura Inimiga (em cima à direita olhando para esquerda)
     const enemy = getEnemyCreature();
@@ -2656,7 +2481,6 @@
       drawAuraGlow(ctx, px, py, layout.playerSize * 0.58, playerAnim.auraColor, playerAnim.auraAlpha);
       drawBattleCreature(ctx, player, px, py, layout.playerSize, 'right', playerAnim, now);
     }
-
     // 5. Feixe e Vaso de Captura
     if (potAnim.active) {
       drawCapturePotVisual(ctx);
